@@ -1,0 +1,52 @@
+@startuml
+title: "Vista logica de las entidades"
+
+class NodeWorker{
+    NodeProcess(csv:String)
+    +run():String
+    -getSupportedGamesCountWinLinuxMac():String
+    -getTop10Indie2010():String
+    -getTop5IndiePositiveReviews():String
+    -getShootersOver50kReviewsPositive():String
+    -getShooters90PercentileNeg():String
+}
+
+class ExchangeFanout{
+    -queues:Array<BrokerQueue>
+    +ExchangeFanout()
+    +pushMessage()
+}
+
+class ExchangeDirect{
+    -queues:Array<BrokerQueue>
+    +ExchangeDirect()
+    +pushMessage():void
+}
+
+
+class BrokerQueue{
+    -bindingKey:String /' antes routingKey '/
+    -aQueue:Queue<String>
+    +Queue(routingKey:String)
+    +sendTo()
+}
+
+class Middleware{
+    -cachedResponses.:Array<String>
+    -csvChunks:Array<String>
+    +Middleware()
+    +run():boolean
+    +getSupportedGamesCountWinLinuxMac():String
+    +getTop10Indie2010():String
+    +getTop5IndiePositiveReviews():String
+    +getShootersOver50kReviewsPositive():String
+    +getShooters90PercentileNeg():String
+}
+
+
+BrokerQueue "  1  " *-- "1..*" NodeWorker
+Middleware "1" o-- "1" ExchangeFanout
+Middleware "1" o-- "1" ExchangeDirect
+
+
+@enduml

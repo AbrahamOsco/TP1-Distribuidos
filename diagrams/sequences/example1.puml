@@ -1,0 +1,11 @@
+@startuml
+actor user
+create "middle:Middleware"
+user -> "middle:Middleware":Middleware()
+user -> "middle:Middleware":start()
+
+
+
+
+
+@enduml
