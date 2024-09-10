@@ -6,17 +6,17 @@ skinparam LegendFontSize 16
 
 legend top
     Se muestran las consultas que el usuario
-    puede hacer al sistema distribuido.
+    puede hacer al sistema.
 end legend
 
 left to right direction
 actor User
 
 usecase "Obtener la cantidad de juegos soportado en Windows, Linux, MAC " as UC1
-usecase "Los nombres del top 10 de juegos género "Indie" publicados en la década\n del 2010 con más tiempo promedio histórico de juego" as UC2
-usecase "Los nombres del top 5 de juegos del género "Indie" con más reseñas positiva " as UC3
-usecase "Los nombres del género shooter con mas de 50k reseñas positivas en idioma inglés" as UC4
-usecase "Los nombres del genero shooter dentro del percentil 90 en cantidad de reseñas negativas  " as UC5
+usecase "Obtener los nombres del top 10 de juegos género "Indie" publicados en la década\n del 2010 con más tiempo promedio histórico de juego" as UC2
+usecase "Obtener los nombres del top 5 de juegos del género "Indie" con más reseñas positiva " as UC3
+usecase "Obtener los nombres del género shooter con mas de 50k reseñas positivas en idioma inglés" as UC4
+usecase "Obtener los nombres del genero shooter dentro del percentil 90 en cantidad de reseñas negativas  " as UC5
 
 User --> UC1
 User --> UC2
