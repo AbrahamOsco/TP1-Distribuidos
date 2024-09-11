@@ -1,7 +1,7 @@
 import socket
 import logging
 
-class SocketTCP:
+class Socket:
 
     def __init__(self, ip="", port=0, listen_backlog = 0, socket_peer=0):
         self.ip = ip
@@ -22,7 +22,7 @@ class SocketTCP:
             logging.error(msg)
             raise RuntimeError(msg)
         skt_peer, addr = self.socket.accept()
-        socket_peer_object = SocketTCP(socket_peer=skt_peer, port=self.port)
+        socket_peer_object = Socket(socket_peer=skt_peer, port=self.port)
         return socket_peer_object, addr
     
     def connect(self):

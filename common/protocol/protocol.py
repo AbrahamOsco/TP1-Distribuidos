@@ -1,4 +1,4 @@
-from socketTCP import SocketTCP
+from socketTCP import Socket
 import logging
 
 FORMAT_ENCODED = "utf-8"
