@@ -1,0 +1,17 @@
+@startuml
+|Query 2 queue|
+start
+:Entrega mensajes de juegos;
+
+|Query 2 Controller|
+:Filtra el mensaje, si cumple con las\ncondiciones lo manda por una nueva queue;
+
+|Reducer Queue 2|
+:Entrega de a 1 juego;
+
+|Query Resolver 2|
+:Almacena N variables en memoria,\ncompara el nuevo juego y\nactualiza según corresponda;
+
+|Query Resolver|
+:Recibe los datos de todas las queries y los agrupa;
+@enduml
