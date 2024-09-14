@@ -1,24 +1,12 @@
 @startuml
 |User|
 start
-:Crea un socket;
-:Inicia una conexión y comienza a mandar datos;
-
-|Servidor|
-:Acepta la conexión y recibe datos;
-:Transmite los datos a un exchange correspondiente al client ID;
-
-|Query 1 Queue|
-:Recibe cada linea del csv a operar;
-
-|Query 1 Controller|
-:Recibe de a 1 juego y acumula en memoria un numero para cada sistema operativo;
-
-|Query Resolver|
-:Acumula todas las respuestas y las envia cuando están listas;
-
-|User|
-:Recibir estado del trabajo;
-stop
-
+   |Games Parser|
+   :Recibe cada juego y parsea su ID;
+   |Platform Filter|
+   :Extrae el dato de que plataformas pueden correr en un juego;
+   |Platform Resolver|
+   :Acumula la cantidad de juegos por plataforma;
+   |User|
+   :Recibe resultado de la query;
 @enduml

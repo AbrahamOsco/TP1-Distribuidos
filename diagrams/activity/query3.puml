@@ -1,25 +1,14 @@
 @startuml
-|Query 3 queue|
+   |Games Parser|
 start
-:Entrega mensajes de juegos;
-
-|Query 3 Controller|
-:Filtra el mensaje, si cumple con las condiciones lo almacena;
-:Hace ACK del mensaje;
-
-|Query 3 queue|
-:Entrega mensajes de reviews;
-
-|Query 3 Controller|
-:Si la review cumple el criterio incrementa el contador almacenado;
-:Hace ACK del mensaje;
-
-|Query 3 queue|
-:Indica FIN;
-
-|Query 3 Controller|
-:Recorre cada linea de los datos almacenados y las envia a un exchange;
-
-|Query Resolver|
-:Recibe los datos de todas las queries y los agrupa;
+   :Recibe cada juego y parsea su ID;
+   |Gender Filter|
+   :Filtra los juegos indie;
+   |Top Sorter|
+   :Recibe juegos y se queda con los 5\ncon más reseñas positivas;
+   |Query resolver|
+   :Acumula los juegos y se queda con los\nque tengan 50k reviews en ingles;
+   |Server|
+   :Recibe resultado de la query;
+stop
 @enduml

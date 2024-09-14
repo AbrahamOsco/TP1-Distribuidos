@@ -1,0 +1,13 @@
+@startuml
+   |Games Parser|
+start
+   :Recibe cada juego y parsea su ID;
+   |Gender Filter|
+   :Filtra los juegos shooter;
+   |Percentil grouper|
+   :Acumula juegos;
+:Calcula el percentil 90\nde reseñas negativas;
+   |Server|
+   :Recibe resultado de la query;
+stop
+@enduml
