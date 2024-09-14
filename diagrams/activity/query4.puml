@@ -4,7 +4,7 @@ start
 :Crea un socket;
 :Inicia una conexión y comienza a mandar datos;
 
-|Servidor|
+|Server|
 :Acepta la conexión y recibe datos;
 if (Encola los mensajes según el CSV correspondiente) then
    |Reviews Parser|
@@ -19,6 +19,9 @@ else
 endif
    |Query resolver|
    :Acumula los juegos y se queda con los\nque tengan 50k reviews en ingles;
+   |Server|
+   :Recibe resultado de la query;
    |User|
    :Recibe resultado de la query;
+stop
 @enduml

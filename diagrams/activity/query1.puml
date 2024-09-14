@@ -1,5 +1,5 @@
 @startuml
-|User|
+|Server|
 start
    |Games Parser|
    :Recibe cada juego y parsea su ID;
@@ -7,6 +7,7 @@ start
    :Extrae el dato de que plataformas pueden correr en un juego;
    |Platform Resolver|
    :Acumula la cantidad de juegos por plataforma;
-   |User|
+   |Server|
    :Recibe resultado de la query;
+stop
 @enduml

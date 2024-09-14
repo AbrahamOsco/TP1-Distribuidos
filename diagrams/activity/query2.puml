@@ -4,7 +4,7 @@ start
 :Crea un socket;
 :Inicia una conexión y comienza a mandar datos;
 
-|Servidor|
+|Server|
 :Acepta la conexión y recibe datos;
 :Encola los mensajes según el CSV correspondiente;
    |Games Parser|
@@ -15,6 +15,9 @@ start
    :Filtra los juegos de la decada 2010;
    |Query resolver|
    :Acumula el top 10 de juegos con mas tiempo historico;
+   |Server|
+   :Recibe resultado de la query;
    |User|
    :Recibe resultado de la query;
+Stop
 @enduml

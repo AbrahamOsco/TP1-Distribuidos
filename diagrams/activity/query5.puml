@@ -1,6 +1,8 @@
 @startuml
-   |Games Parser|
+   |Server|
 start
+:Recibe datos del usuario;
+   |Games Parser|
    :Recibe cada juego y parsea su ID;
    |Gender Filter|
    :Filtra los juegos shooter;
