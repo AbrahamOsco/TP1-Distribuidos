@@ -1,9 +1,11 @@
 import socket
 import logging
 
+MAX_LISTEN_BACKLOG = 30
+
 class Socket:
 
-    def __init__(self, ip="", port=0, listen_backlog = 0, socket_peer=0):
+    def __init__(self, ip="", port=0, socket_peer=0):
         self.ip = ip
         self.was_closed = False
         self.port = port
@@ -13,11 +15,10 @@ class Socket:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if (ip == ""):
             self.socket.bind(("", port))
-            self.socket.listen(listen_backlog)
-            self.listen_backlog = listen_backlog
+            self.socket.listen(MAX_LISTEN_BACKLOG)
     
     def accept(self):
-        if (self.ip != ''):
+        if (self.ip != ""):
             msg = "action: accept | result: fail | error: Socket is not a server socket"
             logging.error(msg)
             raise RuntimeError(msg)
@@ -26,7 +27,7 @@ class Socket:
         return socket_peer_object, addr
     
     def connect(self):
-        if self.ip == '':
+        if self.ip == "":
             msg = "action: connect | result: fail | error: Socket is not a client socket"
             logging.error(msg)
             return False, msg

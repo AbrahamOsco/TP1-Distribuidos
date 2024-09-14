@@ -17,12 +17,15 @@ def read_csv_pandas():
     games_df_columns = ['AppID', 'Name', 'Windows', 'Mac', 'Linux', 'Genres', 'Release date', 'Average playtime forever', 'Positive', 'Negative']
     reviews_df_columns = ['app_id', 'review_text']
     
-    games_df = pd.read_csv("./data/games/games.csv", usecols=games_df_columns, nrows=3)
-    reviews_df = pd.read_csv("./data/reviews/dataset.csv", usecols=reviews_df_columns, nrows=3)
+    games_df = pd.read_csv("./data/games/games.csv", usecols=games_df_columns, nrows=5)
+    reviews_df = pd.read_csv("./data/reviews/dataset.csv", usecols=reviews_df_columns, nrows=5)
     games_df["Genres"] = games_df["Genres"].str.lower() 
+    print(f"{games_df}")
+    print(games_df)
 
-    games_df.info()
-    reviews_df.info()
+    print(f"{reviews_df.tail()}")
+    print(f"{reviews_df['app_id']}")
+
     get_number_of_games_on_win_linux_mac(games_df)
 
 def get_number_of_games_on_win_linux_mac(game_df):
