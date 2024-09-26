@@ -1,0 +1,37 @@
+version: '3'
+services:
+  rabbitmq: #es una ip  hay una resolucion de DNS por debajo
+    build:
+      context: ./rabbitmq
+      dockerfile: rabbitmq.dockerfile
+    ports:
+      - 15672:15672
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:15672"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+  producer:
+    build:
+      context: ./producer
+      dockerfile: producer.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  consumer:
+    build:
+      context: ./consumer
+      dockerfile: consumer.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1

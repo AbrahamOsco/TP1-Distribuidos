@@ -1,0 +1,48 @@
+version: '3'
+services:
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: rabbitmq.dockerfile
+    ports:
+      - 15672:15672
+
+  producer:
+    build:
+      context: ./producer
+      dockerfile: producer.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  consumer1:
+    build:
+      context: ./consumer
+      dockerfile: consumer.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CONSUMER_ID=1
+      - LOG_SEVERITY=info
+
+  consumer2:
+    build:
+      context: ./consumer
+      dockerfile: consumer.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CONSUMER_ID=2
+      - LOG_SEVERITY=error
