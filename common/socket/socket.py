@@ -51,14 +51,14 @@ class Socket:
         logging.error(f"{error}")
         return total_bytes_sent
 
-    def send_all(self, a_object):
+    def send_all(self, a_object_bytes):
         total_bytes_sent = 0
-        bytes_to_send = len(a_object)
+        bytes_to_send = len(a_object_bytes)
         while total_bytes_sent < bytes_to_send:
             try:
-                bytes_sent = self.socket.send(a_object[total_bytes_sent:]) # retorna la # de bytes enviados.
+                bytes_sent = self.socket.send(a_object_bytes[total_bytes_sent:]) # retorna la # de bytes enviados.
                 if bytes_sent == 0:
-                    return self.handler_error_send_all(total_bytes_sent, "action: send_all | result: fail | error: connection broken during send all!")
+                    return self.handler_error_send_all(total_bytes_sent, "action: send_all | result: fail | error: connection broken during send all, bytes sent = 0 ")
             except OSError as e:
                 return self.handler_error_send_all(total_bytes_sent, f"action: send_all | result: fail | error: {e}")
             total_bytes_sent += bytes_sent
@@ -75,7 +75,7 @@ class Socket:
             try:
                 chunk = self.socket.recv(total_bytes_to_receive - bytes_received) # retorna un objeto en bytes.
                 if chunk == b'':
-                    return self.handler_error_recv_all(bytes_received, "action: recv_all | result: fail | error: connection broken during recv all!")
+                    return self.handler_error_recv_all(bytes_received, "action: recv_all | result: fail | error: connection broken during recv all, bytes recv = 0 ")
             except OSError as e:
                     return self.handler_error_recv_all(bytes_received, f"action: send_all | result: fail | error: {e}")
             chunks.append(chunk)
