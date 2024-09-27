@@ -4,6 +4,7 @@ import zmq
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
+# Identico al ejemplo de tcp, Cambia el tipo de socket con unix_socket definido en alguna parte. Multiprocessing.
 socket.bind("ipc:///root/unix_socket")
 print("Starting ZMQ Server")
 

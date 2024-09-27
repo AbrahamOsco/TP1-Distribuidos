@@ -7,6 +7,7 @@ from random import randrange
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
+# Server se conecta al proxy, para delegarle el enrutamiento de los mensajes. 
 socket.connect("tcp://proxy:5560")
 server_id = os.environ["SERVER_ID"]
 

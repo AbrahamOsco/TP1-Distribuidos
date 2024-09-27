@@ -3,11 +3,16 @@ import sys
 import zmq
 import os
 
+#PUB-SUB, 1 Publisher y N subscriber.
+
 #  Socket to talk to server
 context = zmq.Context()
+# Socket del tipo SUB!
 socket = context.socket(zmq.SUB)
 
 print("Collecting updates from weather server...")
+
+#nos conectamos usando tcp. 
 socket.connect("tcp://pub:5556")
 
 zip_filter = os.environ["ZIP_FILTER"]
@@ -16,6 +21,7 @@ zip_filter = os.environ["ZIP_FILTER"]
 if isinstance(zip_filter, bytes):
     zip_filter = zip_filter.decode('ascii')
 
+# aca selecciona el id del evento a suscribirse. Cuando llege un mensaje con ese id zip_filter, lo va a recibir 
 socket.setsockopt_string(zmq.SUBSCRIBE, zip_filter)
 
 # Process 5 updates

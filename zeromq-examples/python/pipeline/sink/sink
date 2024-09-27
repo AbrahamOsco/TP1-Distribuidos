@@ -10,6 +10,7 @@ receiver = context.socket(zmq.PULL)
 receiver.bind("tcp://*:5558")
 
 # Wait for start of batch
+# El primer paquete que recibe es del ventilator (por como es el patron)
 s = receiver.recv()
 
 # Start our clock now

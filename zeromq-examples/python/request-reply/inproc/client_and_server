@@ -3,8 +3,10 @@ import time
 import zmq
 from threading import Thread
 
-context = zmq.Context()
+#Aca el contexto es global! 👀
+context = zmq.Context() # es lo que se usa para compartir recursos entre thread en zmq.
 
+#mismo codigo q en server solo cambia el tipo de socket en este caso es inproc. 🤯
 def server():
 	socket = context.socket(zmq.REP)
 	socket.bind("inproc://local_name")

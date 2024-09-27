@@ -3,7 +3,11 @@ import time
 import zmq
 
 context = zmq.Context()
+#Le pasamos un identificador, creamos un socket del tipo REPLY!. 
 socket = context.socket(zmq.REP)
+# todas las ip con el puerto 5555. Crea una conexion TCP con el Socket tcp
+# NO existe el accept tampoco existen socket peers 🤯.
+#  
 socket.bind("tcp://*:5555")
 
 print("Starting ZMQ Server")

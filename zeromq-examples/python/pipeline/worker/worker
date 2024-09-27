@@ -7,10 +7,12 @@ import os
 context = zmq.Context()
 
 # Socket to receive messages on
+# Worker se conecta con el ventilator con un socket de tipo pull
 receiver = context.socket(zmq.PULL)
 receiver.connect("tcp://ventilator:5557")
 
 # Socket to send messages to
+#Se conecta con el sink para comunicarle la data cuando termina. 
 sender = context.socket(zmq.PUSH)
 sender.connect("tcp://sink:5558")
 
@@ -19,6 +21,7 @@ workerid = os.environ["WORKER_ID"]
 # Process tasks forever
 counter = 0
 while True:
+    # recibe el numero q le envio el ventilator.
     s = receiver.recv()
     counter += 1
 

@@ -9,12 +9,16 @@ except NameError:
     # Python 3
     raw_input = input
 
+
 context = zmq.Context()
 
-# Socket to send messages on
-sender = context.socket(zmq.PUSH)
-sender.bind("tcp://*:5557")
+#Ventilator generador de tareas para los workers
 
+# Socket to send messages on 
+sender = context.socket(zmq.PUSH) #Socket del tipo PUSH.
+sender.bind("tcp://*:5557")
+# Para hacer el speedup  para ver cuanto tarda de procesar el ventilator envia una signal al sink para decirle cuando arrancar a contar.
+# creamos una 'queue' de tip push para hablar con el sink.
 # Socket with direct access to the sink: used to syncronize start of batch
 sink = context.socket(zmq.PUSH)
 sink.connect("tcp://sink:5558")

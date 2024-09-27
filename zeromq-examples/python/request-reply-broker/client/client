@@ -4,7 +4,8 @@ import os
 
 #  Prepare our context and sockets
 context = zmq.Context()
-socket = context.socket(zmq.REQ)
+socket = context.socket(zmq.REQ) #Socket del tipo REQ
+# En Client en lugar de conecntarlos al server nos conectamos al proxy!! 👀
 socket.connect("tcp://proxy:5559")
 client_id = os.environ["CLIENT_ID"]
 

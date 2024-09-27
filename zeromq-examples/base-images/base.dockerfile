@@ -16,3 +16,6 @@ RUN wget --no-check-certificate https://github.com/protocolbuffers/protobuf/rele
     mkdir -p /opt/protoc-3.20.0 && \
     mv bin include /opt/protoc-3.20.0 && \
     rm -rf protoc-3.20.0-linux-x86_64.zip readme.txt
+
+
+    

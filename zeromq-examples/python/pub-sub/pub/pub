@@ -2,10 +2,12 @@
 import zmq
 import time
 from random import randrange
-
+#PUB-SUB, 1 Publisher y N subscriber.
 context = zmq.Context()
+# Socket de tipo PUB 
 socket = context.socket(zmq.PUB)
-socket.bind("tcp://*:5556")
+# Hace el bind, se conecta como si fuera un server
+socket.bind("tcp://*:5556") 
 print("Starting Pub process")
 
 while True:
@@ -15,5 +17,6 @@ while True:
 
     msg = "%i %i %i" % (zipcode, temperature, relhumidity)
     print("Sending string: {}".format(msg))
+    # Enviamos el mensaje siempre del formato id, field1, field2, etc
     socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
     time.sleep(1)
