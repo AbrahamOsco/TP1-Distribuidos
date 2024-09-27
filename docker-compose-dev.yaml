@@ -1,0 +1,36 @@
+name: tp2
+services:
+  system:
+    container_name: system
+    image: system:latest
+    entrypoint: python3 /app/system/main.py 
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  client1:
+    container_name: client1
+    image: client:latest
+    volumes:
+      - ./data/games/games.csv:/data/games.csv
+      - ./data/reviews/dataset.csv:/data/dataset.csv
+    environment:
+      - CLI_ID=1
+      - CLI_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+    entrypoint: python3 /app/client/main.py
+    
+    networks:
+      - system_network
+    depends_on:
+      - system
+
+
+networks:
+  system_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24

@@ -5,7 +5,7 @@ SEPARATOR = ","
 
 class FileReader:
     def __init__(self, file_name ='games',  batch_size =BATCH_SIZE ):
-        FILE_PATHS = {"games": "./data/games/games.csv", "reviews": "./data/reviews/dataset.csv" }
+        FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         self.file_name = file_name
         self.batch_size = batch_size
         self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8") 
@@ -20,8 +20,7 @@ class FileReader:
         try:
             for _ in range(self.batch_size):
                 game_raw = next(self.reader)
-                print(game_raw)
-                games.append(SEPARATOR.join(game_raw))
+                games.append(game_raw)
         except StopIteration:
             self.close()
         return games

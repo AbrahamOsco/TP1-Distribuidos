@@ -1,13 +1,22 @@
-import logging
 from common.protocol.Protocol import Protocol
 
-class ClientProtocol(Protocol):
+class ServerProtocol(Protocol):
     
     def __init__(self, socket):
         super().__init__(socket)  #uso super para invocar al constructor del padre. 
 
-# [ [1, 3, "abcasda", 1, 0], [2, 4, "abc", -1, 0], ... ] 
-# Recibe una lista de lista itera cada lista interna y envia cada string q contiene cada una. 
+    def recv_data_raw(self):
+        list_items_raw = []
+        items_amount = self.recv_number_2_bytes()
+        for i in range(items_amount):
+            element = []
+            field_amount = self.recv_number_2_bytes()
+            for j in range(field_amount):
+                field = self.recv_string()
+                element.append(field)
+            list_items_raw.append(element)
+        return list_items_raw
+    
     def send_data_raw(self, list_items_raw):
         items_amount = len(list_items_raw)
         self.send_number_2_bytes(items_amount)
@@ -16,5 +25,8 @@ class ClientProtocol(Protocol):
             self.send_number_2_bytes(field_amount)
             for field in element:
                 self.send_string(field)
-    
+        
+                
 
+
+            
