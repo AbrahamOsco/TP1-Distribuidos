@@ -1,35 +1,178 @@
-name: tp2
+
 services:
-  system:
-    container_name: system
-    image: system:latest
-    entrypoint: python3 /app/system/main.py 
-    environment:
-      - LOGGING_LEVEL=DEBUG
-      - PYTHONPATH=/app
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # Puerto para conexión con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administración
     networks:
-      - system_network
+      - testing_net
 
-  client1:
-    container_name: client1
-    image: client:latest
-    volumes:
-      - ./data/games/games.csv:/data/games.csv
-      - ./data/reviews/dataset.csv:/data/dataset.csv
-    environment:
-      - CLI_ID=1
-      - CLI_LOG_LEVEL=DEBUG
-      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
-    entrypoint: python3 /app/client/main.py
-    
+  Input:
+    container_name: Input
+    image: Input:latest
+    entrypoint: python3 /main.py
     networks:
-      - system_network
+      - testing_net
     depends_on:
-      - system
+      - rabbitmq
 
+  Output:
+    container_name: Output
+    image: Output:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  PlatformReducer:
+    container_name: PlatformReducer
+    image: PlatformReducer:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SorterTop10AveragePlayTime:
+    container_name: SorterTop10AveragePlayTime
+    image: SorterTop10AveragePlayTime:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  GrouperTop5ReviewsPosIndie:
+    container_name: GrouperTop5ReviewsPosIndie
+    image: GrouperTop5ReviewsPosIndie:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  GameIn90thPercentile:
+    container_name: GameIn90thPercentile
+    image: GameIn90thPercentile:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterBasic_1:
+    container_name: FilterBasic_1
+    image: FilterBasic:latest
+    entrypoint: /FilterBasic
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SelectQ1_1:
+    container_name: SelectQ1_1
+    image: SelectQ1:latest
+    entrypoint: /SelectQ1
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  PlatformCounter_1:
+    container_name: PlatformCounter_1
+    image: PlatformCounter:latest
+    entrypoint: /PlatformCounter
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SelectQ2345_1:
+    container_name: SelectQ2345_1
+    image: SelectQ2345:latest
+    entrypoint: /SelectQ2345
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterGender_1:
+    container_name: FilterGender_1
+    image: FilterGender:latest
+    entrypoint: /FilterGender
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterDecade2010_1:
+    container_name: FilterDecade2010_1
+    image: FilterDecade2010:latest
+    entrypoint: /FilterDecade2010
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SelectIDName_1:
+    container_name: SelectIDName_1
+    image: SelectIDName:latest
+    entrypoint: /SelectIDName
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SelectQ345_1:
+    container_name: SelectQ345_1
+    image: SelectQ345:latest
+    entrypoint: /SelectQ345
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterScorePositive_1:
+    container_name: FilterScorePositive_1
+    image: FilterScorePositive:latest
+    entrypoint: /FilterScorePositive
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterReviewEnglish_1:
+    container_name: FilterReviewEnglish_1
+    image: FilterReviewEnglish:latest
+    entrypoint: /FilterReviewEnglish
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterScore50kPositives_1:
+    container_name: FilterScore50kPositives_1
+    image: FilterScore50kPositives:latest
+    entrypoint: /FilterScore50kPositives
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  FilterScoreNegative_1:
+    container_name: FilterScoreNegative_1
+    image: FilterScoreNegative:latest
+    entrypoint: /FilterScoreNegative
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
 
 networks:
-  system_network:
+  testing_net:
     ipam:
       driver: default
       config:

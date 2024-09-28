@@ -1,16 +1,72 @@
 import sys
 
-def generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender, filter_decade_2010):
+def generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender,
+                           filter_decade_2010, select_id_name, select_q345, filter_score_positive,
+                           filter_review_english, filter_score_50k_positives, filter_score_negative):
     compose_base = """
 services:
-  server:
-    container_name: server
-    image: server:latest
-    entrypoint: python3 /main.py
-    volumes:
-      - ./server/config.ini:/config.ini
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # Puerto para conexión con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administración
     networks:
       - testing_net
+
+  Input:
+    container_name: Input
+    image: Input:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  Output:
+    container_name: Output
+    image: Output:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  PlatformReducer:
+    container_name: PlatformReducer
+    image: PlatformReducer:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  SorterTop10AveragePlayTime:
+    container_name: SorterTop10AveragePlayTime
+    image: SorterTop10AveragePlayTime:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  GrouperTop5ReviewsPosIndie:
+    container_name: GrouperTop5ReviewsPosIndie
+    image: GrouperTop5ReviewsPosIndie:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
+  GameIn90thPercentile:
+    container_name: GameIn90thPercentile
+    image: GameIn90thPercentile:latest
+    entrypoint: python3 /main.py
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
 """
 
     # Función para generar servicios
@@ -18,28 +74,30 @@ services:
         servicios = ""
         for i in range(1, int(cantidad) + 1):
             servicios += f"""
-  {nombre_servicio}{i}:
-    container_name: {nombre_servicio}{i}
+  {nombre_servicio}{"_"}{i}:
+    container_name: {nombre_servicio}{"_"}{i}
     image: {nombre_servicio}:latest
     entrypoint: /{nombre_servicio}
-    environment:
-      - ID={i}
-    volumes:
-      - ./{nombre_servicio}/config.yaml:/config.yaml
     networks:
       - testing_net
     depends_on:
-      - server
+      - rabbitmq
 """
         return servicios
 
     # Generar los servicios correspondientes a cada parámetro
-    client_services = generar_servicios("filter_basic", filter_basic)
-    client_services += generar_servicios("select_q1", select_q1)
-    client_services += generar_servicios("platform_counter", platform_counter)
-    client_services += generar_servicios("select_q2345", select_q2345)
-    client_services += generar_servicios("filter_gender", filter_gender)
-    client_services += generar_servicios("filter_decade_2010", filter_decade_2010)
+    client_services = generar_servicios("FilterBasic", filter_basic)
+    client_services += generar_servicios("SelectQ1", select_q1)
+    client_services += generar_servicios("PlatformCounter", platform_counter)
+    client_services += generar_servicios("SelectQ2345", select_q2345)
+    client_services += generar_servicios("FilterGender", filter_gender)
+    client_services += generar_servicios("FilterDecade2010", filter_decade_2010)
+    client_services += generar_servicios("SelectIDName", select_id_name)
+    client_services += generar_servicios("SelectQ345", select_q345)
+    client_services += generar_servicios("FilterScorePositive", filter_score_positive)
+    client_services += generar_servicios("FilterReviewEnglish", filter_review_english)
+    client_services += generar_servicios("FilterScore50kPositives", filter_score_50k_positives)
+    client_services += generar_servicios("FilterScoreNegative", filter_score_negative)
 
     networks = """
 networks:
@@ -59,22 +117,15 @@ networks:
 
     print(f"{output_file} generado con los siguientes parámetros:")
     print(f"FilterBasic: {filter_basic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
-          f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade2010: {filter_decade_2010}")
+          f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade2010: {filter_decade_2010}, "
+          f"SelectIDName: {select_id_name}, SelectQ345: {select_q345}, "
+          f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
+          f"FilterScore50kPositives: {filter_score_50k_positives}, FilterScoreNegative: {filter_score_negative}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 8:
-        print("Se debe ingresar: python3 generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> "
-              "<PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade2010>")
+    if len(sys.argv) != 14:
+        print("Se debe ingresar: python3 generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade2010> <SelectIDName> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
         sys.exit(1)
 
-    # Leer los argumentos de entrada
-    output_file = sys.argv[1]
-    filter_basic = sys.argv[2]
-    select_q1 = sys.argv[3]
-    platform_counter = sys.argv[4]
-    select_q2345 = sys.argv[5]
-    filter_gender = sys.argv[6]
-    filter_decade_2010 = sys.argv[7]
-
-    # Llamar a la función para generar el docker-compose
-    generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender, filter_decade_2010)
+    # Capturar los parámetros desde la línea de comandos
+    generar_docker_compose(*sys.argv[1:])

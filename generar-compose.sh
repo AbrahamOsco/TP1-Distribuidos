@@ -31,6 +31,12 @@ NUM_PLATFORM_COUNTER=$(solicitar_numero_entero "Ingrese la cantidad de PlatformC
 NUM_SELECT_Q2345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ2345: ")
 NUM_FILTER_GENDER=$(solicitar_numero_entero "Ingrese la cantidad de FilterGender: ")
 NUM_FILTER_DECADE_2010=$(solicitar_numero_entero "Ingrese la cantidad de FilterDecade2010: ")
+NUM_SELECT_ID_NAME=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDName: ")
+NUM_SELECT_Q345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ345: ")
+NUM_FILTER_SCORE_POSITIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScorePositive: ")
+NUM_FILTER_REVIEW_ENGLISH=$(solicitar_numero_entero "Ingrese la cantidad de FilterReviewEnglish: ")
+NUM_FILTER_SCORE_50K_POSITIVES=$(solicitar_numero_entero "Ingrese la cantidad de FilterScore50kPositives: ")
+NUM_FILTER_SCORE_NEGATIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScoreNegative: ")
 
 echo "Nombre del archivo de salida: $OUTPUT_FILE"
 echo "Cantidad de FilterBasic: $NUM_FILTER_BASIC"
@@ -39,12 +45,24 @@ echo "Cantidad de PlatformCounter: $NUM_PLATFORM_COUNTER"
 echo "Cantidad de SelectQ2345: $NUM_SELECT_Q2345"
 echo "Cantidad de FilterGender: $NUM_FILTER_GENDER"
 echo "Cantidad de FilterDecade2010: $NUM_FILTER_DECADE_2010"
+echo "Cantidad de SelectIDName: $NUM_SELECT_ID_NAME"
+echo "Cantidad de SelectQ345: $NUM_SELECT_Q345"
+echo "Cantidad de FilterScorePositive: $NUM_FILTER_SCORE_POSITIVE"
+echo "Cantidad de FilterReviewEnglish: $NUM_FILTER_REVIEW_ENGLISH"
+echo "Cantidad de FilterScore50kPositives: $NUM_FILTER_SCORE_50K_POSITIVES"
+echo "Cantidad de FilterScoreNegative: $NUM_FILTER_SCORE_NEGATIVE"
 
 # Llamar al script de Python para generar el archivo
-python generar_docker_compose.py $OUTPUT_FILE \
+python3 generar_docker_compose.py $OUTPUT_FILE \
     $NUM_FILTER_BASIC \
     $NUM_SELECT_Q1 \
     $NUM_PLATFORM_COUNTER \
     $NUM_SELECT_Q2345 \
     $NUM_FILTER_GENDER \
-    $NUM_FILTER_DECADE_2010
+    $NUM_FILTER_DECADE_2010 \
+    $NUM_SELECT_ID_NAME \
+    $NUM_SELECT_Q345 \
+    $NUM_FILTER_SCORE_POSITIVE \
+    $NUM_FILTER_REVIEW_ENGLISH \
+    $NUM_FILTER_SCORE_50K_POSITIVES \
+    $NUM_FILTER_SCORE_NEGATIVE
