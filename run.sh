@@ -1,3 +1,4 @@
+docker build -f ./common/broker/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/Dockerfile -t "system:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
 docker build -f ./filterDecade2010/Dockerfile -t "filterdecade2010:latest" .
