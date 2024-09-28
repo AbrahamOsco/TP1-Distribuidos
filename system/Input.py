@@ -12,11 +12,11 @@ class Input:
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
-        logging.info("action: Prepare to recv data! | 😶‍🌫️🍄")
+        logging.info("action: Input prepare to recv data! | 😶‍🌫️🍄")
         while True:
-            list_items = self.protocol.recv_data_raw()
-            logging.info("action: The game batches received | result: success | 🍄")
-            logging.info(f"list_items: {list_items}")
+            id_client, operation_type, list_items = self.protocol.recv_data_raw()
+            logging.info("action: The data batches received | result: success | 🍄")
+            logging.info(f"client_id: {id_client} operation: {operation_type} | list_items: {list_items}")
     
     def initialize_log(self, logging_level= logging.INFO):
         logging.basicConfig(
@@ -24,3 +24,8 @@ class Input:
             level=logging_level,
             datefmt='%Y-%m-%d %H:%M:%S',
         )
+    # funcion para filtrar y luego codear un exchange con routing key= game q pushee a las queues games_q1 y games_q2345
+    # y luego un mensaje con ruting_key=review q pushe a la queue reviwes_raw
+
+    def filter_data(self):
+        pass
