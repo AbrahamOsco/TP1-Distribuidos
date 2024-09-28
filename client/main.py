@@ -1,6 +1,4 @@
-from client.SteamAnalyzer import SteamAnalyzer
-
-import time
+from client.analyzer.SteamAnalyzer import SteamAnalyzer
 
 def main():
     analyzer = SteamAnalyzer()

@@ -1,4 +1,4 @@
-from system.Input import Input
+from system.controllers.Input import Input
 import time 
 
 def main():

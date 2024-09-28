@@ -1,22 +1,28 @@
+from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
-from system.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
 import logging
+import os
+from system.protocol.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
 
 class Input:
     def __init__(self):
-        self.initialize_log()
-        self.socket_accepter = Socket(port =12345)
-        logging.info("action: Waiting a client to connect result: pending ⌚")
-        self.socket_peer, addr = self.socket_accepter.accept()
-        logging.info("action: Waiting a client to connect result: success ✅")
-        self.protocol = ServerProtocol(self.socket_peer)
+        initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.game_indexes = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,\
             "Genres": 0, "Release date": 0, "Average playtime forever": 0}
         self.review_indexes = { 'app_id':0, 'review_text':0, 'review_score':0 }
         self.game_index_init= False
         self.review_index_init= False
 
+    def accept_a_connection(self):
+        self.socket_accepter = Socket(port =12345)
+        logging.info("action: Waiting a client to connect result: pending ⌚")
+        self.socket_peer, addr = self.socket_accepter.accept()
+        logging.info("action: Waiting a client to connect result: success ✅")
+        self.protocol = ServerProtocol(self.socket_peer)
+    
+
     def run(self):
+        self.accept_a_connection()
         logging.info("action: Input prepare to recv data! | 😶‍🌫️🍄")
         while True:
             id_client, operation_type, list_items = self.protocol.recv_data_raw()
@@ -24,12 +30,6 @@ class Input:
             batch_item_filtered = self.filter_fields_item(operation_type, list_items)
             logging.info(f"client_id: {id_client} operation: {operation_type} | item filtered: {batch_item_filtered}")
     
-    def initialize_log(self, logging_level= logging.INFO):
-        logging.basicConfig(
-            format='%(asctime)s %(levelname)-8s %(message)s',
-            level=logging_level,
-            datefmt='%Y-%m-%d %H:%M:%S',
-        )
 
     # funcion para filtrar y luego codear un exchange con routing key= game q pushee a las queues games_q1 y games_q2345
     # y luego un mensaje con ruting_key=review q pushe a la queue reviwes_raw
