@@ -1,0 +1,56 @@
+name: tp2
+services:
+  rabbitmq: 
+   container_name: rabbitmq
+   image: rabbit:latest
+   ports:
+     - "15672:15672" # Puerto para la consola de administración web
+   networks:
+     - system_network
+   healthcheck:
+       test: ["CMD", "curl", "-f", "http://localhost:15672"] # -f hace q curl falle silenciosamente si la web no funciona
+       interval: 10s #verifica salud de rabbit each 10 s
+       timeout: 5s # si rabbit no responde en 5s falla 
+       retries: 10 # luego de 10 intentos => no es saludable
+
+  system:
+    container_name: system
+    image: system:latest
+    entrypoint: python3 /app/system/main.py 
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+
+  client1:
+    container_name: client1
+    image: client:latest
+    volumes:
+      - ./data/games/games.csv:/data/games.csv
+      - ./data/reviews/dataset.csv:/data/dataset.csv
+    environment:
+      - CLI_ID=1
+      - CLI_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+    entrypoint: python3 /app/client/main.py
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy  #client1 no se conectara hasta q rabbitmq este saludable, lo esperamos
+      system:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado
+
+networks:
+  system_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24
