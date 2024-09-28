@@ -5,7 +5,7 @@ docker build -f ./filterDecade2010/Dockerfile -t "filterdecade2010:latest" .
 docker build -f ./filterGender/Dockerfile -t "filtergender:latest" .
 docker build -f ./filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
 docker build -f ./filterScore5kPositives/Dockerfile -t "filterscore5kpositives:latest" .
-docker build -f ./grouperTop5ReviewsPositives/Dockerfile -t "groupertop5reviewspositives:latest" .
+docker build -f ./grouperTop5ReviewsPositiveIndie/Dockerfile -t "groupertop5reviewspositiveindie:latest" .
 docker build -f ./grouperTop10AveragePlaytime/Dockerfile -t "groupertop10averageplaytime:latest" .
 docker build -f ./platformCounter/Dockerfile -t "platformcounter:latest" .
 docker build -f ./platformReducer/Dockerfile -t "platformreducer:latest" .
