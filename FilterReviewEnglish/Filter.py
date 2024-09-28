@@ -17,8 +17,11 @@ class Filter(Node):
         lang, _ = langid.classify(text)
         return lang == 'en'
     
+    def trim_data(self, data):
+        return data['id']
+
     def send_review(self, data):
-        logging.info(f"action: result | id: {data['id']}")
+        logging.info(f"action: result | {self.trim_data(data)}")
 
     def process_data(self, data):
         if self.is_eof(data):

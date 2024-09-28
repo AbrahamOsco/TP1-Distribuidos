@@ -18,8 +18,11 @@ class Filter(Node):
                 return True
         return False
     
+    def trim_data(self, data):
+        return data['name'] + " | " + data['release_date'] + " | " + data['average_playtime']
+    
     def send_game(self, data, gender):
-        logging.info(f"action: result | name: {data['name']} | routing key: {gender}")
+        logging.info(f"action: result | routing key: {gender}" | {self.trim_data(data)})
 
     def process_data(self, data):
         if self.is_eof(data):

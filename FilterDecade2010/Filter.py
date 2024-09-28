@@ -16,8 +16,11 @@ class Filter(Node):
         year = date.split(', ')[1]
         return year >= "2010" and year < "2020"
     
+    def trim_data(self, data):
+        return data['name'] + " | " + data['average_playtime']
+
     def send_game(self, data):
-        logging.info(f"action: result | name: {data['name']}")
+        logging.info(f"action: result | {self.trim_data(data)}")
 
     def process_data(self, data):
         if self.is_eof(data):

@@ -15,8 +15,11 @@ class Filter(Node):
     def has_enough_score(self, score):
         return score >= 5000
     
+    def trim_data(self, data):
+        return data['name']
+
     def send_game(self, data):
-        logging.info(f"action: result | name: {data['name']}")
+        logging.info(f"action: result | {self.trim_data(data)}")
 
     def process_data(self, data):
         if self.is_eof(data):
