@@ -8,9 +8,10 @@ class FileReader:
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         self.file_name = file_name
         self.batch_size = batch_size
-        self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8") 
+        self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)
         self.is_closed = False
+        self.fix_header_game = False
 
     def get_next_batch(self):
         games = []
@@ -19,7 +20,10 @@ class FileReader:
             return None
         try:
             for _ in range(self.batch_size):
-                game_raw = next(self.reader)
+                game_raw = next(self.reader) #retorn a list of strings each data separated by a comma
+                if self.fix_header_game == False and self.file_name == 'games':
+                    game_raw.insert(7, 'unknown') # add a new column to synchronize the header
+                    self.fix_header_game = True
                 games.append(game_raw)
         except StopIteration:
             self.close()

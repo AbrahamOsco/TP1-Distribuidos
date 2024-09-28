@@ -1,4 +1,4 @@
-from common.protocol.Protocol import Protocol
+from common.protocol.Protocol import Protocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
 
 class ServerProtocol(Protocol):
     
