@@ -4,6 +4,8 @@ def generar_docker_compose(output_file, filter_basic, select_q1, platform_counte
                            filter_decade_2010, select_id_name, select_q345, filter_score_positive,
                            filter_review_english, filter_score_50k_positives, filter_score_negative):
     compose_base = """
+version: '3.8'
+
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -16,8 +18,9 @@ services:
 
   Input:
     container_name: Input
-    image: Input:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./Input
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -25,8 +28,9 @@ services:
 
   Output:
     container_name: Output
-    image: Output:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./Output
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -34,8 +38,9 @@ services:
 
   PlatformReducer:
     container_name: PlatformReducer
-    image: PlatformReducer:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./PlatformReducer
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -43,8 +48,9 @@ services:
 
   SorterTop10AveragePlayTime:
     container_name: SorterTop10AveragePlayTime
-    image: SorterTop10AveragePlayTime:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./SorterTop10AveragePlayTime
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -52,8 +58,9 @@ services:
 
   GrouperTop5ReviewsPosIndie:
     container_name: GrouperTop5ReviewsPosIndie
-    image: GrouperTop5ReviewsPosIndie:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./GrouperTop5ReviewsPosIndie
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -61,8 +68,9 @@ services:
 
   GameIn90thPercentile:
     container_name: GameIn90thPercentile
-    image: GameIn90thPercentile:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./GameIn90thPercentile
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -76,8 +84,9 @@ services:
             servicios += f"""
   {nombre_servicio}{"_"}{i}:
     container_name: {nombre_servicio}{"_"}{i}
-    image: {nombre_servicio}:latest
-    entrypoint: /{nombre_servicio}
+    build:
+      context: ./{nombre_servicio}  # Carpeta donde está el Dockerfile de {nombre_servicio}
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:

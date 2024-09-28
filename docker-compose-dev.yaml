@@ -1,4 +1,6 @@
 
+version: '3.8'
+
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -11,8 +13,9 @@ services:
 
   Input:
     container_name: Input
-    image: Input:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./Input
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -20,8 +23,9 @@ services:
 
   Output:
     container_name: Output
-    image: Output:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./Output
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -29,8 +33,9 @@ services:
 
   PlatformReducer:
     container_name: PlatformReducer
-    image: PlatformReducer:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./PlatformReducer
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -38,8 +43,9 @@ services:
 
   SorterTop10AveragePlayTime:
     container_name: SorterTop10AveragePlayTime
-    image: SorterTop10AveragePlayTime:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./SorterTop10AveragePlayTime
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -47,8 +53,9 @@ services:
 
   GrouperTop5ReviewsPosIndie:
     container_name: GrouperTop5ReviewsPosIndie
-    image: GrouperTop5ReviewsPosIndie:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./GrouperTop5ReviewsPosIndie
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -56,8 +63,9 @@ services:
 
   GameIn90thPercentile:
     container_name: GameIn90thPercentile
-    image: GameIn90thPercentile:latest
-    entrypoint: python3 /main.py
+    build:
+      context: ./GameIn90thPercentile
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -65,8 +73,9 @@ services:
 
   FilterBasic_1:
     container_name: FilterBasic_1
-    image: FilterBasic:latest
-    entrypoint: /FilterBasic
+    build:
+      context: ./FilterBasic  # Carpeta donde está el Dockerfile de FilterBasic
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -74,8 +83,9 @@ services:
 
   SelectQ1_1:
     container_name: SelectQ1_1
-    image: SelectQ1:latest
-    entrypoint: /SelectQ1
+    build:
+      context: ./SelectQ1  # Carpeta donde está el Dockerfile de SelectQ1
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -83,8 +93,9 @@ services:
 
   PlatformCounter_1:
     container_name: PlatformCounter_1
-    image: PlatformCounter:latest
-    entrypoint: /PlatformCounter
+    build:
+      context: ./PlatformCounter  # Carpeta donde está el Dockerfile de PlatformCounter
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -92,8 +103,9 @@ services:
 
   SelectQ2345_1:
     container_name: SelectQ2345_1
-    image: SelectQ2345:latest
-    entrypoint: /SelectQ2345
+    build:
+      context: ./SelectQ2345  # Carpeta donde está el Dockerfile de SelectQ2345
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -101,8 +113,9 @@ services:
 
   FilterGender_1:
     container_name: FilterGender_1
-    image: FilterGender:latest
-    entrypoint: /FilterGender
+    build:
+      context: ./FilterGender  # Carpeta donde está el Dockerfile de FilterGender
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -110,8 +123,9 @@ services:
 
   FilterDecade2010_1:
     container_name: FilterDecade2010_1
-    image: FilterDecade2010:latest
-    entrypoint: /FilterDecade2010
+    build:
+      context: ./FilterDecade2010  # Carpeta donde está el Dockerfile de FilterDecade2010
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -119,8 +133,9 @@ services:
 
   SelectIDName_1:
     container_name: SelectIDName_1
-    image: SelectIDName:latest
-    entrypoint: /SelectIDName
+    build:
+      context: ./SelectIDName  # Carpeta donde está el Dockerfile de SelectIDName
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -128,8 +143,9 @@ services:
 
   SelectQ345_1:
     container_name: SelectQ345_1
-    image: SelectQ345:latest
-    entrypoint: /SelectQ345
+    build:
+      context: ./SelectQ345  # Carpeta donde está el Dockerfile de SelectQ345
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -137,8 +153,9 @@ services:
 
   FilterScorePositive_1:
     container_name: FilterScorePositive_1
-    image: FilterScorePositive:latest
-    entrypoint: /FilterScorePositive
+    build:
+      context: ./FilterScorePositive  # Carpeta donde está el Dockerfile de FilterScorePositive
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -146,8 +163,9 @@ services:
 
   FilterReviewEnglish_1:
     container_name: FilterReviewEnglish_1
-    image: FilterReviewEnglish:latest
-    entrypoint: /FilterReviewEnglish
+    build:
+      context: ./FilterReviewEnglish  # Carpeta donde está el Dockerfile de FilterReviewEnglish
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -155,8 +173,9 @@ services:
 
   FilterScore50kPositives_1:
     container_name: FilterScore50kPositives_1
-    image: FilterScore50kPositives:latest
-    entrypoint: /FilterScore50kPositives
+    build:
+      context: ./FilterScore50kPositives  # Carpeta donde está el Dockerfile de FilterScore50kPositives
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
@@ -164,8 +183,9 @@ services:
 
   FilterScoreNegative_1:
     container_name: FilterScoreNegative_1
-    image: FilterScoreNegative:latest
-    entrypoint: /FilterScoreNegative
+    build:
+      context: ./FilterScoreNegative  # Carpeta donde está el Dockerfile de FilterScoreNegative
+      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
     networks:
       - testing_net
     depends_on:
