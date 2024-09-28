@@ -1,13 +1,13 @@
 docker build -f ./system/Dockerfile -t "system:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
-docker build -f ./FilterDecade2010/Dockerfile -t "FilterDecade2010:latest" .
-docker build -f ./FilterGender/Dockerfile -t "FilterGender:latest" .
-docker build -f ./FilterReviewEnglish/Dockerfile -t "FilterReviewEnglish:latest" .
-docker build -f ./FilterScore5kPositives/Dockerfile -t "FilterScore5kPositives:latest" .
-docker build -f ./GrouperTop5ReviewsPositives/Dockerfile -t "GrouperTop5ReviewsPositives:latest" .
-docker build -f ./GrouperTop10AveragePlaytime/Dockerfile -t "GrouperTop10AveragePlaytime:latest" .
-docker build -f ./PlatformCounter/Dockerfile -t "PlatformCounter:latest" .
-docker build -f ./PlatformReducer/Dockerfile -t "PlatformReducer:latest" .
+docker build -f ./filterDecade2010/Dockerfile -t "filterdecade2010:latest" .
+docker build -f ./filterGender/Dockerfile -t "filtergender:latest" .
+docker build -f ./filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
+docker build -f ./filterScore5kPositives/Dockerfile -t "filterscore5kpositives:latest" .
+docker build -f ./grouperTop5ReviewsPositives/Dockerfile -t "groupertop5reviewspositives:latest" .
+docker build -f ./grouperTop10AveragePlaytime/Dockerfile -t "groupertop10averageplaytime:latest" .
+docker build -f ./platformCounter/Dockerfile -t "platformcounter:latest" .
+docker build -f ./platformReducer/Dockerfile -t "platformreducer:latest" .
 docker compose -f docker-compose-dev.yaml up -d
 docker compose -f docker-compose-dev.yaml logs -f
 docker compose -f docker-compose-dev.yaml down -t 7

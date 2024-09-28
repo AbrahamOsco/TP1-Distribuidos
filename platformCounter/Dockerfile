@@ -1,5 +1,5 @@
 FROM python:3.9.7-slim
-COPY PlatformReducer /app/PlatformReducer
+COPY platformCounter /app/platformCounter
 COPY common /app/common
 ENTRYPOINT ["/bin/sh"]
 
