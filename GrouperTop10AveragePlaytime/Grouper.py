@@ -1,7 +1,7 @@
 import logging
 from common.node.node import Node
 
-class Sorter(Node):
+class Grouper(Node):
     def __init__(self):
         super()
         self.reset_list()
