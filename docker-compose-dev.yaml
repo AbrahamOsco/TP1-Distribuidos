@@ -47,26 +47,6 @@ services:
       system:
         condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado
 
-  client2:
-    container_name: client2
-    image: client:latest
-    volumes:
-      - ./data/games/games.csv:/data/games.csv
-      - ./data/reviews/dataset.csv:/data/dataset.csv
-    environment:
-      - CLI_ID=1
-      - CLI_LOG_LEVEL=DEBUG
-      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
-    entrypoint: python3 /app/client/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on: 
-      rabbitmq:
-        condition: service_healthy  #client1 no se conectara hasta q rabbitmq este saludable, lo esperamos
-      system:
-        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado
-
 networks:
   system_network:
     ipam:
