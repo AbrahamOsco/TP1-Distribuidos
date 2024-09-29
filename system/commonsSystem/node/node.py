@@ -1,6 +1,5 @@
 import logging
 import os
-import multiprocessing
 from broker.Broker import Broker
 
 class Node:
@@ -10,14 +9,10 @@ class Node:
         self.processes = []
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
-        manager = multiprocessing.Manager()
-        self.processing_lock = manager.Lock()
-        self.clients_lock = manager.Lock()
-        self.shared_data = manager.list()
+        self.clients = []
+        self.confirmations = 0
         if self.amount_of_nodes is None:
             self.amount_of_nodes = 1
-        if self.amount_of_nodes > 1:
-            self.processes.append(multiprocessing.Process(target=self.inform_eof_to_nodes))
 
     def initialize_queues(self):
         self.broker = Broker()
@@ -29,13 +24,13 @@ class Node:
         if self.amount_of_nodes < 2:
             return
         ## Confirmation queue shared amongs workers
-        self.broker.create_queue(queue_name=self.node_name + "_confirmation")
+        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_confirmation")
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.node_name + "_confirmation")
-        self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation", routing_key='')
+        self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation")
         ## Fanout for EOFs
         self.broker.create_queue(queue_name=self.node_name + self.node_id + "_eofs", callback=self.read_nodes_eofs)
         self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
-        self.broker.bind_queue(queue_name=self.node_name + self.node_id + "_eofs", exchange_name=self.node_name + "_eofs", routing_key='')
+        self.broker.bind_queue(queue_name=self.node_name + self.node_id + "_eofs", exchange_name=self.node_name + "_eofs")
 
     def initialize_config(self):
         self.config_params = {}
@@ -62,37 +57,38 @@ class Node:
     def send_eof_confirmation(self, client):
         self.broker.public_message(exchange_name=self.node_name + "_confirmation", message=client) ## CHANGE FOR EOF WITH CLIENT
 
-    def wait_for_confirmation(self, client):
-        ## READ FROM CONFIRMATION QUEUE
-        while self.running:
-            ## IF ALL CONFIRMATIONS RECEIVED
-            break
-        with self.clients_lock:
-            self.shared_data.remove(client)
-        self.send_eof(client)
+    def check_confirmations(self, client):
+        self.confirmations += 1
+        if self.confirmations == self.amount_of_nodes:
+            self.clients.remove(client)
+            self.send_eof(client)
+            self.confirmations = 0
+            self.broker.stop_listening_queue(name=self.node_name + "_confirmation")
+
+    def read_eofs_confirmations(self, ch, method, properties, body):
+        try:
+            data = body.decode()
+            self.check_confirmations(data)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            logging.error(f"action: error | result: {e}")
 
     def inform_eof_to_nodes(self, client):
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
-        with self.clients_lock:
-            self.shared_data.append(client)
-        self.processes.append(multiprocessing.Process(target=self.wait_for_confirmation))
-        #SEND EOF TO FANOUT
-
-    def receive_nodes_eofs(self):
-        client = None ## READ FROM FANOUT
-        return client
+        self.confirmations = 1
+        self.broker.start_listening_queue(name=self.node_name + "_confirmation", callback=self.read_eofs_confirmations)
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=client) ##Change for eofs
     
     def process_node_eof(self, client):
         self.send_eof_confirmation(client)
-        with self.clients_lock:
-            self.shared_data.remove(client)
+        self.clients.remove(client)
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
-            data = body.decode()
-            with self.processing_lock:
+            if self.confirmations == 0:
+                data = body.decode()
                 self.process_node_eof(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
@@ -105,8 +101,7 @@ class Node:
     def process_queue_message(self, ch, method, properties, body):
         try:
             data = body.decode()
-            with self.processing_lock:
-                self.process_data(data)
+            self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
@@ -116,5 +111,3 @@ class Node:
     
     def stop(self):
         self.broker.close()
-        for process in self.processes:
-            process.join()

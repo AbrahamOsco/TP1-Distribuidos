@@ -20,6 +20,14 @@ class Broker:
             self.channel.basic_consume(queue =a_queue.get_name(), auto_ack =False, on_message_callback =callback)
         a_queue.show_status()
         return a_queue.get_name()
+    
+    def start_listening_queue(self, name, callback):
+        self.channel.basic_consume(queue =name, auto_ack =False, on_message_callback =callback)
+        logging.info(f"action: Start listening from queue: {name} | result: sucess ✅")
+
+    def stop_listening_queue(self, name =''):
+        self.channel.basic_cancel(name)
+        logging.info(f"action: Stop listening from queue: {name} | result: sucess ✅")
 
     # Connect a exchange with a queue with a binding!. La binding key es la 'key' de la queue. 
     # if the routing key del mensaje coincicide con la binding key,esta queue recibira el mensaje. 
