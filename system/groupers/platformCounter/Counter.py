@@ -1,5 +1,6 @@
 import logging
 from commonsSystem.node.node import Node
+from commonsSystem.DTO.GameDTO import GameDTO
 
 class Counter(Node):
     def __init__(self):
@@ -13,20 +14,18 @@ class Counter(Node):
             "mac": 0,
         }
 
-    def receive_data(self):
-        data = []
-        return data
+    def pre_eof_actions(self):
+        self.send_result()
+        self.reset_counter()
 
-    def send_result(self):
-        logging.info(f"action: result | windows: {self.result['windows']} | linux: {self.result['linux']} | mac: {self.result['mac']}")
+    def trim_data(self, data):
+        return GameDTO(client=data.client, windows=self.result["windows"], linux=self.result["linux"], mac=self.result["mac"])
+
+    def send_result(self, data):
+        self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
 
     def process_data(self, data):
-        if self.is_eof(data):
-            self.send_result()
-            self.reset_counter()
-            self.send_eof()
-            return
         for d in data:
-            self.result["windows"] += d["windows"]
-            self.result["linux"] += d["linux"]
-            self.result["mac"] += d["mac"]
+            self.result["windows"] += d.windows
+            self.result["linux"] += d.linux
+            self.result["mac"] += d.mac

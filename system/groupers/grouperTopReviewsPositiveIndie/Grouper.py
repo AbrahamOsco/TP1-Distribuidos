@@ -12,12 +12,12 @@ class Grouper(Node):
         self.list = []
         self.min_time = 0
 
-    def receive_data(self):
-        data = []
-        return data
+    def pre_eof_actions(self):
+        self.send_result()
+        self.reset_list()
 
     def has_to_be_inserted(self, game):
-        return len(self.list) < self.top_size or game["reviews"] > self.min_time
+        return len(self.list) < self.top_size or game.reviews > self.min_time
     
     def send_result(self):
         logging.info(f"action: result | list: {self.list}")
@@ -29,9 +29,9 @@ class Grouper(Node):
             return
         if self.has_to_be_inserted(data):
             for i in range(len(self.list)):
-                if data["reviews"] > self.list[i]["reviews"]:
+                if data.reviews > self.list[i].reviews:
                     self.list.insert(i, data)
                     break
             if len(self.list) > self.top_size:
                 self.list.pop()
-            self.min_time = self.list[-1]["reviews"]
+            self.min_time = self.list[-1].reviews

@@ -76,6 +76,7 @@ class Node:
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
+        self.pre_eof_actions()
         self.clients_pending_confirmations.append(client)
         self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False).to_string())
     
@@ -84,6 +85,7 @@ class Node:
             if data.is_confirmation():
                 self.check_confirmations(data.client)
             return
+        self.pre_eof_actions()
         self.send_eof_confirmation(data.client)
         self.clients.remove(data.client)
 
@@ -97,6 +99,9 @@ class Node:
 
     def process_data(self, data):
         pass
+
+    def pre_eof_actions(self):
+        self.send_result()
         
     def check_new_client(self, data):
         if data.get_client() not in self.clients:

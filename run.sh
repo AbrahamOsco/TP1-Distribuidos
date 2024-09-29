@@ -7,7 +7,6 @@ docker build -f ./system/filters/filterScoreXPositives/Dockerfile -t "filterscor
 docker build -f ./system/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertopreviewspositiveindie:latest" .
 docker build -f ./system/groupers/grouperTopAveragePlaytime/Dockerfile -t "groupertopaverageplaytime:latest" .
 docker build -f ./system/groupers/platformCounter/Dockerfile -t "platformcounter:latest" .
-docker build -f ./system/groupers/platformReducer/Dockerfile -t "platformreducer:latest" .
 docker compose -f docker-compose-dev.yaml up -d
 docker compose -f docker-compose-dev.yaml logs -f
 docker compose -f docker-compose-dev.yaml down -t 7
