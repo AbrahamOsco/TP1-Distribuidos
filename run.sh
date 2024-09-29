@@ -1,5 +1,4 @@
-docker build -f ./system/broker/Dockerfile -t "rabbit:latest" .
-docker build -f ./system/Dockerfile -t "system:latest" .
+docker build -f ./system/controllers/input/Dockerfile -t "input:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
 docker build -f ./system/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
 docker build -f ./system/filters/filterGender/Dockerfile -t "filtergender:latest" .

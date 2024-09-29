@@ -15,8 +15,8 @@ services:
 
   system:
     container_name: system
-    image: system:latest
-    entrypoint: python3 /app/system/main.py 
+    image: input:latest
+    entrypoint: python3 /app/system/controllers/input/main.py 
     environment:
       - LOGGING_LEVEL=DEBUG
       - PYTHONPATH=/app
