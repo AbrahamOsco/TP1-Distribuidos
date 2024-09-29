@@ -17,20 +17,20 @@ class Node:
     def initialize_queues(self):
         self.broker = Broker()
         ## Source and destination for all workers
-        self.broker.create_queue(queue_name=self.source_queue, callback=self.process_queue_message)
-        self.broker.create_queue(queue_name=self.sink_queue)
-        self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink_queue)
-        self.broker.bind_queue(queue_name=self.sink_queue, exchange_name=self.sink_queue, routing_key=self.sink_queue)
+        source_queue = self.broker.create_queue(queue_name=self.source, callback=self.process_queue_message)
+        self.broker.create_exchange(exchange_type="direct", exchange_name=self.source)
+        self.broker.bind_queue(queue_name=source_queue, exchange_name=self.source)
+        self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink)
         if self.amount_of_nodes < 2:
             return
         ## Confirmation queue shared amongs workers
-        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_confirmation")
+        self.broker.create_queue(queue_name=self.node_name + "_confirmation")
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.node_name + "_confirmation")
         self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation")
         ## Fanout for EOFs
-        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_eofs", callback=self.read_nodes_eofs)
+        eof_queue = self.broker.create_queue(callback=self.read_nodes_eofs)
         self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
-        self.broker.bind_queue(queue_name=self.node_name + self.node_id + "_eofs", exchange_name=self.node_name + "_eofs")
+        self.broker.bind_queue(queue_name=eof_queue, exchange_name=self.node_name + "_eofs")
 
     def initialize_config(self):
         self.config_params = {}
@@ -52,7 +52,7 @@ class Node:
         pass
 
     def send_eof(self, client):
-        self.broker.public_message(exchange_name=self.sink_queue, message=client) ## CHANGE FOR EOF WITH CLIENT
+        self.broker.public_message(exchange_name=self.sink, message=client) ## CHANGE FOR EOF WITH CLIENT
 
     def send_eof_confirmation(self, client):
         self.broker.public_message(exchange_name=self.node_name + "_confirmation", message=client) ## CHANGE FOR EOF WITH CLIENT
