@@ -1,11 +1,10 @@
 import logging
-import os
-from common.node.node import Node
+from commons.node.node import Node
+import langid
 
 class Filter(Node):
     def __init__(self):
         super()
-        self.decade = int(os.getenv("DECADE"))
 
     def receive_data(self):
         data = []
@@ -14,19 +13,19 @@ class Filter(Node):
     def send_eof(self):
         logging.info("action: eof")
 
-    def is_correct_decade(self, date):
-        year = int(date.split(', ')[1])
-        return year >= self.decade and year < self.decade + 10
+    def is_in_english(self, text):
+        lang, _ = langid.classify(text)
+        return lang == 'en'
     
     def trim_data(self, data):
-        return data['name'] + " | " + data['average_playtime']
+        return data['id']
 
-    def send_game(self, data):
+    def send_review(self, data):
         logging.info(f"action: result | {self.trim_data(data)}")
 
     def process_data(self, data):
         if self.is_eof(data):
             self.send_eof()
             return
-        if self.is_correct_decade(data["release_date"]):
-            self.send_game(data)
+        if self.is_in_english(data["review_text"]):
+            self.send_review(data)

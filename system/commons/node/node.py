@@ -1,12 +1,15 @@
 import logging
 import os
 import multiprocessing
+from broker.Broker import Broker
 
 class Node:
     def __init__(self):
         self.initialize_config()
         self.running = True
         self.processes = []
+        self.node_name = os.getenv("NODE_NAME")
+        self.node_id = os.getenv("NODE_ID")
         manager = multiprocessing.Manager()
         self.processing_lock = manager.Lock()
         self.clients_lock = manager.Lock()
@@ -15,6 +18,11 @@ class Node:
             self.amount_of_nodes = 1
         if self.amount_of_nodes > 1:
             self.processes.append(multiprocessing.Process(target=self.inform_eof_to_nodes))
+
+    def initialize_queues(self):
+        self.broker = Broker()
+        self.broker.create_queue(queue_name=self.source_queue)
+        self.broker.create_queue(queue_name=self.sink_queue)
 
     def initialize_config(self):
         self.config_params = {}
@@ -98,5 +106,6 @@ class Node:
     
     def stop(self):
         self.running = False
+        self.broker.close()
         for process in self.processes:
             process.join()

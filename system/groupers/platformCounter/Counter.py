@@ -1,5 +1,5 @@
 import logging
-from common.node.node import Node
+from commons.node.node import Node
 
 class Counter(Node):
     def __init__(self):

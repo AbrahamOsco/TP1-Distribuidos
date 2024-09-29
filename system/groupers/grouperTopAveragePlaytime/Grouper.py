@@ -1,6 +1,6 @@
 import logging
 import os
-from common.node.node import Node
+from commons.node.node import Node
 
 class Grouper(Node):
     def __init__(self):
@@ -17,7 +17,7 @@ class Grouper(Node):
         return data
 
     def has_to_be_inserted(self, game):
-        return len(self.list) < self.top_size or game["reviews"] > self.min_time
+        return len(self.list) < self.top_size or game["average_playtime"] > self.min_time
     
     def send_result(self):
         logging.info(f"action: result | list: {self.list}")
@@ -29,9 +29,9 @@ class Grouper(Node):
             return
         if self.has_to_be_inserted(data):
             for i in range(len(self.list)):
-                if data["reviews"] > self.list[i]["reviews"]:
+                if data["average_playtime"] > self.list[i]["average_playtime"]:
                     self.list.insert(i, data)
                     break
             if len(self.list) > self.top_size:
                 self.list.pop()
-            self.min_time = self.list[-1]["reviews"]
+            self.min_time = self.list[-1]["average_playtime"]
