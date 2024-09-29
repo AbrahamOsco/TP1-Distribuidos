@@ -1,4 +1,4 @@
-from system.controllers.Input import Input
+from Input import Input
 
 def main():
     a_input = Input()
