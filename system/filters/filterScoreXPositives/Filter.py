@@ -7,22 +7,15 @@ class Filter(Node):
         super()
         self.amount_needed = int(os.getenv("AMOUNT_NEEDED"))
 
-    def receive_data(self):
-        data = []
-        return data
-
     def has_enough_score(self, score):
         return score >= self.amount_needed
     
     def trim_data(self, data):
-        return data['name']
+        return data.retain(["client", "name"])
 
     def send_game(self, data):
-        logging.info(f"action: result | {self.trim_data(data)}")
+        self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
 
     def process_data(self, data):
-        if self.is_eof(data):
-            self.send_eof()
-            return
         if self.has_enough_score(data["score"]):
             self.send_game(data)

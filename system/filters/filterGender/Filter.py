@@ -7,26 +7,16 @@ class Filter(Node):
         super()
         self.genders = os.getenv("GENDERS").split(',')
 
-    def receive_data(self):
-        data = []
-        return data
-
     def is_gender(self, genders, wanted_gender):
-        for gender in genders.split(','):
-            if gender == wanted_gender:
-                return True
-        return False
+        return wanted_gender in genders.split(',')
     
     def trim_data(self, data):
-        return data['name'] + " | " + data['release_date'] + " | " + data['average_playtime']
+        return data.retain(["client", "name", "release_date", "avg_playtime_forever"])
     
     def send_game(self, data, gender):
-        logging.info(f"action: result | routing key: {gender}" | {self.trim_data(data)})
+        self.broker.public_message(exchange_name=self.sink, routing_key=gender, message=self.trim_data(data).to_string())
 
     def process_data(self, data):
-        if self.is_eof(data):
-            self.send_eof()
-            return
         for gender in self.genders:
-            if self.is_gender(data["gender"], gender):
+            if self.is_gender(data.genres, gender):
                 self.send_game(data, gender)

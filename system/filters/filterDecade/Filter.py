@@ -8,10 +8,6 @@ class Filter(Node):
         super()
         self.decade = int(os.getenv("DECADE"))
 
-    def receive_data(self):
-        data = []
-        return data
-
     def is_correct_decade(self, date):
         year = int(date.split(', ')[1])
         return year >= self.decade and year < self.decade + 10

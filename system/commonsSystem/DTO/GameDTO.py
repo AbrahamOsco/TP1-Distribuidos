@@ -28,7 +28,7 @@ class GameDTO:
         return GameDTO(data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9])
 
     def is_EOF(self):
-        return True
+        return False
     
     def get_client(self):
         return self.client
@@ -38,3 +38,4 @@ class GameDTO:
         for attr in list(attributes.keys()):
             if attr not in fields_to_keep:
                 setattr(self, attr, None)
+        return self
