@@ -21,8 +21,21 @@ class Node:
 
     def initialize_queues(self):
         self.broker = Broker()
+        ## Source and destination for all workers
         self.broker.create_queue(queue_name=self.source_queue)
         self.broker.create_queue(queue_name=self.sink_queue)
+        self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink_queue)
+        self.broker.bind_queue(queue_name=self.sink_queue, exchange_name=self.sink_queue, routing_key=self.sink_queue)
+        if self.amount_of_nodes < 2:
+            return
+        ## Confirmation queue shared amongs workers
+        self.broker.create_queue(queue_name=self.node_name + "_confirmation")
+        self.broker.create_exchange(exchange_type="direct", exchange_name=self.node_name + "_confirmation")
+        self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation", routing_key='')
+        ## Fanout for EOFs
+        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_eofs")
+        self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
+        self.broker.bind_queue(queue_name=self.node_name + self.node_id + "_eofs", exchange_name=self.node_name + "_eofs", routing_key='')
 
     def initialize_config(self):
         self.config_params = {}

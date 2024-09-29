@@ -12,6 +12,7 @@ class Filter(Node):
         return data
     
     def send_eof(self):
+        self.broker.public_message(self.sink_queue)
         logging.info("action: eof")
 
     def is_correct_decade(self, date):
