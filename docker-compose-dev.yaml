@@ -13,8 +13,8 @@ services:
        timeout: 5s # si rabbit no responde en 5s falla 
        retries: 10 # luego de 10 intentos => no es saludable
 
-  system:
-    container_name: system
+  input:
+    container_name: input
     image: input:latest
     entrypoint: python3 /app/system/controllers/input/main.py 
     environment:
@@ -34,6 +34,7 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
+      - hostName=input
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
       - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
@@ -44,7 +45,7 @@ services:
     depends_on: 
       rabbitmq:
         condition: service_healthy  #client1 no se conectara hasta q rabbitmq este saludable, lo esperamos
-      system:
+      input:
         condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado
 
 networks:

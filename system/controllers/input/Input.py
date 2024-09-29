@@ -2,7 +2,7 @@ from common.utils.utils import initialize_log
 from common.socket.Socket import Socket
 import logging
 import os
-from system.protocol.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
+from system.commonsSystem.protocol.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
 
 class Input:
     def __init__(self):
