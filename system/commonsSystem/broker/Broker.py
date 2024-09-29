@@ -1,4 +1,5 @@
-from common.broker.Queue import Queue
+from Queue import Queue
+from common.utils.utils import initialize_log 
 import logging
 import pika
 
