@@ -12,3 +12,9 @@ class EOFDTO:
     
     def is_confirmation(self):
         return self.confirmation
+    
+    def get_client(self):
+        return self.client
+    
+    def is_EOF(self):
+        return True

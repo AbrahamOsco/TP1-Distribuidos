@@ -19,3 +19,5 @@ class GameDTO:
     def print_game_in_one_line(self):
         print("Game: ", self.app_id, self.name, self.windows, self.mac, self.linux, self.genres, self.release_date, self.avg_playtime_forever)
     
+    def is_EOF(self):
+        return True

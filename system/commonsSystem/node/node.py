@@ -2,6 +2,7 @@ import logging
 import os
 from broker.Broker import Broker
 from DTO.EOFDTO import EOFDTO
+from DTO.DTO import getDTO
 
 class Node:
     def __init__(self):
@@ -99,8 +100,11 @@ class Node:
         
     def process_queue_message(self, ch, method, properties, body):
         try:
-            data = body.decode()
-            self.process_data(data)
+            data = getDTO(body.decode())
+            if data.is_EOF():
+                self.inform_eof_to_nodes(data.get_client())
+            else:
+                self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
