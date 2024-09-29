@@ -1,1 +1,1 @@
-docker rm -f client1 client2 rabbitmq system
+docker rm -f client1 rabbitmq input

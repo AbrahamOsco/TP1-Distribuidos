@@ -32,9 +32,14 @@ class Broker:
     # Connect a exchange with a queue with a binding!. La binding key es la 'key' de la queue. 
     # if the routing key del mensaje coincicide con la binding key,esta queue recibira el mensaje. 
     def bind_queue(self, exchange_name, queue_name, binding_key = None):
+        self.queues[queue_name].set_binding_key(binding_key)
         self.channel.queue_bind(exchange =exchange_name, queue =queue_name, routing_key =binding_key)
         logging.info(f"action: Binding queue: {queue_name} to exchange: {exchange_name} | result: sucess ✅")
 
+    # Necesita el nombre del exchange y el nombre de la queue, el binding key ya se lo guarda no necesitas pasarlo.
+    def unbind_queue(self, exchange_name, queue_name):
+        self.channel.queue_unbind(exchange =exchange_name, queue =queue_name, routing_key =self.queues[queue_name].get_binding_key())
+        
     #Se debe crear el exchange de ambos lados (productor y consumidor) 
     def create_exchange(self, exchange_type, name=''):
         logging.info(f"action: Created a Exchange: | name: {name} | type: {exchange_type} | result: sucess ✅")

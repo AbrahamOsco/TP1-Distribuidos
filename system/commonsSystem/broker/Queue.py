@@ -12,10 +12,17 @@ class Queue:
             self.exclusive = True # la queue se eliminara al cerrar el channel.
         self.durable = durable
         self.properties = self.command_properties[self.durable]
-        
+        self.routing_key = ''
+
     def set_name(self, name):
         self.name = name
     
+    def set_binding_key(self, binding_key):
+        self.binding_key = binding_key
+
+    def get_binding_key(self):
+        return self.binding_key
+
     def get_name(self):
         return self.name
 
