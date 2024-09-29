@@ -1,6 +1,7 @@
 import logging
 import os
 from broker.Broker import Broker
+from DTO.EOFDTO import EOFDTO
 
 class Node:
     def __init__(self):
@@ -18,9 +19,9 @@ class Node:
     def initialize_queues(self):
         self.broker = Broker()
         ## Source and destination for all workers
-        source_queue = self.broker.create_queue(queue_name=self.source, callback=self.process_queue_message)
+        self.broker.create_queue(queue_name=self.source, callback=self.process_queue_message)
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.source)
-        self.broker.bind_queue(queue_name=source_queue, exchange_name=self.source)
+        self.broker.bind_queue(queue_name=self.source, exchange_name=self.source)
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink)
         if self.amount_of_nodes < 2:
             return
@@ -49,10 +50,10 @@ class Node:
         pass
 
     def send_eof(self, client):
-        self.broker.public_message(exchange_name=self.sink, message=client) ## CHANGE FOR EOF WITH CLIENT
+        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).to_string())
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(exchange_name=self.node_name + "_confirmation", message=client) ## CHANGE FOR EOF WITH CLIENT
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client,True).to_string())
 
     def check_confirmations(self, client):
         self.confirmations += 1
@@ -61,7 +62,6 @@ class Node:
             self.clients_pending_confirmations.remove(client)
             self.send_eof(client)
             self.confirmations = 0
-            self.broker.stop_listening_queue(name=self.node_name + "_confirmation")
 
     def read_eofs_confirmations(self, ch, method, properties, body):
         try:
@@ -76,11 +76,12 @@ class Node:
             self.send_eof(client)
             return
         self.clients_pending_confirmations.append(client)
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=client) ##Change for eofs
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False).to_string())
     
     def process_node_eof(self, data):
         if data.client in self.clients_pending_confirmations:
-            self.check_confirmations(data.client)
+            if data.is_confirmation():
+                self.check_confirmations(data.client)
             return
         self.send_eof_confirmation(data.client)
         self.clients.remove(data.client)
@@ -88,7 +89,7 @@ class Node:
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
             data = body.decode()
-            self.process_node_eof(data)
+            self.process_node_eof(EOFDTO.from_string(data))
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
