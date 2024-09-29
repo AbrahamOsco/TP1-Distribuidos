@@ -10,6 +10,7 @@ class Node:
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
         self.clients = []
+        self.clients_pending_confirmations = []
         self.confirmations = 0
         if self.amount_of_nodes is None:
             self.amount_of_nodes = 1
@@ -23,10 +24,6 @@ class Node:
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink)
         if self.amount_of_nodes < 2:
             return
-        ## Confirmation queue shared amongs workers
-        self.broker.create_queue(queue_name=self.node_name + "_confirmation")
-        self.broker.create_exchange(exchange_type="direct", exchange_name=self.node_name + "_confirmation")
-        self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation")
         ## Fanout for EOFs
         eof_queue = self.broker.create_queue(callback=self.read_nodes_eofs)
         self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
@@ -61,6 +58,7 @@ class Node:
         self.confirmations += 1
         if self.confirmations == self.amount_of_nodes:
             self.clients.remove(client)
+            self.clients_pending_confirmations.remove(client)
             self.send_eof(client)
             self.confirmations = 0
             self.broker.stop_listening_queue(name=self.node_name + "_confirmation")
@@ -77,19 +75,20 @@ class Node:
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
-        self.confirmations = 1
-        self.broker.start_listening_queue(name=self.node_name + "_confirmation", callback=self.read_eofs_confirmations)
+        self.clients_pending_confirmations.append(client)
         self.broker.public_message(exchange_name=self.node_name + "_eofs", message=client) ##Change for eofs
     
-    def process_node_eof(self, client):
-        self.send_eof_confirmation(client)
-        self.clients.remove(client)
+    def process_node_eof(self, data):
+        if data.client in self.clients_pending_confirmations:
+            self.check_confirmations(data.client)
+            return
+        self.send_eof_confirmation(data.client)
+        self.clients.remove(data.client)
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
-            if self.confirmations == 0:
-                data = body.decode()
-                self.process_node_eof(data)
+            data = body.decode()
+            self.process_node_eof(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
