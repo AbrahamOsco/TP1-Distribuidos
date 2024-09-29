@@ -6,186 +6,176 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"  # Puerto para conexión con RabbitMQ
-      - "15672:15672"  # Puerto para la interfaz de administración
+      - "5672:5672"  # Puerto para conexion con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
       - testing_net
 
-  Input:
-    container_name: Input
+  input:
+    container_name: input
     build:
-      context: ./Input
+      context: ./input
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  Output:
-    container_name: Output
+  output:
+    container_name: output
     build:
-      context: ./Output
+      context: ./output
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  PlatformReducer:
-    container_name: PlatformReducer
+  platformreducer:
+    container_name: platformreducer
     build:
-      context: ./PlatformReducer
+      context: ./platformreducer
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SorterTop10AveragePlayTime:
-    container_name: SorterTop10AveragePlayTime
+  sortertop10averageplaytime:
+    container_name: sortertop10averageplaytime
     build:
-      context: ./SorterTop10AveragePlayTime
+      context: ./sortertop10averageplaytime
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  GrouperTop5ReviewsPosIndie:
-    container_name: GrouperTop5ReviewsPosIndie
+  groupertop5reviewsposindie:
+    container_name: groupertop5reviewsposindie
     build:
-      context: ./GrouperTop5ReviewsPosIndie
+      context: ./groupertop5reviewsposindie
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  GameIn90thPercentile:
-    container_name: GameIn90thPercentile
+  gamein90thpercentile:
+    container_name: gamein90thpercentile
     build:
-      context: ./GameIn90thPercentile
+      context: ./gamein90thpercentile
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterBasic_1:
-    container_name: FilterBasic_1
+  filterbasic_1:
+    container_name: filterbasic_1
     build:
-      context: ./FilterBasic  # Carpeta donde está el Dockerfile de FilterBasic
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterbasic
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SelectQ1_1:
-    container_name: SelectQ1_1
+  selectq1_1:
+    container_name: selectq1_1
     build:
-      context: ./SelectQ1  # Carpeta donde está el Dockerfile de SelectQ1
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./selectq1
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  PlatformCounter_1:
-    container_name: PlatformCounter_1
+  platformcounter_1:
+    container_name: platformcounter_1
     build:
-      context: ./PlatformCounter  # Carpeta donde está el Dockerfile de PlatformCounter
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./platformcounter
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SelectQ2345_1:
-    container_name: SelectQ2345_1
+  filtergender_1:
+    container_name: filtergender_1
     build:
-      context: ./SelectQ2345  # Carpeta donde está el Dockerfile de SelectQ2345
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filtergender
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterGender_1:
-    container_name: FilterGender_1
+  filterdecade2010_1:
+    container_name: filterdecade2010_1
     build:
-      context: ./FilterGender  # Carpeta donde está el Dockerfile de FilterGender
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterdecade2010
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterDecade2010_1:
-    container_name: FilterDecade2010_1
+  selectidname_1:
+    container_name: selectidname_1
     build:
-      context: ./FilterDecade2010  # Carpeta donde está el Dockerfile de FilterDecade2010
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./selectidname
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SelectIDName_1:
-    container_name: SelectIDName_1
+  selectq345_1:
+    container_name: selectq345_1
     build:
-      context: ./SelectIDName  # Carpeta donde está el Dockerfile de SelectIDName
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./selectq345
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SelectQ345_1:
-    container_name: SelectQ345_1
+  filterscorepositive_1:
+    container_name: filterscorepositive_1
     build:
-      context: ./SelectQ345  # Carpeta donde está el Dockerfile de SelectQ345
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterscorepositive
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterScorePositive_1:
-    container_name: FilterScorePositive_1
+  filterreviewenglish_1:
+    container_name: filterreviewenglish_1
     build:
-      context: ./FilterScorePositive  # Carpeta donde está el Dockerfile de FilterScorePositive
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterreviewenglish
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterReviewEnglish_1:
-    container_name: FilterReviewEnglish_1
+  filterscore50kpositives_1:
+    container_name: filterscore50kpositives_1
     build:
-      context: ./FilterReviewEnglish  # Carpeta donde está el Dockerfile de FilterReviewEnglish
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterscore50kpositives
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  FilterScore50kPositives_1:
-    container_name: FilterScore50kPositives_1
+  filterscorenegative_1:
+    container_name: filterscorenegative_1
     build:
-      context: ./FilterScore50kPositives  # Carpeta donde está el Dockerfile de FilterScore50kPositives
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  FilterScoreNegative_1:
-    container_name: FilterScoreNegative_1
-    build:
-      context: ./FilterScoreNegative  # Carpeta donde está el Dockerfile de FilterScoreNegative
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./filterscorenegative
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:

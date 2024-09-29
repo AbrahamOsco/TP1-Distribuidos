@@ -11,65 +11,65 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"  # Puerto para conexión con RabbitMQ
-      - "15672:15672"  # Puerto para la interfaz de administración
+      - "5672:5672"  # Puerto para conexion con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
       - testing_net
 
-  Input:
-    container_name: Input
+  input:
+    container_name: input
     build:
-      context: ./Input
+      context: ./input
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  Output:
-    container_name: Output
+  output:
+    container_name: output
     build:
-      context: ./Output
+      context: ./output
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  PlatformReducer:
-    container_name: PlatformReducer
+  platformreducer:
+    container_name: platformreducer
     build:
-      context: ./PlatformReducer
+      context: ./platformreducer
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  SorterTop10AveragePlayTime:
-    container_name: SorterTop10AveragePlayTime
+  sortertop10averageplaytime:
+    container_name: sortertop10averageplaytime
     build:
-      context: ./SorterTop10AveragePlayTime
+      context: ./sortertop10averageplaytime
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  GrouperTop5ReviewsPosIndie:
-    container_name: GrouperTop5ReviewsPosIndie
+  groupertop5reviewsposindie:
+    container_name: groupertop5reviewsposindie
     build:
-      context: ./GrouperTop5ReviewsPosIndie
+      context: ./groupertop5reviewsposindie
       dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
       - rabbitmq
 
-  GameIn90thPercentile:
-    container_name: GameIn90thPercentile
+  gamein90thpercentile:
+    container_name: gamein90thpercentile
     build:
-      context: ./GameIn90thPercentile
+      context: ./gamein90thpercentile
       dockerfile: Dockerfile
     networks:
       - testing_net
@@ -82,11 +82,11 @@ services:
         servicios = ""
         for i in range(1, int(cantidad) + 1):
             servicios += f"""
-  {nombre_servicio}{"_"}{i}:
-    container_name: {nombre_servicio}{"_"}{i}
+  {nombre_servicio.lower()}{"_"}{i}:
+    container_name: {nombre_servicio.lower()}{"_"}{i}
     build:
-      context: ./{nombre_servicio}  # Carpeta donde está el Dockerfile de {nombre_servicio}
-      dockerfile: Dockerfile         # Nombre del Dockerfile (opcional si es el predeterminado)
+      context: ./{nombre_servicio.lower()}
+      dockerfile: Dockerfile
     networks:
       - testing_net
     depends_on:
@@ -98,7 +98,7 @@ services:
     client_services = generar_servicios("FilterBasic", filter_basic)
     client_services += generar_servicios("SelectQ1", select_q1)
     client_services += generar_servicios("PlatformCounter", platform_counter)
-    client_services += generar_servicios("SelectQ2345", select_q2345)
+    # client_services += generar_servicios("SelectQ2345", select_q2345)
     client_services += generar_servicios("FilterGender", filter_gender)
     client_services += generar_servicios("FilterDecade2010", filter_decade_2010)
     client_services += generar_servicios("SelectIDName", select_id_name)
@@ -133,7 +133,7 @@ networks:
 
 if __name__ == "__main__":
     if len(sys.argv) != 14:
-        print("Se debe ingresar: python3 generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade2010> <SelectIDName> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
+        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade2010> <SelectIDName> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
         sys.exit(1)
 
     # Capturar los parámetros desde la línea de comandos

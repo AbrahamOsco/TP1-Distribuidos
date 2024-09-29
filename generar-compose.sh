@@ -53,7 +53,7 @@ echo "Cantidad de FilterScore50kPositives: $NUM_FILTER_SCORE_50K_POSITIVES"
 echo "Cantidad de FilterScoreNegative: $NUM_FILTER_SCORE_NEGATIVE"
 
 # Llamar al script de Python para generar el archivo
-python3 generar_docker_compose.py $OUTPUT_FILE \
+python generar_docker_compose.py $OUTPUT_FILE \
     $NUM_FILTER_BASIC \
     $NUM_SELECT_Q1 \
     $NUM_PLATFORM_COUNTER \
