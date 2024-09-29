@@ -1,6 +1,6 @@
 import logging
 import os
-from utils.node.node import Node
+from commonsSystem.node.node import Node
 
 class Grouper(Node):
     def __init__(self):

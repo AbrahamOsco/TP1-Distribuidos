@@ -1,5 +1,5 @@
 import logging
-from utils.node.node import Node
+from commonsSystem.node.node import Node
 import langid
 
 class Filter(Node):

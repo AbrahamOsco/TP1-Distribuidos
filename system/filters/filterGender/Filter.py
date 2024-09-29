@@ -1,6 +1,6 @@
 import os
 import logging
-from utils.node.node import Node
+from commonsSystem.node.node import Node
 
 class Filter(Node):
     def __init__(self):
