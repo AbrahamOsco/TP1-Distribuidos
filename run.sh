@@ -1,12 +1,12 @@
 docker build -f ./common/broker/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/Dockerfile -t "system:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
-docker build -f ./filterDecade2010/Dockerfile -t "filterdecade2010:latest" .
+docker build -f ./filterDecade/Dockerfile -t "filterdecade:latest" .
 docker build -f ./filterGender/Dockerfile -t "filtergender:latest" .
 docker build -f ./filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
-docker build -f ./filterScore5kPositives/Dockerfile -t "filterscore5kpositives:latest" .
-docker build -f ./grouperTop5ReviewsPositiveIndie/Dockerfile -t "groupertop5reviewspositiveindie:latest" .
-docker build -f ./grouperTop10AveragePlaytime/Dockerfile -t "groupertop10averageplaytime:latest" .
+docker build -f ./filterScoreXPositives/Dockerfile -t "filterscorexpositives:latest" .
+docker build -f ./grouperTopReviewsPositiveIndie/Dockerfile -t "groupertopreviewspositiveindie:latest" .
+docker build -f ./grouperTopAveragePlaytime/Dockerfile -t "groupertopaverageplaytime:latest" .
 docker build -f ./platformCounter/Dockerfile -t "platformcounter:latest" .
 docker build -f ./platformReducer/Dockerfile -t "platformreducer:latest" .
 docker compose -f docker-compose-dev.yaml up -d

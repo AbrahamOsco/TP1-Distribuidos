@@ -1,9 +1,11 @@
+import os
 import logging
 from common.node.node import Node
 
 class Filter(Node):
     def __init__(self):
         super()
+        self.genders = os.getenv("GENDERS").split(',')
 
     def receive_data(self):
         data = []
@@ -28,7 +30,6 @@ class Filter(Node):
         if self.is_eof(data):
             self.send_eof()
             return
-        if self.is_gender(data["gender"], "indie"):
-            self.send_game(data, "indie")
-        if self.is_gender(data["gender"], "action"):
-            self.send_game(data, "action")
+        for gender in self.genders:
+            if self.is_gender(data["gender"], gender):
+                self.send_game(data, gender)
