@@ -98,12 +98,17 @@ class Node:
     def process_data(self, data):
         pass
         
+    def check_new_client(self, data):
+        if data.get_client() not in self.clients:
+            self.clients.append(data.get_client())
+
     def process_queue_message(self, ch, method, properties, body):
         try:
             data = getDTO(body.decode())
             if data.is_EOF():
                 self.inform_eof_to_nodes(data.get_client())
             else:
+                self.check_new_client(data)
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
