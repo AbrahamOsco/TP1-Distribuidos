@@ -22,7 +22,7 @@ class Node:
     def initialize_queues(self):
         self.broker = Broker()
         ## Source and destination for all workers
-        self.broker.create_queue(queue_name=self.source_queue)
+        self.broker.create_queue(queue_name=self.source_queue, callback=self.process_queue_message)
         self.broker.create_queue(queue_name=self.sink_queue)
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink_queue)
         self.broker.bind_queue(queue_name=self.sink_queue, exchange_name=self.sink_queue, routing_key=self.sink_queue)
@@ -33,7 +33,7 @@ class Node:
         self.broker.create_exchange(exchange_type="direct", exchange_name=self.node_name + "_confirmation")
         self.broker.bind_queue(queue_name=self.node_name + "_confirmation", exchange_name=self.node_name + "_confirmation", routing_key='')
         ## Fanout for EOFs
-        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_eofs")
+        self.broker.create_queue(queue_name=self.node_name + self.node_id + "_eofs", callback=self.read_nodes_eofs)
         self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
         self.broker.bind_queue(queue_name=self.node_name + self.node_id + "_eofs", exchange_name=self.node_name + "_eofs", routing_key='')
 
@@ -49,10 +49,6 @@ class Node:
             level=self.config_params["log_level"],
             datefmt='%Y-%m-%d %H:%M:%S',
         )
-
-    def receive_data(self):
-        data = []
-        return data
     
     def is_eof(self, data):
         return data == "EOF"
@@ -61,12 +57,10 @@ class Node:
         pass
 
     def send_eof(self, client):
-        ## SEND EOF TO NEXT NODE
-        pass
+        self.broker.public_message(exchange_name=self.sink_queue, message=client) ## CHANGE FOR EOF WITH CLIENT
 
     def send_eof_confirmation(self, client):
-        ## SEND EOF CONFIRMATION TO ORIGINAL NODE
-        pass
+        self.broker.public_message(exchange_name=self.node_name + "_confirmation", message=client) ## CHANGE FOR EOF WITH CLIENT
 
     def wait_for_confirmation(self, client):
         ## READ FROM CONFIRMATION QUEUE
@@ -95,30 +89,32 @@ class Node:
         with self.clients_lock:
             self.shared_data.remove(client)
 
-    def read_nodes_eofs(self):
-        while self.running:
-            try:
-                client = self.receive_nodes_eofs()
-                with self.processing_lock:
-                    self.process_node_eof(client)
-            except Exception as e:
-                logging.error(f"action: error | result: {e}")
+    def read_nodes_eofs(self, ch, method, properties, body):
+        try:
+            data = body.decode()
+            with self.processing_lock:
+                self.process_node_eof(data)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            logging.error(f"action: error | result: {e}")
 
     def process_data(self, data):
         if self.is_eof(data):
             return
         
+    def process_queue_message(self, ch, method, properties, body):
+        try:
+            data = body.decode()
+            with self.processing_lock:
+                self.process_data(data)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            logging.error(f"action: error | result: {e}")
+
     def run(self):
-        while self.running:
-            try:
-                data = self.receive_data()
-                with self.processing_lock:
-                    self.process_data(data)
-            except Exception as e:
-                logging.error(f"action: error | result: {e}")
+        self.broker.start_consuming()
     
     def stop(self):
-        self.running = False
         self.broker.close()
         for process in self.processes:
             process.join()
