@@ -3,7 +3,6 @@ RUN apk update && apk add --no-cache python3-dev py3-pip
 RUN pip install pika
 
 COPY system/controllers/input /app/system/controllers/input
-COPY system/commons /app/system/commons
 COPY common /app/common
 ENTRYPOINT ["/bin/sh"]
 
