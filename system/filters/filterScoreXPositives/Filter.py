@@ -10,9 +10,6 @@ class Filter(Node):
     def receive_data(self):
         data = []
         return data
-    
-    def send_eof(self):
-        logging.info("action: eof")
 
     def has_enough_score(self, score):
         return score >= self.amount_needed

@@ -10,9 +10,6 @@ class Filter(Node):
     def receive_data(self):
         data = []
         return data
-    
-    def send_eof(self):
-        logging.info("action: eof")
 
     def is_gender(self, genders, wanted_gender):
         for gender in genders.split(','):

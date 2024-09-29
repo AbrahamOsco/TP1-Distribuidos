@@ -95,8 +95,7 @@ class Node:
             logging.error(f"action: error | result: {e}")
 
     def process_data(self, data):
-        if self.is_eof(data):
-            return
+        pass
         
     def process_queue_message(self, ch, method, properties, body):
         try:

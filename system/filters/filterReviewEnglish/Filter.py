@@ -9,9 +9,6 @@ class Filter(Node):
     def receive_data(self):
         data = []
         return data
-    
-    def send_eof(self):
-        logging.info("action: eof")
 
     def is_in_english(self, text):
         lang, _ = langid.classify(text)

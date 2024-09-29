@@ -17,9 +17,6 @@ class Counter(Node):
         data = []
         return data
 
-    def send_eof(self):
-        logging.info("action: eof")
-
     def send_result(self):
         logging.info(f"action: result | windows: {self.result['windows']} | linux: {self.result['linux']} | mac: {self.result['mac']}")
 
