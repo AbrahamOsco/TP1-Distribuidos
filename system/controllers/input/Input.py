@@ -15,7 +15,8 @@ class Input:
         self.game_index_init= False
         self.review_index_init= False
         self.broker = Broker()
-        self.broker.create_exchange(name='games_reviews_input', exchange_type='topic')
+        self.broker.create_exchange(name='games_reviews_input', exchange_type='direct')
+        self.wait_for_select = False
 
     def accept_a_connection(self):
         self.socket_accepter = Socket(port =12345)
@@ -27,19 +28,23 @@ class Input:
     def run(self):
         self.accept_a_connection()
         logging.info("action: Input prepare to recv data! | 😶‍🌫️🍄")
+        i = 0
         while True:
             id_client, operation_type, list_items = self.protocol.recv_data_raw()
             self.initialize_indexes(operation_type, list_items)
             batch_item_filtered = self.filter_fields_item(operation_type, list_items)
             logging.info(f"client_id: {id_client} operation: {operation_type} | item filtered: {batch_item_filtered}")
+            if not self.wait_for_select:
+                t.sleep(5)
+                logging.info("action: Waiting for bind some queues to the exchange! | result: finish with success ✅")
+                self.wait_for_select = True
             self.send_data(batch_item_filtered, operation_type)
     # funcion para filtrar y luego codear un exchange con routing key= game q pushee a las queues games_q1 y games_q2345
     # y luego un mensaje con ruting_key=review q pushe a la queue reviwes_raw
-    # abria q aumentar el hearbets del cliente tambien. 
+    # abria q aumentar el hearbets del cliente tambien.
     def send_data(self, data_filtered, operation_type):
-        t.sleep(5)
         if operation_type == OPERATION_GAME_RAW:
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1.hello', message ="Some data 🩹 🅰️" )
+            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message ="Some data 🩹 🅰️" )
             self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q2345', message = "Some data 🩹 🅰️ 🥑" )
         elif operation_type == OPERATION_REVIEW_RAW:
             self.broker.public_message(exchange_name='games_reviews_input', routing_key='reviews.raw', message ="Some data 🛡️ 👨‍🔧 🗡️" )
