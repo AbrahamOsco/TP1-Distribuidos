@@ -96,7 +96,7 @@ services:
 
     # Generar los servicios correspondientes a cada parámetro
     client_services = generar_servicios("select","selectQ1", select_q1)
-    # client_services = generar_servicios("FilterBasic", filter_basic) TODO: No se encuentra implementado
+    client_services = generar_servicios("filters","filterBasic", filter_basic)
     client_services += generar_servicios("groupers","platformCounter", platform_counter)
     client_services += generar_servicios("select","selectQ2345", select_q2345)
     client_services += generar_servicios("filters","filterGender", filter_gender)

@@ -71,11 +71,11 @@ services:
   #   depends_on:
   #     - rabbitmq
 
-  selectq1_1:
-    container_name: selectq1_1
+  filterbasic_1:
+    container_name: filterbasic_1
     build:
       context: .
-      dockerfile: system/controllers/select/selectQ1/Dockerfile
+      dockerfile: system/controllers/filters/filterBasic/Dockerfile
     networks:
       - testing_net
     depends_on:
