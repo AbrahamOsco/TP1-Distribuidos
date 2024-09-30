@@ -1,7 +1,7 @@
 FROM python:3.9.20-alpine3.19
 RUN apk update && apk add --no-cache python3-dev py3-pip
 RUN pip install pika
-COPY system/groupers/grouperTopAveragePlaytime /app/system/groupers/grouperTopAveragePlaytime
+COPY system/controllers/filters/selectIDName /app/system/controllers/filters/selectIDName
 COPY system/commonsSystem /app/system/commonsSystem
 COPY common /app/common
 ENTRYPOINT ["/bin/sh"]

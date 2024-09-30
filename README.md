@@ -7,3 +7,11 @@
 1. Idem a otras carpetas publisher-subscriber, routing, work-queues. Leer comentarios
 
 
+## Instrucciones de uso
+
+Para generar el archivo docker compose se debe correr el comando: 
+* **./generar-compose.sh docker-compose-dev.yaml**
+
+Luego se puede correr el mismo usando 
+
+* **docker-compose -f docker-compose-dev.yaml build**
