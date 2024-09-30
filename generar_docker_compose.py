@@ -101,7 +101,7 @@ services:
     # client_services += generar_servicios("SelectQ2345", select_q2345) TODO: No se encuentra implementado
     # client_services += generar_servicios("filterGender", filter_gender) TODO: No se encuentra implementado
     client_services += generar_servicios("filters","filterDecade", filter_decade)
-    # client_services += generar_servicios("SelectIDName", select_id_name) TODO: No se encuentra implementado
+    client_services += generar_servicios("select","SelectIDName", select_id_name)
     # client_services += generar_servicios("SelectQ345", select_q345) TODO: No se encuentra implementado
     # client_services += generar_servicios("FilterScorePositive", filter_score_positive) TODO: No se encuentra implementado
     client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)

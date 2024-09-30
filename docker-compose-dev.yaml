@@ -91,6 +91,16 @@ services:
     depends_on:
       - rabbitmq
 
+  selectidname_1:
+    container_name: selectidname_1
+    build:
+      context: .
+      dockerfile: system/controllers/select/SelectIDName/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
     build:
