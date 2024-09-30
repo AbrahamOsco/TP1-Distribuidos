@@ -1,4 +1,4 @@
-from Queue import Queue
+from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
 import logging
 import pika
@@ -24,7 +24,7 @@ class Broker:
     def start_listening_queue(self, name, callback):
         self.channel.basic_consume(queue =name, auto_ack =False, on_message_callback =callback)
         logging.info(f"action: Start listening from queue: {name} | result: sucess ✅")
-
+            
     def stop_listening_queue(self, name =''):
         self.channel.basic_cancel(name)
         logging.info(f"action: Stop listening from queue: {name} | result: sucess ✅")
@@ -51,7 +51,11 @@ class Broker:
             self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,\
                 properties = self.queues[queue_name].get_properties() )
         else:
-            self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message)
+            # Todos los mensajes q se publican a un exchange seran persistentes! existira. Habra alguna situacion que no queramos esto 
+            # con mandatory = true Hace que el mensaje no se pierda si no hay colas vinculadas. Al inicio puede q la queue todavia no exista
+            # pero el exchange si y con este 'mandatory' el mensaje no se perdera!.
+            self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message,\
+                                       properties=pika.BasicProperties(delivery_mode=2), mandatory=True)
 
     def start_consuming(self):
         self.channel.start_consuming()

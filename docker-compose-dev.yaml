@@ -18,7 +18,7 @@ services:
     image: input:latest
     entrypoint: python3 /app/system/controllers/input/main.py 
     environment:
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
       - system_network
@@ -26,6 +26,23 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+  
+  #Select Q1.
+  selectQ1:
+    container_name: selectQ1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
 
   client1:
     container_name: client1
@@ -36,7 +53,7 @@ services:
     environment:
       - hostName=input
       - CLI_ID=1
-      - CLI_LOG_LEVEL=DEBUG
+      - CLI_LOG_LEVEL=INFO
       - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
     entrypoint: python3 /app/client/main.py
     networks:
