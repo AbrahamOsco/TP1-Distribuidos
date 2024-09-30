@@ -71,6 +71,16 @@ services:
   #   depends_on:
   #     - rabbitmq
 
+  selectq1_1:
+    container_name: selectq1_1
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectQ1/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
   platformcounter_1:
     container_name: platformcounter_1
     build:
