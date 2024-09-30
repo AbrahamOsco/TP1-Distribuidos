@@ -11,6 +11,8 @@ class Node:
         self.processes = []
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
+        self.source = os.getenv("SOURCE")
+        self.sink = os.getenv("SINK")
         self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = 0
@@ -73,6 +75,7 @@ class Node:
             logging.error(f"action: error | result: {e}")
 
     def inform_eof_to_nodes(self, client):
+        logging.info(f"action: inform_eof_to_nodes | client: {client}")
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
@@ -85,6 +88,7 @@ class Node:
             if data.is_confirmation():
                 self.check_confirmations(data.client)
             return
+        logging.info(f"action: process_node_eof | client: {data.client}")
         self.pre_eof_actions()
         self.send_eof_confirmation(data.client)
         self.clients.remove(data.client)
