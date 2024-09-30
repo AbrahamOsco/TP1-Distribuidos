@@ -12,6 +12,10 @@
 Para generar el archivo docker compose se debe correr el comando: 
 * **./generar-compose.sh docker-compose-dev.yaml**
 
-Luego se puede correr el mismo usando 
+Luego se puede construir los contenedores usando 
 
 * **docker-compose -f docker-compose-dev.yaml build**
+
+Finalmente se puede correr los mismos usando
+
+* **docker-compose -f docker-compose-dev.yaml up**

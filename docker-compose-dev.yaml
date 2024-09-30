@@ -21,15 +21,15 @@ services:
     depends_on:
       - rabbitmq
 
-  # output:
-  #   container_name: output
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/output/Dockerfile
-  #   networks:
-  #     - testing_net
-  #   depends_on:
-  #     - rabbitmq
+  output:
+    container_name: output
+    build:
+      context: .
+      dockerfile: system/controllers/output/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
 
 #   platformreducer:
 #     container_name: platformreducer
