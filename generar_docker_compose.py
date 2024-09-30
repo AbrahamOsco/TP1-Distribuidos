@@ -36,15 +36,15 @@ services:
     depends_on:
       - rabbitmq
 
-#   platformreducer:
-#     container_name: platformreducer
-#     build:
-#       context: .
-#       dockerfile: system/controllers/platformreducer/Dockerfile
-#     networks:
-#       - testing_net
-#     depends_on:
-#       - rabbitmq
+  platformreducer:
+    container_name: platformreducer
+    build:
+      context: .
+      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
