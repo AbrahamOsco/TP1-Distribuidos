@@ -106,7 +106,7 @@ services:
     client_services += generar_servicios("filters","filterScorePositive", filter_score_positive)
     client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)
     client_services += generar_servicios("filters","filterScoreXPositives", filter_score_X_positives)
-    # client_services += generar_servicios("FilterScoreNegative", filter_score_negative)
+    client_services += generar_servicios("filters","filterScoreNegative", filter_score_negative)
 
     networks = """
 networks:

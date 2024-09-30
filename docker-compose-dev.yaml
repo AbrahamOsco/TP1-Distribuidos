@@ -171,6 +171,16 @@ services:
     depends_on:
       - rabbitmq
 
+  filterscorenegative_1:
+    container_name: filterscorenegative_1
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
 networks:
   testing_net:
     ipam:
