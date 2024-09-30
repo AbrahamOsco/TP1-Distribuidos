@@ -131,6 +131,16 @@ services:
     depends_on:
       - rabbitmq
 
+  selectq345_1:
+    container_name: selectq345_1
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectQ345/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
   filterscorepositive_1:
     container_name: filterscorepositive_1
     build:

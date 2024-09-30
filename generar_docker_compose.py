@@ -102,7 +102,7 @@ services:
     client_services += generar_servicios("filters","filterGender", filter_gender)
     client_services += generar_servicios("filters","filterDecade", filter_decade)
     client_services += generar_servicios("select","selectIDName", select_id_name)
-    # client_services += generar_servicios("SelectQ345", select_q345) TODO: No se encuentra implementado
+    client_services += generar_servicios("select","selectQ345", select_q345)
     client_services += generar_servicios("filters","filterScorePositive", filter_score_positive)
     client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)
     client_services += generar_servicios("filters","filterScoreXPositives", filter_score_X_positives)
