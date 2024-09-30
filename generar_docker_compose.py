@@ -16,15 +16,15 @@ services:
     networks:
       - testing_net
 
-  # input:
-  #   container_name: input
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/input/Dockerfile
-  #   networks:
-  #     - testing_net
-  #   depends_on:
-  #     - rabbitmq
+  input:
+    container_name: input
+    build:
+      context: .
+      dockerfile: system/controllers/input/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
 
   # output:
   #   container_name: output
@@ -60,7 +60,7 @@ services:
     container_name: groupertopreviewspositiveindie
     build:
       context: .
-      dockerfile: system/controllers/groupers/groupertopreviewspositiveindie/Dockerfile
+      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
     networks:
       - testing_net
     depends_on:
