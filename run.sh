@@ -1,3 +1,4 @@
+docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/input/Dockerfile -t "input:latest" .
 docker build -f ./system/controllers/select/selectQ1/Dockerfile -t "selectq1:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .

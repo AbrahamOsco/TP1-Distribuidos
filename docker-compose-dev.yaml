@@ -1,65 +1,110 @@
-
+name: tp2
 version: '3.8'
-
 services:
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3-management
+    image: rabbit:latest
     ports:
       - "5672:5672"  # Puerto para conexion con RabbitMQ
       - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
-      - testing_net
+      - system_network
+    healthcheck:
+       test: ["CMD", "curl", "-f", "http://localhost:15672"] # -f hace q curl falle silenciosamente si la web no funciona
+       interval: 10s #verifica salud de rabbit each 10 s
+       timeout: 5s # si rabbit no responde en 5s falla 
+       retries: 10 # luego de 10 intentos => no es saludable
+
+  client1:
+    container_name: client1
+    image: client:latest
+    volumes:
+      - ./data/games/games.csv:/data/games.csv
+      - ./data/reviews/dataset.csv:/data/dataset.csv
+    environment:
+      - CLI_ID=1
+      - CLI_LOG_LEVEL=INFO
+      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+    entrypoint: python3 /app/client/main.py
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy  #client1 no se conectara hasta q rabbitmq este saludable, lo esperamos
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado
 
   input:
     container_name: input
-    build:
-      context: .
-      dockerfile: system/controllers/input/Dockerfile
+    image: input:latest
+    entrypoint: python3 /app/system/controllers/input/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
     networks:
-      - testing_net
+      - system_network
+    restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 
-  output:
-    container_name: output
-    build:
-      context: .
-      dockerfile: system/controllers/output/Dockerfile
+  #Select Q1.
+  selectQ1:
+    container_name: selectQ1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
     networks:
-      - testing_net
+      - system_network
+    restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
 
-  platformreducer:
-    container_name: platformreducer
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
+  #output:
+  #  container_name: output
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/output/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #platformreducer:
+  #  container_name: platformreducer
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
   #   build:
   #     context: .
   #     dockerfile: sortertop10averageplaytime/Dockerfile
   #   networks:
-  #     - testing_net
+  #     - system_network
   #   depends_on:
   #     - rabbitmq
 
-  groupertopreviewspositiveindie:
-    container_name: groupertopreviewspositiveindie
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
+  #groupertopreviewspositiveindie:
+  #  container_name: groupertopreviewspositiveindie
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
+  #  networks:
+  #    - system_network
+  #  depends_on:
+  #    - rabbitmq
 
   # gamein90thpercentile:
   #   container_name: gamein90thpercentile
@@ -67,122 +112,123 @@ services:
   #     context: .
   #     dockerfile: system/controllers/gamein90thpercentile/Dockerfile
   #   networks:
-  #     - testing_net
+  #     - system_network
   #   depends_on:
   #     - rabbitmq
 
-  filterbasic_1:
-    container_name: filterbasic_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterBasic/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
+  #filterbasic_1:
+  #  container_name: filterbasic_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterBasic/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #platformcounter_1:
+  #  container_name: platformcounter_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #selectq2345_1:
+  #  container_name: selectq2345_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/select/selectQ2345/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
 
-  platformcounter_1:
-    container_name: platformcounter_1
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
+  #filtergender_1:
+  #  container_name: filtergender_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterGender/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #filterdecade_1:
+  #  container_name: filterdecade_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterDecade/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #selectidname_1:
+  #  container_name: selectidname_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/select/selectIDName/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #selectq345_1:
+  #  container_name: selectq345_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/select/selectQ345/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #filterscorepositive_1:
+  #  container_name: filterscorepositive_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #filterreviewenglish_1:
+  #  container_name: filterreviewenglish_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #filterscorexpositives_1:
+  #  container_name: filterscorexpositives_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
+#
+  #filterscorenegative_1:
+  #  container_name: filterscorenegative_1
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
+  #  networks:
+  #    - testing_net
+  #  depends_on:
+  #    - rabbitmq
 
-  selectq2345_1:
-    container_name: selectq2345_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectQ2345/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filtergender_1:
-    container_name: filtergender_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterGender/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filterdecade_1:
-    container_name: filterdecade_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterDecade/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  selectidname_1:
-    container_name: selectidname_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectIDName/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  selectq345_1:
-    container_name: selectq345_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectQ345/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filterscorepositive_1:
-    container_name: filterscorepositive_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filterreviewenglish_1:
-    container_name: filterreviewenglish_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filterscorexpositives_1:
-    container_name: filterscorexpositives_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
-
-  filterscorenegative_1:
-    container_name: filterscorenegative_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
-    networks:
-      - testing_net
-    depends_on:
-      - rabbitmq
 
 networks:
-  testing_net:
+  system_network:
     ipam:
       driver: default
       config:
