@@ -98,7 +98,7 @@ services:
     client_services = generar_servicios("select","selectQ1", select_q1)
     # client_services = generar_servicios("FilterBasic", filter_basic) TODO: No se encuentra implementado
     client_services += generar_servicios("groupers","platformCounter", platform_counter)
-    # client_services += generar_servicios("SelectQ2345", select_q2345) TODO: No se encuentra implementado
+    client_services += generar_servicios("select","selectQ2345", select_q2345)
     client_services += generar_servicios("filters","filterGender", filter_gender)
     client_services += generar_servicios("filters","filterDecade", filter_decade)
     client_services += generar_servicios("select","selectIDName", select_id_name)

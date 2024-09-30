@@ -91,6 +91,16 @@ services:
     depends_on:
       - rabbitmq
 
+  selectq2345_1:
+    container_name: selectq2345_1
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectQ2345/Dockerfile
+    networks:
+      - testing_net
+    depends_on:
+      - rabbitmq
+
   filtergender_1:
     container_name: filtergender_1
     build:
