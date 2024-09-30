@@ -1,5 +1,6 @@
 from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
+from system.commonsSystem.broker.BrokerSerializer import BrokerSerializer
 import logging
 import pika
 
@@ -10,6 +11,7 @@ class Broker:
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
+        self.broker_serializer = BrokerSerializer()
 
     def create_queue(self, name ='', durable =False, callback =None):
         a_queue = Queue(name =name, durable =durable, callback =callback)
@@ -20,14 +22,6 @@ class Broker:
             self.channel.basic_consume(queue =a_queue.get_name(), auto_ack =False, on_message_callback =callback)
         a_queue.show_status()
         return a_queue.get_name()
-    
-    def start_listening_queue(self, name, callback):
-        self.channel.basic_consume(queue =name, auto_ack =False, on_message_callback =callback)
-        logging.info(f"action: Start listening from queue: {name} | result: sucess ✅")
-            
-    def stop_listening_queue(self, name =''):
-        self.channel.basic_cancel(name)
-        logging.info(f"action: Stop listening from queue: {name} | result: sucess ✅")
 
     # Connect a exchange with a queue with a binding!. La binding key es la 'key' de la queue. 
     # if the routing key del mensaje coincicide con la binding key,esta queue recibira el mensaje. 
@@ -47,15 +41,20 @@ class Broker:
 
     # Si no especificamos el queue_name (casi siempre haremos esto), mandamos por el exchange con su routing_key definido. 
     def public_message(self, exchange_name='', queue_name='', routing_key='', message=''):
+        message = self.broker_serializer.serialize(message)
         if queue_name != '':
             self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,\
-                properties = self.queues[queue_name].get_properties() )
+                properties = self.queues[queue_name].get_properties())
         else:
             # Todos los mensajes q se publican a un exchange seran persistentes! existira. Habra alguna situacion que no queramos esto 
             # con mandatory = true Hace que el mensaje no se pierda si no hay colas vinculadas. Al inicio puede q la queue todavia no exista
             # pero el exchange si y con este 'mandatory' el mensaje no se perdera!.
             self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message,\
-                                       properties=pika.BasicProperties(delivery_mode=2), mandatory=True)
+                                       properties=pika.BasicProperties(delivery_mode=2))
+
+    def get_message(self, message):
+        return self.broker_serializer.deserialize(message)
+
 
     def start_consuming(self):
         self.channel.start_consuming()

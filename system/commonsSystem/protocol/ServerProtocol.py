@@ -6,7 +6,7 @@ class ServerProtocol(Protocol):
         super().__init__(socket)  #uso super para invocar al constructor del padre. 
 
     def recv_data_raw(self):
-        id_client = self.recv_number_1_byte()
+        client_id = self.recv_number_1_byte()
         operation_type = self.recv_number_1_byte()
         list_items_raw = []
         items_amount = self.recv_number_2_bytes()
@@ -17,5 +17,5 @@ class ServerProtocol(Protocol):
                 field = self.recv_string()
                 element.append(field)
             list_items_raw.append(element)
-        return id_client, operation_type, list_items_raw
+        return client_id, operation_type, list_items_raw
     

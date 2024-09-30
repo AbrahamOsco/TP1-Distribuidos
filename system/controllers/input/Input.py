@@ -1,5 +1,6 @@
 from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
 from system.commonsSystem.broker.Broker import Broker
 import logging
 import os
@@ -30,24 +31,26 @@ class Input:
         logging.info("action: Input prepare to recv data! | 😶‍🌫️🍄")
         i = 0
         while True:
-            id_client, operation_type, list_items = self.protocol.recv_data_raw()
+            client_id, operation_type, list_items = self.protocol.recv_data_raw()
             self.initialize_indexes(operation_type, list_items)
             batch_item_filtered = self.filter_fields_item(operation_type, list_items)
-            logging.info(f"client_id: {id_client} operation: {operation_type} | item filtered: {batch_item_filtered}")
+            logging.info(f"client_id: {client_id} operation: {operation_type} | item filtered: {batch_item_filtered}")
             if not self.wait_for_select:
-                t.sleep(5)
+                t.sleep(2)
                 logging.info("action: Waiting for bind some queues to the exchange! | result: finish with success ✅")
                 self.wait_for_select = True
-            self.send_data(batch_item_filtered, operation_type)
-    # funcion para filtrar y luego codear un exchange con routing key= game q pushee a las queues games_q1 y games_q2345
-    # y luego un mensaje con ruting_key=review q pushe a la queue reviwes_raw
-    # abria q aumentar el hearbets del cliente tambien.
-    def send_data(self, data_filtered, operation_type):
+            self.send_batch_data(batch_item_filtered, operation_type, client_id)
+    
+    # for each game se cumple:  ['AppID', 'Name', 'Release date', 'Windows', 'Mac', 'Linux', 'Average playtime forever', 'Genres']
+    # example: ['1659180', 'TD Worlds', 'Jan 9, 2022', 'True', 'False', 'False', '0', 'Indie,Strategy']
+    
+    def send_batch_data(self, data_filtered, operation_type, client_id):
         if operation_type == OPERATION_GAME_RAW:
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message ="Some data 🩹 🅰️" )
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q2345', message = "Some data 🩹 🅰️ 🥑" )
+            game_dto = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
+            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message = "Some data 🛡️ 👨‍🔧  〽️ 🐲")
+            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q2345', message = "Some data 🩹 🅰️ 🥑")
         elif operation_type == OPERATION_REVIEW_RAW:
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='reviews.raw', message ="Some data 🛡️ 👨‍🔧 🗡️" )
+            self.broker.public_message(exchange_name='games_reviews_input', routing_key='reviews.raw', message ="Some data 🛡️ 👨‍🔧 🗡️")
 
     def filter_fields_item(self, operation_type, list_items):
         batch_item = []
@@ -61,11 +64,12 @@ class Input:
                 batch_item.append(basic_review)
         return batch_item
 
-
     def drop_basic_item(self, a_item, dic_indexes):
+        logging.info(f"Dic Indexes 🦃 : {dic_indexes}")
         item_basic = []
         for i in range(len(a_item)):
             if i in dic_indexes.values():
+                logging.info(f"index: {i} value: {a_item[i]}")
                 item_basic.append(a_item[i])
         return item_basic
 
