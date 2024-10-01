@@ -46,47 +46,48 @@ class Node:
             datefmt='%Y-%m-%d %H:%M:%S',
         )
     
-    def is_eof(self, data):
-        return data == "EOF"
-    
     def send_result(self):
         pass
 
     def send_eof(self, client):
-        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).to_string())
+        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).to_string(), routing_key='default')
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client,True).to_string())
+        logging.info(f"action: send_eof_confirmation | client: {client}")
+        confirmation = EOFDTO(client,True).to_string()
+        logging.info(f"action: send_eof_confirmation | confirmation: {confirmation}")
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=confirmation)
 
     def check_confirmations(self, client):
         self.confirmations += 1
+        logging.info(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes:
             self.clients.remove(client)
             self.clients_pending_confirmations.remove(client)
             self.send_eof(client)
             self.confirmations = 0
 
-    def read_eofs_confirmations(self, ch, method, properties, body):
-        try:
-            data = body.decode()
-            self.check_confirmations(data)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        except Exception as e:
-            logging.error(f"action: error | result: {e}")
-
     def inform_eof_to_nodes(self, client):
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        self.pre_eof_actions()
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
-        self.pre_eof_actions()
+        self.confirmations = 1
         self.clients_pending_confirmations.append(client)
+        logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
         self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False).to_string())
     
     def process_node_eof(self, data):
+        logging.info(f"action: process_node_eof | data: {data.to_string()} | pending: {self.clients_pending_confirmations}")
         if data.client in self.clients_pending_confirmations:
             if data.is_confirmation():
                 self.check_confirmations(data.client)
+            return
+        logging.info(f"action: process_node_eof | not in pending confirmation")
+        if data.is_confirmation():
+            return
+        if data.client not in self.clients:
             return
         logging.info(f"action: process_node_eof | client: {data.client}")
         self.pre_eof_actions()
@@ -113,6 +114,7 @@ class Node:
 
     def process_queue_message(self, ch, method, properties, body):
         try:
+            logging.info(f"action: process_queue_message | body: {body}")
             data = getDTO(body.decode())
             if data.is_EOF():
                 self.inform_eof_to_nodes(data.get_client())

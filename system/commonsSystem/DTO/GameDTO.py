@@ -9,9 +9,9 @@ class GameDTO:
         self.app_id = app_id
         self.name = name
         self.release_date = release_date
-        self.windows = windows
-        self.mac = mac
-        self.linux = linux
+        self.windows = int(windows)
+        self.mac = int(mac)
+        self.linux = int(linux)
         self.avg_playtime_forever = avg_playtime_forever
         self.genres = genres
 
@@ -20,10 +20,10 @@ class GameDTO:
         logging.info(f"action: Show Game: {self.app_id}, {self.name}, {self.windows}, {self.mac}, {self.linux}, {self.genres}, {self.release_date}, {self.avg_playtime_forever}")
     
     def to_string(self):
-        return f"GAME|{self.app_id}|{self.client_id}|{self.name}|{self.windows}|{self.mac}|{self.linux}|{self.genres}|{self.release_date}|{self.avg_playtime_forever}"
+        return f"GAME|;|{self.app_id}|;|{self.client_id}|;|{self.name}|;|{self.windows}|;|{self.mac}|;|{self.linux}|;|{self.genres}|;|{self.release_date}|;|{self.avg_playtime_forever}"
 
     def from_string(data):
-        data = data.split("|")
+        data = data.split("|;|")
         return GameDTO(data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9])
 
     def is_EOF(self):
