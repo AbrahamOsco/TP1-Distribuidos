@@ -23,8 +23,8 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
-      - NODE_ID="1"
-      - CLI_LOG_LEVEL=INFO
+      - NODE_ID=1
+      - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     entrypoint: python3 /app/client/main.py
     networks:
@@ -48,7 +48,7 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME:"input"
-      - NODE_ID="2"
+      - NODE_ID=2
       - SOURCE=""
       - SINK=""
       - LOGGING_LEVEL=INFO
@@ -66,9 +66,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="output"
-      - NODE_ID="3"
+      - NODE_ID=3
       - SOURCE="response_exchange"
       - SINK=""
+      - LOGGING_LEVEL=INFO
 
   platformreducer:
     container_name: platformreducer
@@ -82,9 +83,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="platformreducer"
-      - NODE_ID="4"
+      - NODE_ID=4
       - SOURCE="CountByPlatform"
       - SINK=""
+      - LOGGING_LEVEL=INFO
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
@@ -108,9 +110,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="groupertopreviewspositiveindie"
-      - NODE_ID="5"
+      - NODE_ID=5
       - SOURCE=""
       - SINK=""
+      - LOGGING_LEVEL=INFO
       
 
   # gamein90thpercentile:
@@ -135,9 +138,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterbasic_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=DataRaw
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   platformcounter_1:
     container_name: platformcounter_1
@@ -151,9 +155,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="platformcounter_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesPlatform
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   selectq2345_1:
     container_name: selectq2345_1
@@ -167,9 +172,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="selectq2345_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=DataParsed
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   filtergender_1:
     container_name: filtergender_1
@@ -183,9 +189,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filtergender_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesQ2345
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   filterdecade_1:
     container_name: filterdecade_1
@@ -199,9 +206,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterdecade_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesIndieQ2
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   selectidnameindie_1:
     container_name: selectidnameindie_1
@@ -215,9 +223,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="selectidnameindie_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesIndieQ3
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   selectidnameaction_1:
     container_name: selectidnameaction_1
@@ -231,9 +240,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="selectidnameaction_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesActionQ45
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   selectq345_1:
     container_name: selectq345_1
@@ -247,9 +257,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="selectq345_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=DataParsed
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   filterscorepositive_1:
     container_name: filterscorepositive_1
@@ -263,9 +274,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorepositive_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=ERROR
       - SINK=ERROR
+      - LOGGING_LEVEL=INFO
 
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
@@ -279,9 +291,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterreviewenglish_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=GamesActionPositives
       - SINK=
+      - LOGGING_LEVEL=INFO
 
   filterscorexpositives_1:
     container_name: filterscorexpositives_1
@@ -295,9 +308,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorexpositives_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=ERROR
       - SINK=ERROR
+      - LOGGING_LEVEL=INFO
 
   filterscorenegative_1:
     container_name: filterscorenegative_1
@@ -311,9 +325,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorenegative_1"
-      - NODE_ID="6"
+      - NODE_ID=6
       - SOURCE=ReviewsRaw
       - SINK=
+      - LOGGING_LEVEL=INFO
 
 networks:
   system_network:

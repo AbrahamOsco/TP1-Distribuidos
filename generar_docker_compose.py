@@ -79,8 +79,8 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
-      - NODE_ID="1"
-      - CLI_LOG_LEVEL=INFO
+      - NODE_ID=1
+      - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     entrypoint: python3 /app/client/main.py
     networks:
@@ -104,7 +104,7 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME:"input"
-      - NODE_ID="2"
+      - NODE_ID=2
       - SOURCE=""
       - SINK=""
       - LOGGING_LEVEL=INFO
@@ -122,9 +122,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="output"
-      - NODE_ID="3"
+      - NODE_ID=3
       - SOURCE="response_exchange"
       - SINK=""
+      - LOGGING_LEVEL=INFO
 
   platformreducer:
     container_name: platformreducer
@@ -138,9 +139,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="platformreducer"
-      - NODE_ID="4"
+      - NODE_ID=4
       - SOURCE="CountByPlatform"
       - SINK=""
+      - LOGGING_LEVEL=INFO
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
@@ -164,9 +166,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="groupertopreviewspositiveindie"
-      - NODE_ID="5"
+      - NODE_ID=5
       - SOURCE=""
       - SINK=""
+      - LOGGING_LEVEL=INFO
       
 
   # gamein90thpercentile:
@@ -199,9 +202,10 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="{nombre_servicio.lower()}{"_"}{i}"
-      - NODE_ID="{id}"
+      - NODE_ID={id}
       - SOURCE={get_source(nombre_servicio.lower())}
       - SINK={get_sink(nombre_servicio.lower())}
+      - LOGGING_LEVEL=INFO
 """
         return servicios
 

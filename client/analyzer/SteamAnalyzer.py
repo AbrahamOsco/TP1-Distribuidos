@@ -15,8 +15,8 @@ class SteamAnalyzer:
 
     def initialize_config(self):
         self.config_params = {}
-        self.config_params["id"] = int(os.getenv("CLI_ID"))
-        self.config_params["log_level"] = os.getenv("CLI_LOG_LEVEL")
+        self.config_params["id"] = int(os.getenv("NODE_ID"))
+        self.config_params["log_level"] = os.getenv("LOGGING_LEVEL")
         initialize_log(self.config_params["log_level"])
     
     def connect_to_server(self):
