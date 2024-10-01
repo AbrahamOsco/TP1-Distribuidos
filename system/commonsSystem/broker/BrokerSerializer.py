@@ -12,14 +12,12 @@ class BrokerSerializer:
 
     def serialize(self, message):
         type_message = type(message).__name__
-        logging.info(f" Serialize: 🍎  Type: {type_message}")
         return self.command_serialize[type_message](message)
 
     def deserialize(self, message):
         offset = 0
         #Primer byte indica el tipo de operacion, usando Command, obtenemos la funcion a usar. 
         operation_type = int.from_bytes(message[offset:offset+1], byteorder='big')
-        logging.info(f" Deserialize 🍍 Type: {operation_type}")
         result, offset = self.command_deserialize[operation_type](message, 0)
         return result
 
