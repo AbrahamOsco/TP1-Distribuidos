@@ -10,8 +10,8 @@ from system.commonsSystem.protocol.ServerProtocol import ServerProtocol, OPERATI
 class Input:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
-        self.game_indexes = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,\
-            "Genres": 0, "Release date": 0, "Average playtime forever": 0}
+        self.game_indexes = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
+                            "Genres": 0, "Release date": 0, "Average playtime forever": 0}
         self.review_indexes = { 'app_id':0, 'review_text':0, 'review_score':0 }
         self.game_index_init= False
         self.review_index_init= False
@@ -21,23 +21,19 @@ class Input:
 
     def accept_a_connection(self):
         self.socket_accepter = Socket(port =12345)
-        logging.info("action: Waiting a client to connect result: pending ⌚")
+        logging.info("action: Waiting a client to connect | result: pending ⌚")
         self.socket_peer, addr = self.socket_accepter.accept()
-        logging.info("action: Waiting a client to connect result: success ✅")
+        logging.info("action: Waiting a client to connect | result: success ✅")
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
         self.accept_a_connection()
-        logging.info("action: Input prepare to recv data! | 😶‍🌫️🍄")
-        i = 0
         while True:
             client_id, operation_type, list_items = self.protocol.recv_data_raw()
             self.initialize_indexes(operation_type, list_items)
             batch_item_filtered = self.filter_fields_item(operation_type, list_items)
-            logging.info(f"client_id: {client_id} operation: {operation_type} | item filtered: {batch_item_filtered}")
             if not self.wait_for_select:
                 t.sleep(2)
-                logging.info("action: Waiting for bind some queues to the exchange! | result: finish with success ✅")
                 self.wait_for_select = True
             self.send_batch_data(batch_item_filtered, operation_type, client_id)
     

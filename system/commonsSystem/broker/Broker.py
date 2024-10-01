@@ -12,6 +12,7 @@ class Broker:
         initialize_log(logging_level='INFO')
         self.queues = {}
         self.broker_serializer = BrokerSerializer()
+        self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
     def create_queue(self, name ='', durable =False, callback =None):
         a_queue = Queue(name =name, durable =durable, callback =callback)
@@ -43,13 +44,12 @@ class Broker:
     def public_message(self, exchange_name='', queue_name='', routing_key='', message=''):
         message = self.broker_serializer.serialize(message)
         if queue_name != '':
-            self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,\
+            self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,
                 properties = self.queues[queue_name].get_properties())
         else:
-            # Todos los mensajes q se publican a un exchange seran persistentes! existira. Habra alguna situacion que no queramos esto 
-            # con mandatory = true Hace que el mensaje no se pierda si no hay colas vinculadas. Al inicio puede q la queue todavia no exista
-            # pero el exchange si y con este 'mandatory' el mensaje no se perdera!.
-            self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message,\
+            # Todos los mensajes q se publican a un exchange seran persistentes! existira. Habra alguna situacion que no queramos esto??
+            # El mensaje pusheado a un exchange se pierde, si no existen ningna queue bindeada al exchange! ⏰ 
+            self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message,
                                        properties=pika.BasicProperties(delivery_mode=2))
 
     def get_message(self, message):

@@ -2,7 +2,7 @@ import logging
 OPERATION_TYPE_GAME = 1
 
 class GameDTO:
-    def __init__(self, app_id ="", client_id =0, name ="", windows =0,\
+    def __init__(self, app_id ="", client_id =0, name ="", windows =0,
             mac =0, linux =0, genres ="", release_date ="", avg_playtime_forever =""):
         self.operation_type = OPERATION_TYPE_GAME
         self.client_id = client_id # es enviado pero lo saco de una si no se usa. 

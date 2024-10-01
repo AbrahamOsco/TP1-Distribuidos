@@ -1,6 +1,4 @@
-
 version: '3.8'
-
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -16,6 +14,7 @@ services:
       timeout: 5s # si rabbit no responde en 5s falla 
       retries: 10 # luego de 10 intentos => no es saludable
 
+
   client1:
     container_name: client1
     image: client:latest
@@ -23,9 +22,10 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
+      - CLI_ID=1
       - NODE_ID= 1
-      - CLI_LOG_LEVEL= INFO
-      - PYTHONPATH= /app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+      - CLI_LOG_LEVEL=INFO
+      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
     entrypoint: python3 /app/client/main.py
     networks:
       - system_network
@@ -34,25 +34,59 @@ services:
       rabbitmq:
         condition: service_healthy
       input:
-        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado    
-
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado   
+  
+  # input de abraham
   input:
     container_name: input
-    build:
-      context: .
-      dockerfile: system/controllers/input/Dockerfile
+    image: input:latest
+    entrypoint: python3 /app/system/controllers/input/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
     networks:
       - system_network
+    restart: on-failure
     depends_on:
       rabbitmq:
-        condition: service_healthy
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+ #Select Q1.
+  selectQ1:
+    container_name: selectQ1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
     environment:
-      NODE_NAME: "input"
-      NODE_ID: 2
-      SOURCE: ""
-      SINK: "input_exchange"
-      LOGGING_LEVEL: INFO
-      PYTHONPATH: /app
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
+
+
+  #Input de kevin 
+  #input:
+  #  container_name: input
+  #  build:
+  #    context: .
+  #    dockerfile: system/controllers/input/Dockerfile
+  #  networks:
+  #    - system_network
+  #  depends_on:
+  #    rabbitmq:
+  #      condition: service_healthy
+  #  environment:
+  #    NODE_NAME: "input"
+  #    NODE_ID: 2
+  #    SOURCE: ""
+  #    SINK: "input_exchange"
+  #    LOGGING_LEVEL: INFO
+  #    PYTHONPATH: /app
 
   output:
     container_name: output

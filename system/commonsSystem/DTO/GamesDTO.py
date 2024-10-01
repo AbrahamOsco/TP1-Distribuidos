@@ -16,11 +16,12 @@ class GamesDTO:
     def raw_to_dto(self, games_raw):
         self.games_dto = []
         for game_raw in games_raw:
-            a_game_dto = GameDTO(app_id =game_raw[0], client_id =self.client_id, name =game_raw[1], \
-                release_date =game_raw[2], windows =self.command_platform[game_raw[3]], \
-                mac =self.command_platform[game_raw[4]] , linux =self.command_platform[game_raw[5]], \
+            a_game_dto = GameDTO(app_id =game_raw[0], client_id =self.client_id, name =game_raw[1],
+                release_date =game_raw[2], windows =self.command_platform[game_raw[3]],
+                mac =self.command_platform[game_raw[4]] , linux =self.command_platform[game_raw[5]],
                 avg_playtime_forever =game_raw[6], genres =game_raw[7])
             self.games_dto.append(a_game_dto)
 
     def show_games_dto(self):
-        logging.info(f"operation_type: {self.operation_type} | client_id: {self.client_id} | size_games_dto: {len(self.games_dto)}")
+        logging.info(f"action: view status GamesDTO | operation_type: {self.operation_type} | client_id: {self.client_id}" +
+                     f"| size_games_dto: {len(self.games_dto)} result: success ✅")
