@@ -1,10 +1,10 @@
 import logging
-from commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 import langid
 
 class Filter(Node):
     def __init__(self):
-        super()
+        super().__init__()
 
     def is_in_english(self, text):
         lang, _ = langid.classify(text)

@@ -1,8 +1,8 @@
-from commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 
 class Filter(Node):
     def __init__(self):
-        super()
+        super().__init__()
     
     def trim_data(self, data):
         return data.retain(["client", "id", "review_text"])

@@ -1,8 +1,8 @@
 import logging
 import os
-from broker.Broker import Broker
-from DTO.EOFDTO import EOFDTO
-from DTO.DTO import getDTO
+from system.commonsSystem.broker.Broker import Broker
+from system.commonsSystem.DTO.EOFDTO import EOFDTO
+from system.commonsSystem.DTO.DTO import getDTO
 
 class Node:
     def __init__(self):
@@ -12,31 +12,31 @@ class Node:
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
         self.source = os.getenv("SOURCE")
+        self.source_key = os.getenv("SOURCE_KEY", "default")
         self.sink = os.getenv("SINK")
+        self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
         self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = 0
-        if self.amount_of_nodes is None:
-            self.amount_of_nodes = 1
+        self.broker = Broker()
+        self.initialize_queues()
 
     def initialize_queues(self):
-        self.broker = Broker()
         ## Source and destination for all workers
-        self.broker.create_queue(queue_name=self.source, callback=self.process_queue_message)
-        self.broker.create_exchange(exchange_type="direct", exchange_name=self.source)
-        self.broker.bind_queue(queue_name=self.source, exchange_name=self.source)
-        self.broker.create_exchange(exchange_type="direct", exchange_name=self.sink)
+        self.broker.create_queue(name=self.source, callback=self.process_queue_message)
+        self.broker.create_exchange(exchange_type="direct", name=self.source)
+        self.broker.bind_queue(queue_name=self.source, exchange_name=self.source, binding_key=self.source_key)
+        self.broker.create_exchange(exchange_type="direct", name=self.sink)
         if self.amount_of_nodes < 2:
             return
         ## Fanout for EOFs
         eof_queue = self.broker.create_queue(callback=self.read_nodes_eofs)
-        self.broker.create_exchange(exchange_type="fanout", exchange_name=self.node_name + "_eofs")
+        self.broker.create_exchange(exchange_type="fanout", name=self.node_name + "_eofs")
         self.broker.bind_queue(queue_name=eof_queue, exchange_name=self.node_name + "_eofs")
 
     def initialize_config(self):
         self.config_params = {}
-        self.config_params["id"] = int(os.getenv("CLI_ID"))
-        self.config_params["log_level"] = os.getenv("CLI_LOG_LEVEL")
+        self.config_params["log_level"] = os.getenv("CLI_LOG_LEVEL", "INFO")
         self.initialize_log()
 
     def initialize_log(self):

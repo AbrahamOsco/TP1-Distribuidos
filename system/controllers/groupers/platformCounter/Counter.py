@@ -1,10 +1,10 @@
 import logging
-from commonsSystem.node.node import Node
-from commonsSystem.DTO.GameDTO import GameDTO
+from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.GameDTO import GameDTO
 
 class Counter(Node):
     def __init__(self):
-        super()
+        super().__init__()
         self.reset_counter()
 
     def reset_counter(self):
@@ -22,6 +22,7 @@ class Counter(Node):
         return GameDTO(client=data.client, windows=self.result["windows"], linux=self.result["linux"], mac=self.result["mac"])
 
     def send_result(self, data):
+        logging.info(f"action: send_result | data: {data}")
         self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
 
     def process_data(self, data):

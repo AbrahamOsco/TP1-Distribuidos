@@ -1,10 +1,10 @@
 import os
 import logging
-from commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 
 class Filter(Node):
     def __init__(self):
-        super()
+        super().__init__()
         self.genders = os.getenv("GENDERS").split(',')
 
     def is_gender(self, genders, wanted_gender):
