@@ -1,10 +1,10 @@
-from common.utils.utils import initialize_log 
+from common.utils.utils import initialize_log
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.broker.Broker import Broker
 import logging
 import time as t
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
-
 
 class SelectQ1:
     
@@ -19,7 +19,8 @@ class SelectQ1:
     def filter_fields_game(self):
         def callback_generica(ch, method, properties, body):
             result = self.broker.get_message(body)
-            logging.info(f"🔥 🔥 Se Recibe : 👉 Decode:{body.decode()} result 🤯{result} with routing key: {method.routing_key}")
+            for game in result.games_dto:
+                logging.info(f"🔥Se Recibe : 👉🤯{game.app_id}| {game.name}| {game.genres} with routing key: {method.routing_key}")
             t.sleep(2)
             logging.info(f" Message ready! 🔨 🛠️ 🇱")
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -30,4 +31,4 @@ class SelectQ1:
         self.broker.start_consuming()
         # Solo hacer el close cuando recibamos la signal y acabe todo ordenado!!. 
         # self.broker.close()
-    
+

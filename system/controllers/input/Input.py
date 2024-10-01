@@ -46,8 +46,8 @@ class Input:
     
     def send_batch_data(self, data_filtered, operation_type, client_id):
         if operation_type == OPERATION_GAME_RAW:
-            game_dto = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message = "Some data 🛡️ 👨‍🔧  〽️ 🐲")
+            gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
+            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message = gamesDTO)
             self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q2345', message = "Some data 🩹 🅰️ 🥑")
         elif operation_type == OPERATION_REVIEW_RAW:
             self.broker.public_message(exchange_name='games_reviews_input', routing_key='reviews.raw', message ="Some data 🛡️ 👨‍🔧 🗡️")
@@ -65,11 +65,11 @@ class Input:
         return batch_item
 
     def drop_basic_item(self, a_item, dic_indexes):
-        logging.info(f"Dic Indexes 🦃 : {dic_indexes}")
+        #logging.info(f"Dic Indexes 🦃 : {dic_indexes}")
         item_basic = []
         for i in range(len(a_item)):
             if i in dic_indexes.values():
-                logging.info(f"index: {i} value: {a_item[i]}")
+                #logging.info(f"index: {i} value: {a_item[i]}")
                 item_basic.append(a_item[i])
         return item_basic
 
