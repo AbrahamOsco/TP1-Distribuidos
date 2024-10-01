@@ -26,7 +26,6 @@ class Counter(Node):
         self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
 
     def process_data(self, data):
-        for d in data:
-            self.result["windows"] += d.windows
-            self.result["linux"] += d.linux
-            self.result["mac"] += d.mac
+        self.result["windows"] += data.windows
+        self.result["linux"] += data.linux
+        self.result["mac"] += data.mac
