@@ -35,7 +35,7 @@ class Broker:
     def unbind_queue(self, exchange_name, queue_name):
         self.channel.queue_unbind(exchange =exchange_name, queue =queue_name, routing_key =self.queues[queue_name].get_binding_key())
         
-    #Se debe crear el exchange de ambos lados (productor y consumidor) 
+    #Se debe crear el exchange de ambos lados (productor y consumidor)
     def create_exchange(self, exchange_type, name=''):
         logging.info(f"action: Created a Exchange: | name: {name} | type: {exchange_type} | result: sucess ✅")
         self.channel.exchange_declare(exchange =name, exchange_type =exchange_type)

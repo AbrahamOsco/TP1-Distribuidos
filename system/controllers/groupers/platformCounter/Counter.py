@@ -20,14 +20,14 @@ class Counter(Node):
         self.reset_counter()
 
     def trim_data(self, data):
-        return GameDTO(client_id=data["client_id"], windows=data["windows"], linux=data["linux"], mac=data["mac"])
+        return GameDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])
 
     def send_result(self, data):
         logging.info(f"action: send_result | data: {data}")
         self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string(), routing_key="default")
 
     def process_data(self, data):
-        self.result["client_id"] = data.client_id
+        #self.result["client_id"] = data.client_id HERE need a fix @FRANCO you should use now the new dto that will be created soon! 
         self.result["windows"] += data.windows
         self.result["linux"] += data.linux
         self.result["mac"] += data.mac

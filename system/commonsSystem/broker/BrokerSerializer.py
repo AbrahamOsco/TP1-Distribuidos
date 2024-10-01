@@ -26,7 +26,7 @@ class BrokerSerializer:
     def serialize_GamesDTO(self, gamesDTO: GamesDTO):
         games_bytes = bytearray()
         games_bytes.extend(gamesDTO.operation_type.to_bytes(1, byteorder='big'))
-        games_bytes.extend(gamesDTO.client_id.to_bytes(1, byteorder='big')) # ver si en un futuro sacarlo.
+        games_bytes.extend(gamesDTO.client_id.to_bytes(1, byteorder='big'))
         games_bytes.extend(gamesDTO.state_games.to_bytes(1, byteorder='big'))
         games_bytes.extend(len(gamesDTO.games_dto).to_bytes(2, byteorder='big'))
 
@@ -38,7 +38,6 @@ class BrokerSerializer:
     def serialize_GameDTO(self, gameDTO: GameDTO, state_games:int):
         game_bytes = bytearray()
         game_bytes.extend(gameDTO.operation_type.to_bytes(1, byteorder='big'))
-        game_bytes.extend(gameDTO.client_id.to_bytes(1, byteorder='big')) # Ver si sacarlo!.
         # Preguntar segun el state games enviar q atributos y que no. 
         game_bytes.extend(self.serialize_str(gameDTO.app_id))
         game_bytes.extend(self.serialize_str(gameDTO.name))
@@ -89,8 +88,6 @@ class BrokerSerializer:
     def deserialize_gameDTO(self, data, offset, state_games:int):
         operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
-        client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
-        offset += 1
         app_id, offset = self.deserialize_str(data, offset)
         name, offset = self.deserialize_str(data, offset)
         release_date, offset = self.deserialize_str(data, offset)
@@ -102,6 +99,6 @@ class BrokerSerializer:
         offset += 1
         avg_playtime_forever, offset = self.deserialize_str(data, offset)
         genres, offset = self.deserialize_str(data, offset)
-        return GameDTO(app_id =app_id, client_id =client_id, name =name, windows =windows,
+        return GameDTO(app_id =app_id, name =name, windows =windows,
                        mac =mac, linux =linux, genres =genres, release_date =release_date, 
                        avg_playtime_forever =avg_playtime_forever), offset
