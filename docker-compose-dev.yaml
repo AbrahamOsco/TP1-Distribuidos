@@ -1,4 +1,6 @@
+
 version: '3.8'
+
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -14,7 +16,6 @@ services:
       timeout: 5s # si rabbit no responde en 5s falla 
       retries: 10 # luego de 10 intentos => no es saludable
 
-
   client1:
     container_name: client1
     image: client:latest
@@ -22,10 +23,9 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
-      - CLI_ID=1
-      - NODE_ID= 1
+      - NODE_ID="1"
       - CLI_LOG_LEVEL=INFO
-      - PYTHONPATH=/app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+      - PYTHONPATH=/app
     entrypoint: python3 /app/client/main.py
     networks:
       - system_network
@@ -34,79 +34,25 @@ services:
       rabbitmq:
         condition: service_healthy
       input:
-        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado   
-  
-  # input de abraham
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado    
+
   input:
     container_name: input
-    image: input:latest
-    entrypoint: python3 /app/system/controllers/input/main.py 
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-
- #Select Q1.
-  selectQ1:
-    container_name: selectQ1
-    image: selectq1:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      input:
-        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
-
-  #platform counter
-  platformcounter_1:
-    container_name: platformcounter_1
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
     build:
       context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+      dockerfile: system/controllers/input/Dockerfile
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: platformcounter_1
-      NODE_ID: 6
-      SOURCE: selectq1_exchange
-      SINK: platformcounter_exchange
-      PYTHONPATH: /app
-
-
-
-  #Input de kevin 
-  #input:
-  #  container_name: input
-  #  build:
-  #    context: .
-  #    dockerfile: system/controllers/input/Dockerfile
-  #  networks:
-  #    - system_network
-  #  depends_on:
-  #    rabbitmq:
-  #      condition: service_healthy
-  #  environment:
-  #    NODE_NAME: "input"
-  #    NODE_ID: 2
-  #    SOURCE: ""
-  #    SINK: "input_exchange"
-  #    LOGGING_LEVEL: INFO
-  #    PYTHONPATH: /app
+      - NODE_NAME:"input"
+      - NODE_ID="2"
+      - SOURCE=""
+      - SINK=""
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
 
   output:
     container_name: output
@@ -119,10 +65,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "output"
-      NODE_ID: 3
-      SOURCE: "response_exchange"
-      SINK: ""
+      - NODE_NAME="output"
+      - NODE_ID="3"
+      - SOURCE="response_exchange"
+      - SINK=""
 
   platformreducer:
     container_name: platformreducer
@@ -135,10 +81,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "platformreducer"
-      NODE_ID: 4
-      SOURCE: "platformcounter_exchange"
-      SINK: "response_exchange"
+      - NODE_NAME="platformreducer"
+      - NODE_ID="4"
+      - SOURCE="CountByPlatform"
+      - SINK=""
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
@@ -161,10 +107,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "groupertopreviewspositiveindie"
-      NODE_ID: 5
-      SOURCE: ""
-      SINK: ""
+      - NODE_NAME="groupertopreviewspositiveindie"
+      - NODE_ID="5"
+      - SOURCE=""
+      - SINK=""
       
 
   # gamein90thpercentile:
@@ -188,10 +134,26 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterbasic_1
-      NODE_ID: 6
-      SOURCE: input_exchange
-      SINK: filterbasic_exchange
+      - NODE_NAME="filterbasic_1"
+      - NODE_ID="6"
+      - SOURCE=DataRaw
+      - SINK=
+
+  platformcounter_1:
+    container_name: platformcounter_1
+    build:
+      context: .
+      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - NODE_NAME="platformcounter_1"
+      - NODE_ID="6"
+      - SOURCE=GamesPlatform
+      - SINK=
 
   selectq2345_1:
     container_name: selectq2345_1
@@ -204,10 +166,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: selectq2345_1
-      NODE_ID: 6
-      SOURCE: filterbasic_exchange
-      SINK: selectq2345_exchange
+      - NODE_NAME="selectq2345_1"
+      - NODE_ID="6"
+      - SOURCE=DataParsed
+      - SINK=
 
   filtergender_1:
     container_name: filtergender_1
@@ -220,10 +182,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filtergender_1
-      NODE_ID: 6
-      SOURCE: selectq2345_exchange
-      SINK: filtergender_exchange
+      - NODE_NAME="filtergender_1"
+      - NODE_ID="6"
+      - SOURCE=GamesQ2345
+      - SINK=
 
   filterdecade_1:
     container_name: filterdecade_1
@@ -236,26 +198,42 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterdecade_1
-      NODE_ID: 6
-      SOURCE: filtergender_exchange
-      SINK: filterdecade_exchange
+      - NODE_NAME="filterdecade_1"
+      - NODE_ID="6"
+      - SOURCE=GamesIndieQ2
+      - SINK=
 
-  selectidname_1:
-    container_name: selectidname_1
+  selectidnameindie_1:
+    container_name: selectidnameindie_1
     build:
       context: .
-      dockerfile: system/controllers/select/selectIDName/Dockerfile
+      dockerfile: system/controllers/select/SelectIDNameIndie/Dockerfile
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: selectidname_1
-      NODE_ID: 6
-      SOURCE: filtergender_exchange
-      SINK: selectidname_exchange
+      - NODE_NAME="selectidnameindie_1"
+      - NODE_ID="6"
+      - SOURCE=GamesIndieQ3
+      - SINK=
+
+  selectidnameaction_1:
+    container_name: selectidnameaction_1
+    build:
+      context: .
+      dockerfile: system/controllers/select/SelectIDNameAction/Dockerfile
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - NODE_NAME="selectidnameaction_1"
+      - NODE_ID="6"
+      - SOURCE=GamesActionQ45
+      - SINK=
 
   selectq345_1:
     container_name: selectq345_1
@@ -268,10 +246,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: selectq345_1
-      NODE_ID: 6
-      SOURCE: filterbasic_exchange
-      SINK: selectq345_exchange
+      - NODE_NAME="selectq345_1"
+      - NODE_ID="6"
+      - SOURCE=DataParsed
+      - SINK=
 
   filterscorepositive_1:
     container_name: filterscorepositive_1
@@ -284,10 +262,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterscorepositive_1
-      NODE_ID: 6
-      SOURCE: ERROR
-      SINK: filterscorepositive_exchange
+      - NODE_NAME="filterscorepositive_1"
+      - NODE_ID="6"
+      - SOURCE=ERROR
+      - SINK=ERROR
 
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
@@ -300,10 +278,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterreviewenglish_1
-      NODE_ID: 6
-      SOURCE: selectq345_exchange
-      SINK: filterreviewenglish_exchange
+      - NODE_NAME="filterreviewenglish_1"
+      - NODE_ID="6"
+      - SOURCE=GamesActionPositives
+      - SINK=
 
   filterscorexpositives_1:
     container_name: filterscorexpositives_1
@@ -316,10 +294,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterscorexpositives_1
-      NODE_ID: 6
-      SOURCE: ERROR
-      SINK: filterscorexpositives_exchange
+      - NODE_NAME="filterscorexpositives_1"
+      - NODE_ID="6"
+      - SOURCE=ERROR
+      - SINK=ERROR
 
   filterscorenegative_1:
     container_name: filterscorenegative_1
@@ -332,10 +310,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: filterscorenegative_1
-      NODE_ID: 6
-      SOURCE: selectq345_exchange
-      SINK: filterscorenegative_exchange
+      - NODE_NAME="filterscorenegative_1"
+      - NODE_ID="6"
+      - SOURCE=ReviewsRaw
+      - SINK=
 
 networks:
   system_network:

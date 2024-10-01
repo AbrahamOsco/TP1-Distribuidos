@@ -31,7 +31,8 @@ NUM_PLATFORM_COUNTER=$(solicitar_numero_entero "Ingrese la cantidad de PlatformC
 NUM_SELECT_Q2345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ2345: ")
 NUM_FILTER_GENDER=$(solicitar_numero_entero "Ingrese la cantidad de FilterGender: ")
 NUM_FILTER_DECADE=$(solicitar_numero_entero "Ingrese la cantidad de FilterDecade: ")
-NUM_SELECT_ID_NAME=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDName: ")
+NUM_SELECT_ID_NAME_INDIE=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDNameIndie: ")
+NUM_SELECT_ID_NAME_ACTION=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDNameAction: ")
 NUM_SELECT_Q345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ345: ")
 NUM_FILTER_SCORE_POSITIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScorePositive: ")
 NUM_FILTER_REVIEW_ENGLISH=$(solicitar_numero_entero "Ingrese la cantidad de FilterReviewEnglish: ")
@@ -45,7 +46,8 @@ echo "Cantidad de PlatformCounter: $NUM_PLATFORM_COUNTER"
 echo "Cantidad de SelectQ2345: $NUM_SELECT_Q2345"
 echo "Cantidad de FilterGender: $NUM_FILTER_GENDER"
 echo "Cantidad de FilterDecade: $NUM_FILTER_DECADE"
-echo "Cantidad de SelectIDName: $NUM_SELECT_ID_NAME"
+echo "Cantidad de SelectIDNameIndie: $NUM_SELECT_ID_NAME_INDIE"
+echo "Cantidad de SelectIDNameIndie: $NUM_SELECT_ID_NAME_ACTION"
 echo "Cantidad de SelectQ345: $NUM_SELECT_Q345"
 echo "Cantidad de FilterScorePositive: $NUM_FILTER_SCORE_POSITIVE"
 echo "Cantidad de FilterReviewEnglish: $NUM_FILTER_REVIEW_ENGLISH"
@@ -60,7 +62,8 @@ python generar_docker_compose.py $OUTPUT_FILE \
     $NUM_SELECT_Q2345 \
     $NUM_FILTER_GENDER \
     $NUM_FILTER_DECADE \
-    $NUM_SELECT_ID_NAME \
+    $NUM_SELECT_ID_NAME_INDIE \
+    $NUM_SELECT_ID_NAME_ACTION \
     $NUM_SELECT_Q345 \
     $NUM_FILTER_SCORE_POSITIVE \
     $NUM_FILTER_REVIEW_ENGLISH \

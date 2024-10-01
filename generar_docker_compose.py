@@ -2,22 +2,57 @@ import sys
 
 def get_source(service_name):
     if service_name == "filterbasic":
-        return "input_exchange"
+        return "DataRaw"
     elif service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
-        return "filterbasic_exchange"
+        return "DataParsed"
     elif service_name == "platformcounter":
-        return "selectq1_exchange"
+        return "GamesPlatform"
     elif service_name == "filtergender":
-        return "selectq2345_exchange"
-    elif service_name == "filterdecade" or service_name == "selectidname":
-        return "filtergender_exchange"
+        return "GamesQ2345"
+    elif service_name == "filterdecade":
+        return "GamesIndieQ2"
+    elif service_name == "selectidnameindie":
+        return "GamesIndieQ3"
+    elif service_name == "monitorstorageq3":
+        return "GamesIndieQ3Sumarized"
+    elif service_name == "groupertopreviewspos":
+        return "GamesIndieMonitor"
+    elif service_name == "selectidnameaction":
+        return "GamesActionQ45"
+    elif service_name == "monitorjoinerq4" or service_name == "monitorstorageq5":
+        return "GamesActionQ45Sumarized"
+    elif service_name == "filterreviewenglish":
+        return "GamesActionPositives"
+    elif service_name == "filterscorexpositive" or service_name == "filterscorenegative":
+        return "ReviewsRaw"
+    elif service_name == "output":
+        return "ClientsResponse"
+    else:
+        return "ERROR"
+ 
+ #Falta hacer el get_sink   
+def get_sink(service_name): 
+    if service_name == "filterbasic":
+        return ""
+    elif service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
+        return ""
+    elif service_name == "platformcounter":
+        return ""
+    elif service_name == "filtergender":
+        return ""
+    elif service_name == "filterdecade":
+        return ""
+    elif service_name == "selectidnameindie":
+        return ""
+    elif service_name == "selectidnameaction":
+        return ""
     elif service_name == "filterreviewenglish" or service_name == "filterscorexpositive" or service_name == "filterscorenegative":
-        return "selectq345_exchange"
+        return ""
     else:
         return "ERROR"
 
 def generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender,
-                           filter_decade, select_id_name, select_q345, filter_score_positive,
+                           filter_decade, select_id_name_indie, select_id_name_action, select_q345, filter_score_positive,
                            filter_review_english, filter_score_X_positives, filter_score_negative):
     compose_base = """
 version: '3.8'
@@ -44,9 +79,9 @@ services:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
     environment:
-      - NODE_ID= 1
-      - CLI_LOG_LEVEL= INFO
-      - PYTHONPATH= /app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+      - NODE_ID="1"
+      - CLI_LOG_LEVEL=INFO
+      - PYTHONPATH=/app
     entrypoint: python3 /app/client/main.py
     networks:
       - system_network
@@ -68,12 +103,12 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "input"
-      NODE_ID: 2
-      SOURCE: ""
-      SINK: "input_exchange"
-      LOGGING_LEVEL: INFO
-      PYTHONPATH: /app
+      - NODE_NAME:"input"
+      - NODE_ID="2"
+      - SOURCE=""
+      - SINK=""
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
 
   output:
     container_name: output
@@ -86,10 +121,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "output"
-      NODE_ID: 3
-      SOURCE: "response_exchange"
-      SINK: ""
+      - NODE_NAME="output"
+      - NODE_ID="3"
+      - SOURCE="response_exchange"
+      - SINK=""
 
   platformreducer:
     container_name: platformreducer
@@ -102,10 +137,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "platformreducer"
-      NODE_ID: 4
-      SOURCE: "platformcounter_exchange"
-      SINK: "response_exchange"
+      - NODE_NAME="platformreducer"
+      - NODE_ID="4"
+      - SOURCE="CountByPlatform"
+      - SINK=""
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
@@ -128,10 +163,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: "groupertopreviewspositiveindie"
-      NODE_ID: 5
-      SOURCE: ""
-      SINK: ""
+      - NODE_NAME="groupertopreviewspositiveindie"
+      - NODE_ID="5"
+      - SOURCE=""
+      - SINK=""
       
 
   # gamein90thpercentile:
@@ -163,10 +198,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      NODE_NAME: {nombre_servicio.lower()}{"_"}{i}
-      NODE_ID: {id}
-      SOURCE: {get_source(nombre_servicio.lower())}
-      SINK: {nombre_servicio.lower()}{"_exchange"}
+      - NODE_NAME="{nombre_servicio.lower()}{"_"}{i}"
+      - NODE_ID="{id}"
+      - SOURCE={get_source(nombre_servicio.lower())}
+      - SINK={get_sink(nombre_servicio.lower())}
 """
         return servicios
 
@@ -177,7 +212,8 @@ services:
     client_services += generar_servicios("select","selectQ2345", select_q2345)
     client_services += generar_servicios("filters","filterGender", filter_gender)
     client_services += generar_servicios("filters","filterDecade", filter_decade)
-    client_services += generar_servicios("select","selectIDName", select_id_name)
+    client_services += generar_servicios("select","SelectIDNameIndie", select_id_name_indie)
+    client_services += generar_servicios("select","SelectIDNameAction", select_id_name_action)
     client_services += generar_servicios("select","selectQ345", select_q345)
     client_services += generar_servicios("filters","filterScorePositive", filter_score_positive)
     client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)
@@ -203,13 +239,13 @@ networks:
     print(f"{output_file} generado con los siguientes parámetros:")
     print(f"FilterBasic: {filter_basic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
           f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade: {filter_decade}, "
-          f"SelectIDName: {select_id_name}, SelectQ345: {select_q345}, "
+          f"SelectIDNameIndie: {select_id_name_indie}, SelectIDNameAction: {select_id_name_indie}, SelectQ345: {select_q345}, "
           f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
           f"FilterScoreXPositives: {filter_score_X_positives}, FilterScoreNegative: {filter_score_negative}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 14:
-        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade> <SelectIDName> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
+    if len(sys.argv) != 15:
+        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade> <SelectIDNameIndie> <SelectIDNameAction> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
         sys.exit(1)
 
     # Capturar los parámetros desde la línea de comandos
