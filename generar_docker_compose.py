@@ -1,5 +1,21 @@
 import sys
 
+def get_source(service_name):
+    if service_name == "filterbasic":
+        return "input_exchange"
+    elif service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
+        return "filterbasic_exchange"
+    elif service_name == "platformcounter":
+        return "selectq1_exchange"
+    elif service_name == "filtergender":
+        return "selectq2345_exchange"
+    elif service_name == "filterdecade" or service_name == "selectidname":
+        return "filtergender_exchange"
+    elif service_name == "filterreviewenglish" or service_name == "filterscorexpositive" or service_name == "filterscorenegative":
+        return "selectq345_exchange"
+    else:
+        return "ERROR"
+
 def generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender,
                            filter_decade, select_id_name, select_q345, filter_score_positive,
                            filter_review_english, filter_score_X_positives, filter_score_negative):
@@ -9,12 +25,37 @@ version: '3.8'
 services:
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3-management
+    image: rabbit:latest
     ports:
       - "5672:5672"  # Puerto para conexion con RabbitMQ
       - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
-      - testing_net
+      - system_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"] # -f hace q curl falle silenciosamente si la web no funciona
+      interval: 10s #verifica salud de rabbit each 10 s
+      timeout: 5s # si rabbit no responde en 5s falla 
+      retries: 10 # luego de 10 intentos => no es saludable
+
+  client1:
+    container_name: client1
+    image: client:latest
+    volumes:
+      - ./data/games/games.csv:/data/games.csv
+      - ./data/reviews/dataset.csv:/data/dataset.csv
+    environment:
+      - NODE_ID= 1
+      - CLI_LOG_LEVEL= INFO
+      - PYTHONPATH= /app  # le decimos a python que incluya /app para buscar paquetes asi podra encontrar el paquete client (/app/client). 
+    entrypoint: python3 /app/client/main.py
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado    
 
   input:
     container_name: input
@@ -22,9 +63,17 @@ services:
       context: .
       dockerfile: system/controllers/input/Dockerfile
     networks:
-      - testing_net
+      - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: "input"
+      NODE_ID: 2
+      SOURCE: ""
+      SINK: "input_exchange"
+      LOGGING_LEVEL: INFO
+      PYTHONPATH: /app
 
   output:
     container_name: output
@@ -32,9 +81,15 @@ services:
       context: .
       dockerfile: system/controllers/output/Dockerfile
     networks:
-      - testing_net
+      - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: "output"
+      NODE_ID: 3
+      SOURCE: "response_exchange"
+      SINK: ""
 
   platformreducer:
     container_name: platformreducer
@@ -42,9 +97,15 @@ services:
       context: .
       dockerfile: system/controllers/groupers/platformCounter/Dockerfile
     networks:
-      - testing_net
+      - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: "platformreducer"
+      NODE_ID: 4
+      SOURCE: "platformcounter_exchange"
+      SINK: "response_exchange"
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
@@ -52,7 +113,7 @@ services:
   #     context: .
   #     dockerfile: sortertop10averageplaytime/Dockerfile
   #   networks:
-  #     - testing_net
+  #     - system_network
   #   depends_on:
   #     - rabbitmq
 
@@ -62,9 +123,16 @@ services:
       context: .
       dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
     networks:
-      - testing_net
+      - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: "groupertopreviewspositiveindie"
+      NODE_ID: 5
+      SOURCE: ""
+      SINK: ""
+      
 
   # gamein90thpercentile:
   #   container_name: gamein90thpercentile
@@ -72,7 +140,7 @@ services:
   #     context: .
   #     dockerfile: system/controllers/gamein90thpercentile/Dockerfile
   #   networks:
-  #     - testing_net
+  #     - system_network
   #   depends_on:
   #     - rabbitmq
 """
@@ -80,7 +148,9 @@ services:
     # Función para generar servicios
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
+        id = 5
         for i in range(1, int(cantidad) + 1):
+            id += 1
             servicios += f"""
   {nombre_servicio.lower()}{"_"}{i}:
     container_name: {nombre_servicio.lower()}{"_"}{i}
@@ -88,9 +158,15 @@ services:
       context: .
       dockerfile: system/controllers/{tipo_servicio}/{nombre_servicio}/Dockerfile
     networks:
-      - testing_net
+      - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: {nombre_servicio.lower()}{"_"}{i}
+      NODE_ID: {id}
+      SOURCE: {get_source(nombre_servicio.lower())}
+      SINK: {nombre_servicio.lower()}{"_exchange"}
 """
         return servicios
 
@@ -110,7 +186,7 @@ services:
 
     networks = """
 networks:
-  testing_net:
+  system_network:
     ipam:
       driver: default
       config:
