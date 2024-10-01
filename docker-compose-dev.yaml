@@ -68,6 +68,26 @@ services:
       input:
         condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
 
+  #platform counter
+  platformcounter_1:
+    container_name: platformcounter_1
+    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_NAME: platformcounter_1
+      NODE_ID: 6
+      SOURCE: selectq1_exchange
+      SINK: platformcounter_exchange
+      PYTHONPATH: /app
+
+
 
   #Input de kevin 
   #input:
@@ -172,22 +192,6 @@ services:
       NODE_ID: 6
       SOURCE: input_exchange
       SINK: filterbasic_exchange
-
-  platformcounter_1:
-    container_name: platformcounter_1
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      NODE_NAME: platformcounter_1
-      NODE_ID: 6
-      SOURCE: selectq1_exchange
-      SINK: platformcounter_exchange
 
   selectq2345_1:
     container_name: selectq2345_1

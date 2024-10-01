@@ -1,5 +1,5 @@
 import logging
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, OPERATION_TYPE_GAMES_DTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, OPERATION_TYPE_GAMES_DTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
 OPERATION_TYPE_STR = 27
 
@@ -11,8 +11,8 @@ class BrokerSerializer:
                          OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO}
 
     def serialize(self, message):
-        logging.info(f" Serialize: 🍎  Type: {type(message).__name__}")
         type_message = type(message).__name__
+        logging.info(f" Serialize: 🍎  Type: {type_message}")
         return self.command_serialize[type_message](message)
 
     def deserialize(self, message):
@@ -39,6 +39,12 @@ class BrokerSerializer:
         game_bytes = bytearray()
         game_bytes.extend(gameDTO.operation_type.to_bytes(1, byteorder='big'))
         # Preguntar segun el state games enviar q atributos y que no. 
+        if state_games == STATE_PLATFORM:
+            game_bytes.extend(gameDTO.windows.to_bytes(1, byteorder='big'))
+            game_bytes.extend(gameDTO.mac.to_bytes(1, byteorder='big'))
+            game_bytes.extend(gameDTO.linux.to_bytes(1, byteorder='big'))
+            return game_bytes
+        
         game_bytes.extend(self.serialize_str(gameDTO.app_id))
         game_bytes.extend(self.serialize_str(gameDTO.name))
         game_bytes.extend(self.serialize_str(gameDTO.release_date))
@@ -88,6 +94,15 @@ class BrokerSerializer:
     def deserialize_gameDTO(self, data, offset, state_games:int):
         operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        if state_games == STATE_PLATFORM:
+            windows = int.from_bytes(data[offset:offset+1], byteorder='big')
+            offset += 1
+            mac = int.from_bytes(data[offset:offset+1], byteorder='big')
+            offset += 1
+            linux = int.from_bytes(data[offset:offset+1], byteorder='big')
+            offset += 1
+            return GameDTO(windows =windows, mac =mac, linux =linux), offset
+        
         app_id, offset = self.deserialize_str(data, offset)
         name, offset = self.deserialize_str(data, offset)
         release_date, offset = self.deserialize_str(data, offset)

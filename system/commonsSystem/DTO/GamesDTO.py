@@ -2,6 +2,7 @@ import logging
 from system.commonsSystem.DTO.GameDTO import GameDTO
 OPERATION_TYPE_GAMES_DTO = 2
 STATE_GAMES_INITIAL = 1
+STATE_PLATFORM = 2
 
 class GamesDTO:
     def __init__(self, client_id:int, state_games:int,  games_raw =[], games_dto =[]):
@@ -25,3 +26,4 @@ class GamesDTO:
     def show_games_dto(self):
         logging.info(f"action: view status GamesDTO | operation_type: {self.operation_type} | client_id: {self.client_id}" +
                      f"| size_games_dto: {len(self.games_dto)} result: success ✅")
+                     

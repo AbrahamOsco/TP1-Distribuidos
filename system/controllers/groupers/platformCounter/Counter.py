@@ -6,6 +6,19 @@ class Counter(Node):
     def __init__(self):
         super().__init__()
         self.reset_counter()
+        self.broker.create_exchange(name='selectq1_to_platform_counter', exchange_type='direct')
+        queue_name = self.broker.create_queue(durable =True, callback = self.handler_callback())
+        self.broker.bind_queue(exchange_name='selectq1_to_platform_counter', queue_name =queue_name, binding_key='sq1.pc')
+
+    def handler_callback(self):
+        def handler_message(ch, method, properties, body):
+            result = self.broker.get_message(body)
+            for game in result.games_dto:
+                logging.info(f"Win: {game.windows} Linux: {game.linux}, Mac: {game.mac} ⏰ 🧮 🚡 ")
+            self.process_data(result)
+            self.pre_eof_actions()
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        return handler_message
 
     def reset_counter(self):
         self.result = {
