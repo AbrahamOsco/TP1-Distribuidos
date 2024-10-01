@@ -8,7 +8,7 @@ class EOFDTO:
 
     def from_string(data):
         data = data.split("|")
-        return EOFDTO(data[1], data[2] == 1)
+        return EOFDTO(data[1], bool(int(data[2])))
     
     def is_confirmation(self):
         return self.confirmation

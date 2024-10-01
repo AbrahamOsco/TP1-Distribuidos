@@ -6,7 +6,6 @@ OPERATION_REVIEW_RAW = 2
 
 FORMAT_ENCODED = "utf-8"
 
-
 class Protocol:
     
     def __init__(self, socket):

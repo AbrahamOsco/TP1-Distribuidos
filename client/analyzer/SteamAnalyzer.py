@@ -9,8 +9,8 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name='games', batch_size=3)
-        self.review_reader = FileReader(file_name='reviews', batch_size=3)
+        self.game_reader = FileReader(file_name='games', batch_size=5)
+        self.review_reader = FileReader(file_name='reviews', batch_size=5)
         self.run()
 
     def initialize_config(self):

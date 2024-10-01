@@ -1,10 +1,10 @@
 import logging
 import os
-from commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 
 class Grouper(Node):
     def __init__(self):
-        super()
+        super().__init__()
         self.reset_list()
         self.top_size = os.getenv("TOP_SIZE")
 

@@ -1,11 +1,11 @@
 import logging
 import os
-from commonsSystem.node.node import Node
-from commonsSystem.DTO.GameDTO import GameDTO
+from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.GameDTO import GameDTO
 
 class Filter(Node):
     def __init__(self):
-        super()
+        super().__init__()
         self.decade = int(os.getenv("DECADE"))
 
     def is_correct_decade(self, date):

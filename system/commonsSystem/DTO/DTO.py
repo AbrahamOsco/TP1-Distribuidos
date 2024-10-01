@@ -1,6 +1,6 @@
-from EOFDTO import EOFDTO
-from GameDTO import GameDTO
-from ReviewDTO import ReviewDTO
+from system.commonsSystem.DTO.EOFDTO import EOFDTO
+from system.commonsSystem.DTO.GameDTO import GameDTO
+from system.commonsSystem.DTO.ReviewDTO import ReviewDTO
 
 def getDTO(data):
     if "EOF" in data:
