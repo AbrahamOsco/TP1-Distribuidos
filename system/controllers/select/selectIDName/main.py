@@ -1,4 +1,4 @@
-"""from Select import Select
+from Select import Select
 import signal
 
 def main():
@@ -7,4 +7,4 @@ def main():
     select.run()
 
 if __name__ == "__main__":
-    main()"""
+    main()

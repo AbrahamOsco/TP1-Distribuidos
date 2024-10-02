@@ -26,11 +26,9 @@ class FileReader:
                 if self.bytes_read > self.usage_limit:
                     self.close()
                     break
-                data_raw = next(self.reader) #retorn a list of string ej: ['123232', 'mario bros', '2022', ...]
-                total_size_raw = 0 
-                for element in data_raw:
-                    total_size_raw += len(element)
-                self.bytes_read += (total_size_raw + len(data_raw)) # Sumo bytes de cada elemento de la lista, comas y \n.
+                data_raw = next(self.reader)
+                total_size_raw = sum(len(element) for element in data_raw)
+                self.bytes_read += (total_size_raw + len(data_raw))
                 if self.fix_header_game == False and self.file_name == 'games':
                     data_raw.insert(INDEX_TO_FIX_HEADER, 'Unknown') # add a new column to synchronize the header
                     self.fix_header_game = True

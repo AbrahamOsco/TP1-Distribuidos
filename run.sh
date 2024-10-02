@@ -14,6 +14,5 @@ docker build -f ./system/controllers/groupers/platformCounter/Dockerfile -t "pla
 #docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertopreviewspositiveindie:latest" .
 #docker build -f ./system/controllers/groupers/grouperTopAveragePlaytime/Dockerfile -t "groupertopaverageplaytime:latest" .
 docker compose -f docker-compose-dev.yaml up -d
-docker compose -f docker-compose-dev.yaml logs -f
 #docker compose -f docker-compose-dev.yaml down -t 7
 #docker compose -f docker-compose-dev.yaml up

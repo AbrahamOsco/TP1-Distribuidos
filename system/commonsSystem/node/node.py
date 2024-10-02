@@ -1,4 +1,4 @@
-"""import logging
+import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
@@ -15,7 +15,9 @@ class Node:
         self.node_id = os.getenv("NODE_ID")
         self.source = os.getenv("SOURCE").split(',')
         self.source_key = os.getenv("SOURCE_KEY", "default")
+        self.source_type = os.getenv("SOURCE_TYPE", "direct")
         self.sink = os.getenv("SINK")
+        self.sink_type = os.getenv("SINK_TYPE", "direct")
         self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
         self.clients = []
         self.clients_pending_confirmations = []
@@ -26,16 +28,16 @@ class Node:
     def initialize_queues(self):
         ## Source and destination for all workers
         for source in self.source:
-            self.broker.create_queue(name=source, callback=self.process_queue_message)
-            self.broker.create_exchange(exchange_type="direct", name=source)
-            self.broker.bind_queue(queue_name=source, exchange_name=source, binding_key=self.source_key)
-        self.broker.create_exchange(exchange_type="direct", name=self.sink)
+            self.broker.create_source(name=source, callback=self.process_queue_message)
+            self.broker.create_sink(type=self.source_type, name=source)
+            self.broker.bind_queue(queue_name=source, sink=source, binding_key=self.source_key)
+        self.broker.create_sink(type=self.sink_type, name=self.sink)
         if self.amount_of_nodes < 2:
             return
         ## Fanout for EOFs
-        eof_queue = self.broker.create_queue(callback=self.read_nodes_eofs)
-        self.broker.create_exchange(exchange_type="fanout", name=self.node_name + "_eofs")
-        self.broker.bind_queue(queue_name=eof_queue, exchange_name=self.node_name + "_eofs")
+        eof_queue = self.broker.create_source(callback=self.read_nodes_eofs)
+        self.broker.create_sink(type="fanout", name=self.node_name + "_eofs")
+        self.broker.bind_queue(queue_name=eof_queue, sink=self.node_name + "_eofs")
 
     def initialize_config(self):
         self.config_params = {}
@@ -50,10 +52,10 @@ class Node:
         )
 
     def send_eof(self, client):
-        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False), routing_key='default')
+        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).serialize(), routing_key='default')
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client,True))
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client,True).serialize())
 
     def check_confirmations(self, client):
         self.confirmations += 1
@@ -123,18 +125,18 @@ class Node:
         self.broker.close()
     
     def pre_eof_actions(self):
-         This method can be implemented by the child class 
+        """ This method can be implemented by the child class 
          Send the result of the processing to the next node 
-         Will be executed when receiving an EOF
+         Will be executed when receiving an EOF """
         self.send_result()
 
     def send_result(self):
-        This method should be implemented by the child class 
+        """This method should be implemented by the child class 
         Send the result of the processing to the next node 
-        Called by pre_eof_actions
+        Called by pre_eof_actions"""
         pass
 
     
     def process_data(self, data):
         pass
-        self.broker.close()"""
+        self.broker.close()

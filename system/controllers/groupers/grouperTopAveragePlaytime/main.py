@@ -1,4 +1,4 @@
-"""from Grouper import Grouper
+from Grouper import Grouper
 import signal
 
 def main():
@@ -7,4 +7,4 @@ def main():
     grouper.run()
 
 if __name__ == "__main__":
-    main()"""
+    main()

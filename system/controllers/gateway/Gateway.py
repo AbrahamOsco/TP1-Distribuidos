@@ -1,16 +1,12 @@
-from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
-from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
+from common.DTO.GamesRawDTO import OPERATION_TYPE_GAMES_RAW
+from common.DTO.ReviewsRawDTO import OPERATION_TYPE_REVIEWS_RAW
 from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
-from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
-from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.broker.Broker import Broker
 import logging
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
-
-#FILTERBASIC_INPUT = "filterbasic.input"
-QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 
 class Gateway:
     def __init__(self):
@@ -20,10 +16,10 @@ class Gateway:
         self.review_indexes = { 'app_id':0, 'review_text':0, 'review_score':0 }
         self.game_index_init= False
         self.review_index_init= False
+        self.sink = os.getenv("SINK")
         self.broker = Broker()
-        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True)
-        #self.broker.create_exchange(name =FILTERBASIC_INPUT, exchange_type='direct')
-        self.socket_accepter = Socket(port =12345)
+        self.broker.create_sink(type='topic', name=self.sink)
+        self.socket_accepter = Socket(port=12345)
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -32,20 +28,21 @@ class Gateway:
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
-        self.accept_a_connection()
-        logging.info(f"action: Gateway started | result: sucess ✅")
         while True:
-            raw_dto = self.protocol.recv_data_raw()
-            self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
-            if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
-                games_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
-                                                games_raw =raw_dto.data_raw, indexes = self.game_indexes)
-                self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = games_index_dto.serialize())
-            
-            elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-                review_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
-                                                reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
-                self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = review_index_dto.serialize())
+            self.accept_a_connection()
+            logging.info(f"action: Gateway started | result: sucess ✅")
+            while True:
+                raw_dto = self.protocol.recv_data_raw()
+                self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
+                if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
+                    games_dto = GamesDTO(client_id =raw_dto.client_id,
+                                                    games_raw =raw_dto.data_raw, indexes = self.game_indexes)
+                    self.broker.public_message(sink=self.sink, message = games_dto.serialize(), routing_key="games")
+                
+                # elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
+                #     review_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
+                #                                     reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
+                #     self.broker.public_message(sink=self.sink, message = review_index_dto.serialize())
             
     def initialize_indexes(self, operation_type, list_items):
         if operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == True:

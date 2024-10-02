@@ -1,4 +1,4 @@
-"""from system.commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import STATE_PLATFORM
 
 class Select(Node):
@@ -7,7 +7,7 @@ class Select(Node):
 
     def send_games(self, data):
         data.set_state(STATE_PLATFORM)
-        self.broker.public_message(exchange_name=self.sink, message=data)
+        self.broker.public_message(exchange_name=self.sink, message=data.serialize())
 
     def process_data(self, data):
-        self.send_games(data)"""
+        self.send_games(data)

@@ -18,7 +18,7 @@ image_exists() {
 
 # Lista de las imágenes que se deben verificar
 images=("rabbit:latest" "client:latest" "gateway:latest" \
-        "filterbasic:latest" "selectq1:latest" "platformcounter:latest" \
+        "selectq1:latest" "platformcounter:latest" \
         "selectq2345:latest" "filtergender:latest" "filterdecade:latest" \
         "selectidnameindie:latest" "selectidnameaction:latest" "selectq345:latest" \
         "filterscorepositive:latest" "filterreviewenglish:latest" "filterscorexpositives:latest" \
@@ -26,7 +26,7 @@ images=("rabbit:latest" "client:latest" "gateway:latest" \
 
 # Rutas específicas de los Dockerfiles de cada imagen
 path_images=("system/rabbitmq" "client" "system/controllers/gateway"\
-             "system/controllers/filters/filterBasic" "system/controllers/select/selectQ1" "system/controllers/groupers/platformCounter" \
+             "system/controllers/select/selectQ1" "system/controllers/groupers/platformCounter" \
              "system/controllers/select/selectQ2345" "system/controllers/filters/filterGender" "system/controllers/filters/filterDecade" \
              "system/controllers/select/selectIDNameIndie" "system/controllers/select/selectIDNameAction" "system/controllers/select/selectQ345" \
              "system/controllers/filters/filterScorePositive" "system/controllers/filters/filterReviewEnglish" "system/controllers/filters/filterScoreXPositives" \
@@ -65,7 +65,6 @@ function solicitar_numero_entero() {
 }
 
 # Solicitar las cantidades para cada tipo de servicio
-NUM_FILTER_BASIC=$(solicitar_numero_entero "Ingrese la cantidad de FilterBasic: ")
 NUM_SELECT_Q1=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ1: ")
 NUM_PLATFORM_COUNTER=$(solicitar_numero_entero "Ingrese la cantidad de PlatformCounter: ")
 NUM_SELECT_Q2345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ2345: ")
@@ -80,7 +79,6 @@ NUM_FILTER_SCORE_X_POSITIVES=$(solicitar_numero_entero "Ingrese la cantidad de F
 NUM_FILTER_SCORE_NEGATIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScoreNegative: ")
 
 echo "Nombre del archivo de salida: $OUTPUT_FILE"
-echo "Cantidad de FilterBasic: $NUM_FILTER_BASIC"
 echo "Cantidad de SelectQ1: $NUM_SELECT_Q1"
 echo "Cantidad de PlatformCounter: $NUM_PLATFORM_COUNTER"
 echo "Cantidad de SelectQ2345: $NUM_SELECT_Q2345"
@@ -95,8 +93,7 @@ echo "Cantidad de FilterScoreXPositives: $NUM_FILTER_SCORE_X_POSITIVES"
 echo "Cantidad de FilterScoreNegative: $NUM_FILTER_SCORE_NEGATIVE"
 
 # Llamar al script de Python para generar el archivo
-python generar_docker_compose.py $OUTPUT_FILE \
-    $NUM_FILTER_BASIC \
+python3 generar_docker_compose.py $OUTPUT_FILE \
     $NUM_SELECT_Q1 \
     $NUM_PLATFORM_COUNTER \
     $NUM_SELECT_Q2345 \

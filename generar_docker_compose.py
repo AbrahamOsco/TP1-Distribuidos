@@ -1,9 +1,7 @@
 import sys
 
 def get_source(service_name):
-    if service_name == "filterbasic":
-        return "DataRaw"
-    elif service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
+    if service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
         return "DataParsed"
     elif service_name == "platformcounter":
         return "GamesPlatform"
@@ -29,6 +27,13 @@ def get_source(service_name):
         return "ClientsResponse"
     else:
         return "ERROR"
+
+def get_source_key(service_name):
+    if service_name == "selectq1" or service_name == "selectq2345":
+        return "games"
+    if service_name == "selectq345":
+        return "reviews"
+    return "default"
 
 def get_sink(service_name):
     if service_name == "gateway":
@@ -123,20 +128,15 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME:"gateway"
-      - NODE_ID=2
-      - SOURCE=""
-      - SINK=""
+      - NODE_ID=1
+      - SOURCE="output"
+      - SINK="input"
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_NEEDED=1
-      - AMOUNT_OF_NODES=1
-      - TOP_SIZE=5
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
-        id = 5
         for i in range(1, int(cantidad) + 1):
-            id += 1
             servicios += f"""
   {nombre_servicio.lower()}{"_"}{i}:
     container_name: {nombre_servicio.lower()}{"_"}{i}
@@ -150,12 +150,13 @@ services:
         condition: service_healthy
     environment:
       - NODE_NAME="{nombre_servicio.lower()}{"_"}{i}"
-      - NODE_ID={id}
+      - NODE_ID={i}
       - SOURCE={get_source(nombre_servicio.lower())}
+      - SOURCE_KEY={get_source_key(nombre_servicio.lower())}
       - SINK={get_sink(nombre_servicio.lower())}
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_NEEDED={cantidad}
+      - AMOUNT_NEEDED=5000
       - DECADE=2010
       - AMOUNT_OF_NODES={cantidad}
       - GENDERS="Action,Indie"
@@ -164,7 +165,6 @@ services:
         return servicios
 
     client_services = generar_servicios("select","selectQ1", select_q1)
-    client_services += generar_servicios("filters","filterBasic", filter_basic)
     client_services += generar_servicios("groupers","platformCounter", platform_counter)
     client_services += generar_servicios("select","selectQ2345", select_q2345)
     client_services += generar_servicios("filters","filterGender", filter_gender)
@@ -192,15 +192,15 @@ networks:
         f.write(docker_compose_content)
 
     print(f"{output_file} generado con los siguientes parámetros:")
-    print(f"FilterBasic: {filter_basic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
+    print(f"SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
           f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade: {filter_decade}, "
           f"SelectIDNameIndie: {select_id_name_indie}, SelectIDNameAction: {select_id_name_action}, SelectQ345: {select_q345}, "
           f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
           f"FilterScoreXPositives: {filter_score_X_positives}, FilterScoreNegative: {filter_score_negative}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 15:
-        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade> <SelectIDNameIndie> <SelectIDNameAction> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
+    if len(sys.argv) != 14:
+        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade> <SelectIDNameIndie> <SelectIDNameAction> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
         sys.exit(1)
 
     generar_docker_compose(*sys.argv[1:])
