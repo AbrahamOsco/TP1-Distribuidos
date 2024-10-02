@@ -3,6 +3,9 @@ import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 
+class UnfinishedBusinessException(Exception):
+    pass
+
 class Node:
     def __init__(self):
         self.initialize_config()
@@ -10,7 +13,7 @@ class Node:
         self.processes = []
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
-        self.source = os.getenv("SOURCE")
+        self.source = os.getenv("SOURCE").split(',')
         self.source_key = os.getenv("SOURCE_KEY", "default")
         self.sink = os.getenv("SINK")
         self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
@@ -22,9 +25,10 @@ class Node:
 
     def initialize_queues(self):
         ## Source and destination for all workers
-        self.broker.create_queue(name=self.source, callback=self.process_queue_message)
-        self.broker.create_exchange(exchange_type="direct", name=self.source)
-        self.broker.bind_queue(queue_name=self.source, exchange_name=self.source, binding_key=self.source_key)
+        for source in self.source:
+            self.broker.create_queue(name=source, callback=self.process_queue_message)
+            self.broker.create_exchange(exchange_type="direct", name=source)
+            self.broker.bind_queue(queue_name=source, exchange_name=source, binding_key=self.source_key)
         self.broker.create_exchange(exchange_type="direct", name=self.sink)
         if self.amount_of_nodes < 2:
             return
@@ -106,6 +110,9 @@ class Node:
                 self.check_new_client(data)
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
+        except UnfinishedBusinessException as e:
+            logging.info(f"action: error | Unfinished Business Exception")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
 
