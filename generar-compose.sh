@@ -6,6 +6,46 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
+# Función para verificar si una imagen existe
+image_exists() {
+  image_name=$1
+  if [ "$(docker images -q $image_name)" ]; then
+    return 0 # La imagen existe
+  else
+    return 1 # La imagen no existe
+  fi
+}
+
+# Lista de las imágenes que se deben verificar
+images=("client:latest" "input:latest" \
+        "filterbasic:latest" "selectq1:latest" "platformcounter:latest" \
+        "selectq2345:latest" "filtergender:latest" "filterdecade:latest" \
+        "selectidnameindie:latest" "selectidnameaction:latest" "selectq345:latest" \
+        "filterscorepositive:latest" "filterreviewenglish:latest" "filterscorexpositives:latest" \
+        "filterscorenegative:latest")
+
+# Rutas específicas de los Dockerfiles de cada imagen
+path_images=("client" "system/controllers/input"\
+             "system/controllers/filters/filterBasic" "system/controllers/select/selectQ1" "system/controllers/groupers/platformCounter" \
+             "system/controllers/select/selectQ2345" "system/controllers/filters/filterGender" "system/controllers/filters/filterDecade" \
+             "system/controllers/select/selectIDNameIndie" "system/controllers/select/selectIDNameAction" "system/controllers/select/selectQ345" \
+             "system/controllers/filters/filterScorePositive" "system/controllers/filters/filterReviewEnglish" "system/controllers/filters/filterScoreXPositives" \
+             "system/controllers/filters/filterScoreNegative")
+
+# Verificar si las imágenes existen, y si no, construirlas desde la ruta correspondiente
+for i in "${!images[@]}"; do
+  image="${images[$i]}"
+  path="${path_images[$i]}"
+  
+  if ! image_exists "$image"; then
+    echo "La imagen $image no existe. Creando desde $path..."
+    docker build -t "$image" -f "$path"/Dockerfile .
+
+  else
+    echo "La imagen $image ya existe."
+  fi
+done
+
 # Parámetro de salida
 OUTPUT_FILE=$1
 
