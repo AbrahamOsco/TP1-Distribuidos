@@ -1,4 +1,4 @@
-from system.commonsSystem.node.node import Node
+"""from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import STATE_PLATFORM
 
 class Select(Node):
@@ -10,4 +10,4 @@ class Select(Node):
         self.broker.public_message(exchange_name=self.sink, message=data)
 
     def process_data(self, data):
-        self.send_games(data)
+        self.send_games(data)"""

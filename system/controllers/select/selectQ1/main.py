@@ -1,10 +1,7 @@
-from Select import Select
-import signal
+from system.controllers.select.selectQ1.SelectQ1 import SelectQ1
 
 def main():
-    select = Select()
-    signal.signal(signal.SIGTERM, lambda _n,_f: select.stop())
-    select.run()
+    select_q1 = SelectQ1()
+    select_q1.run()
 
-if __name__ == "__main__":
-    main()
+main()

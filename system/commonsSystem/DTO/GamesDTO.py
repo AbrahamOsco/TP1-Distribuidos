@@ -24,29 +24,6 @@ class GamesDTO(DTO):
                 avg_playtime_forever =game_raw[6], genres =game_raw[7])
             self.games_dto.append(a_game_dto)
 
-<<<<<<< HEAD
-    def set_state(self, state):
-        self.state_games = state
-
-    def get_client(self):
-        return self.client_id
-
-    def is_EOF(self):
-        return False
-    
-    def get_platform_count(self):
-        count = {
-            "windows": 0,
-            "mac": 0,
-            "linux": 0
-        }
-        for game in self.games_dto:
-            count["windows"] += game.windows
-            count["linux"] += game.linux
-            count["mac"] += game.mac
-        return count
-    
-=======
     def serialize(self):
         games_bytes = bytearray()
         games_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
@@ -74,9 +51,3 @@ class GamesDTO(DTO):
             some_games_dto.append(game)
         gamesDTO = GamesDTO(state_games =state_games, client_id =client_id, games_dto =some_games_dto)
         return gamesDTO, offset
-
->>>>>>> 15427c4 (advances)
-    def show_games_dto(self):
-        logging.info(f"action: view status GamesDTO | operation_type: {self.operation_type} | client_id: {self.client_id}" +
-                     f"| size_games_dto: {len(self.games_dto)} result: success ✅")
-                     
