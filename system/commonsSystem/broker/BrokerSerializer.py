@@ -1,6 +1,7 @@
 import logging
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
+from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
@@ -9,13 +10,15 @@ class BrokerSerializer:
         self.command_serialize = {
             'str': self.serialize_str,
             'GamesDTO': self.serialize_GamesDTO,
-            'PlatformDTO': self.serialize_PlatformDTO
+            'PlatformDTO': self.serialize_PlatformDTO,
+            'GenreDTO': self.serialize_GenreDTO,
         }
         self.command_deserialize = {
             OperationType.OPERATION_TYPE_STR: self.deserialize_str,
             OperationType.OPERATION_TYPE_GAME: self.deserialize_gameDTO,
             OperationType.OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
-            OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO
+            OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO,
+            OperationType.OPERATION_TYPE_GENRE_DTO: self.deserialize_genreDTO
         }
 
     def serialize(self, message):
@@ -33,6 +36,17 @@ class BrokerSerializer:
             logging.error(f"Unknown operation type: {operation_type}")
 
         return result
+
+
+    def serialize_GenreDTO(self, genreDTO: GenreDTO):
+        genre_bytes = bytearray()
+        genre_bytes.extend(genreDTO.operation_type.value.to_bytes(1, byteorder='big'))
+        genre_bytes.extend(genreDTO.client_id.to_bytes(1, byteorder='big'))
+        genre_bytes.extend(self.serialize_str(genreDTO.name))
+        genre_bytes.extend(self.serialize_str(genreDTO.gender))
+        genre_bytes.extend(genreDTO.year.to_bytes(4, byteorder='big'))
+        genre_bytes.extend(genreDTO.average_playtime.to_bytes(4, byteorder='big'))
+        return bytes(genre_bytes)
 
     def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
         platform_bytes = bytearray()
@@ -92,6 +106,19 @@ class BrokerSerializer:
         string = data[offset:offset + string_length].decode('utf-8')
         offset += string_length
         return string, offset
+
+    def deserialize_genreDTO(self, data, offset):
+        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        name, offset = self.deserialize_str(data, offset)
+        gender, offset = self.deserialize_str(data, offset)
+        year = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
+        average_playtime = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
+        return GenreDTO(client_id=client_id, name=name, gender=gender, year=year, average_playtime=average_playtime), offset
 
     def deserialize_platformDTO(self, data, offset):
         client_id = int.from_bytes(data[offset:offset + 1], byteorder='big')
