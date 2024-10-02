@@ -27,19 +27,9 @@ class Storage(Node):
             self.status = STATUS_REVIEWING
 
     def send_result(self):
-        data = self.get_top_5()
-        logging.info(f"action: result | list: {data}")
-        self.broker.public_message(exchange_name=self.sink, message=data, routing_key="default")
-
-    def get_top_5(self):
-        return sorted(self.top_5_heap, key=lambda x: -x[0])
-    
-    def _update_heap(self, name):
-        if len(self.top_5_heap) == 5:
-            if self.data[name] > self.top_5_heap[0][0]:
-                heapq.heappushpop(self.top_5_heap, (self.data[name], name))
-        else:
-            heapq.heappush(self.top_5_heap, (self.data[name], name))
+        for app_id in self.list:
+            data = ReviewedGameDTO(app_id, self.list[app_id])
+            self.broker.public_message(exchange_name=self.sink, message=data, routing_key="default")
 
     def process_data(self, data):
         if data.is_review():
@@ -47,7 +37,6 @@ class Storage(Node):
                 raise UnfinishedBusinessException()
             if data.app_id in self.list:
                 self.list[data.app_id] += 1
-                self._update_heap(data.app_id)
         if data.is_game():
             if self.status == STATUS_REVIEWING:
                 raise UnfinishedBusinessException()
