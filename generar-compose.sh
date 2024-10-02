@@ -109,3 +109,6 @@ python generar_docker_compose.py $OUTPUT_FILE \
     $NUM_FILTER_REVIEW_ENGLISH \
     $NUM_FILTER_SCORE_X_POSITIVES \
     $NUM_FILTER_SCORE_NEGATIVE
+
+docker compose -f docker-compose-dev.yaml up -d
+docker compose -f docker-compose-dev.yaml logs -f

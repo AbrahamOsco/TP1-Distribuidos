@@ -98,6 +98,7 @@ services:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+      - AMOUNT_NEEDED=1
     networks:
       - system_network
     restart: on-failure
@@ -121,6 +122,7 @@ services:
       - SINK=""
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+      - AMOUNT_NEEDED=1
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
@@ -144,6 +146,7 @@ services:
       - SINK={get_sink(nombre_servicio.lower())}
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+      - AMOUNT_NEEDED={cantidad}
 """
         return servicios
 
@@ -153,8 +156,8 @@ services:
     client_services += generar_servicios("select","selectQ2345", select_q2345)
     client_services += generar_servicios("filters","filterGender", filter_gender)
     client_services += generar_servicios("filters","filterDecade", filter_decade)
-    client_services += generar_servicios("select","SelectIDNameIndie", select_id_name_indie)
-    client_services += generar_servicios("select","SelectIDNameAction", select_id_name_action)
+    client_services += generar_servicios("select","selectIDNameIndie", select_id_name_indie)
+    client_services += generar_servicios("select","selectIDNameAction", select_id_name_action)
     client_services += generar_servicios("select","selectQ345", select_q345)
     client_services += generar_servicios("filters","filterScorePositive", filter_score_positive)
     client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)
