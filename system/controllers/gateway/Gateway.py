@@ -3,6 +3,7 @@ from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
 from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
 
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
@@ -52,7 +53,7 @@ class Gateway:
                 self.broker.public_message(queue_name='gateway_filterbasic', message = games_index_dto)
             else:
                 review_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
-                                                reviews_raw= raw_dto.data_raw, indexes =self.review_indexes)
+                                                reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
                 self.broker.public_message(queue_name='gateway_filterbasic', message = review_index_dto)
                 for review in raw_dto.data_raw:
                     logging.info(f"Review: 🧅 🪓 {review}")

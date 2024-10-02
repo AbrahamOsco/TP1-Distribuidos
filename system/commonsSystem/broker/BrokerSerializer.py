@@ -5,9 +5,8 @@ from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-from system.commonsSystem.DTO.PlatformDTO import PlatformDTO, OPERATION_TYPE_PLATFORM_DTO
-from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO, OPERATION_TYPE_GAMES_INDEX_DTO
-from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO, OPERATION_TYPE_REVIEWS_INDEX_DTO
+from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
+from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 
 
 OPERATION_TYPE_STR = 27
@@ -31,8 +30,8 @@ class BrokerSerializer:
             OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO,
             OperationType.OPERATION_TYPE_GENRE_DTO: self.deserialize_genreDTO,
             OperationType.OPERATION_TYPE_DECADE_DTO: self.deserialize_decadeDTO,
-            OPERATION_TYPE_GAMES_INDEX_DTO: self.deserialize_a_IndexDTO,
-            OPERATION_TYPE_REVIEWS_INDEX_DTO: self.deserialize_a_IndexDTO
+            OperationType.OPERATION_TYPE_GAMES_INDEX_DTO: self.deserialize_a_IndexDTO,
+            OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO: self.deserialize_a_IndexDTO
         }
 
     def serialize(self, message):
@@ -73,7 +72,7 @@ class BrokerSerializer:
 
     def serialize_a_IndexDTO(self, aIndexDTO):
         index_bytes = bytearray()
-        index_bytes.extend(aIndexDTO.operation_type.to_bytes(1, byteorder='big'))
+        index_bytes.extend(aIndexDTO.operation_type.value.to_bytes(1, byteorder='big'))
         index_bytes.extend(aIndexDTO.client_id.to_bytes(1, byteorder='big'))
         
         index_bytes.extend(len(aIndexDTO.data_raw).to_bytes(2, byteorder='big'))
@@ -114,9 +113,9 @@ class BrokerSerializer:
             index = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
             indexes[name] = index
-        if operation_type == OPERATION_TYPE_GAMES_INDEX_DTO:
+        if operation_type == OperationType.OPERATION_TYPE_GAMES_INDEX_DTO:
             return GamesIndexDTO(client_id=client_id, indexes=indexes, games_raw= items_raw), offset
-
+        return ReviewsIndexDTO(client_id=client_id, indexes=indexes, reviews_raw= items_raw), offset
 
     def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
         platform_bytes = bytearray()
