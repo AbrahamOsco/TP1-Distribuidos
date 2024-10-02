@@ -7,6 +7,11 @@ import os
 import time as t 
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
 
+EXCHANGE_INPUT_SELECTQ1 = "input_to_selectq1"
+RK_INPUT_SELECTQ1= "games.q1"
+RK_INPUT_SELECTQ2345= "games.q2345"
+RK_INPUT_SELECTQ345 = "reviews.raw"
+
 class Input:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
@@ -16,7 +21,7 @@ class Input:
         self.game_index_init= False
         self.review_index_init= False
         self.broker = Broker()
-        self.broker.create_exchange(name='games_reviews_input', exchange_type='direct')
+        self.broker.create_exchange(name =EXCHANGE_INPUT_SELECTQ1, exchange_type='direct')
         self.wait_for_select = False
 
     def accept_a_connection(self):
@@ -43,10 +48,15 @@ class Input:
     def send_batch_data(self, data_filtered, operation_type, client_id):
         if operation_type == OPERATION_GAME_RAW:
             gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q1', message = gamesDTO)
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='games.q2345', message = "Some data 🩹 🅰️ 🥑")
+            self.broker.public_message(exchange_name= EXCHANGE_INPUT_SELECTQ1,
+                                        routing_key =RK_INPUT_SELECTQ1, message = gamesDTO)
+            
+            self.broker.public_message(exchange_name= EXCHANGE_INPUT_SELECTQ1,
+                                        routing_key =RK_INPUT_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
+        
         elif operation_type == OPERATION_REVIEW_RAW:
-            self.broker.public_message(exchange_name='games_reviews_input', routing_key='reviews.raw', message ="Some data 🛡️ 👨‍🔧 🗡️")
+            self.broker.public_message(exchange_name= EXCHANGE_INPUT_SELECTQ1,
+                                         routing_key= RK_INPUT_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
 
     def filter_fields_item(self, operation_type, list_items):
         batch_item = []

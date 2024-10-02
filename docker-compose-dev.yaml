@@ -1,7 +1,6 @@
-
 version: '3.8'
-
 services:
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbit:latest
@@ -36,23 +35,77 @@ services:
       input:
         condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado    
 
+  # input de abraham NO LO BORRES @KEVIN 
   input:
     container_name: input
-    build:
-      context: .
-      dockerfile: system/controllers/input/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+    image: input:latest
+    entrypoint: python3 /app/system/controllers/input/main.py 
     environment:
-      - NODE_NAME:"input"
-      - NODE_ID=2
-      - SOURCE=""
-      - SINK=""
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+ #Select Q1. No borrar 
+  selectQ1:
+    container_name: selectQ1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      input:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
+
+ #Select Q1. No borrar 
+  platformcounter_1:
+    container_name: platformcounter_1
+    image: platformcounter:latest
+    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=platformcounter_1
+      - NODE_ID=6
+      - SOURCE=GamesPlatform
+      - SINK=
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      selectQ1:
+        condition: service_started  # Puede esperar simplemente a que el sistema se haya iniciado  
+
+# No tocar 
+#  platformcounter_1:
+#    container_name: platformcounter_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="platformcounter_1"
+#      - NODE_ID=6
+#      - SOURCE=GamesPlatform
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
 
   output:
     container_name: output
@@ -143,22 +196,6 @@ services:
       - SINK=
       - LOGGING_LEVEL=INFO
 
-  platformcounter_1:
-    container_name: platformcounter_1
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="platformcounter_1"
-      - NODE_ID=6
-      - SOURCE=GamesPlatform
-      - SINK=
-      - LOGGING_LEVEL=INFO
 
   selectq2345_1:
     container_name: selectq2345_1
@@ -215,7 +252,7 @@ services:
     container_name: selectidnameindie_1
     build:
       context: .
-      dockerfile: system/controllers/select/SelectIDNameIndie/Dockerfile
+      dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
     networks:
       - system_network
     depends_on:
@@ -232,7 +269,7 @@ services:
     container_name: selectidnameaction_1
     build:
       context: .
-      dockerfile: system/controllers/select/SelectIDNameAction/Dockerfile
+      dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
     networks:
       - system_network
     depends_on:
