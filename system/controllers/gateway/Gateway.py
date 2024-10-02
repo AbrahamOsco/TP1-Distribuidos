@@ -1,11 +1,17 @@
+from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
+from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
 from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
+
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
+from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
+from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
+
 from system.commonsSystem.broker.Broker import Broker
 import logging
 import os
 import time as t 
-from system.commonsSystem.protocol.ServerProtocol import ServerProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
+from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
 FILTERBASIC_INPUT = "filterbasic.input"
 RK_GATEWAY_SELECTQ1= "games.q1"
@@ -21,11 +27,12 @@ class Gateway:
         self.game_index_init= False
         self.review_index_init= False
         self.broker = Broker()
+        self.broker.create_queue(name ='gateway_filterbasic', durable = True)
         self.broker.create_exchange(name =FILTERBASIC_INPUT, exchange_type='direct')
         self.wait_for_select = False
+        self.socket_accepter = Socket(port =12345)
 
     def accept_a_connection(self):
-        self.socket_accepter = Socket(port =12345)
         logging.info("action: Waiting a client to connect | result: pending ⌚")
         self.socket_peer, addr = self.socket_accepter.accept()
         logging.info("action: Waiting a client to connect | result: success ✅")
@@ -34,37 +41,53 @@ class Gateway:
     def run(self):
         self.accept_a_connection()
         while True:
-            client_id, operation_type, list_items = self.protocol.recv_data_raw()
-            self.initialize_indexes(operation_type, list_items)
-            batch_item_filtered = self.filter_fields_item(operation_type, list_items)
-            if not self.wait_for_select:
-                t.sleep(2)
-                self.wait_for_select = True
-            self.send_batch_data(batch_item_filtered, operation_type, client_id)
+            raw_dto = self.protocol.recv_data_raw()
+            self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
+            if (raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW):
+                games_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
+                                                games_raw =raw_dto.data_raw, indexes = self.game_indexes)
+                if not self.wait_for_select:
+                    t.sleep(2)
+                    self.wait_for_select = True
+                self.broker.public_message(queue_name='gateway_filterbasic', message = games_index_dto)
+            else:
+                review_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
+                                                reviews_raw= raw_dto.data_raw, indexes =self.review_indexes)
+                self.broker.public_message(queue_name='gateway_filterbasic', message = review_index_dto)
+                for review in raw_dto.data_raw:
+                    logging.info(f"Review: 🧅 🪓 {review}")
+            
+
+            #self.initialize_indexes(operation_type, list_items)
+            #batch_item_filtered = self.filter_fields_item(operation_type, list_items)
+            #if not self.wait_for_select:
+            #    t.sleep(2)
+            #    self.wait_for_select = True
+            #self.send_batch_data(batch_item_filtered, operation_type, client_id)
     
     # for each game se cumple:  ['AppID', 'Name', 'Release date', 'Windows', 'Mac', 'Linux', 'Average playtime forever', 'Genres']
     # example: ['1659180', 'TD Worlds', 'Jan 9, 2022', 'True', 'False', 'False', '0', 'Indie,Strategy']
     
     def send_batch_data(self, data_filtered, operation_type, client_id):
-        if operation_type == OPERATION_GAME_RAW:
+        if operation_type == OPERATION_TYPE_GAMES_RAW:
             gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
-            self.broker.public_message(exchange_name= FILTERBASIC_INPUT,
+            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
                                         routing_key =RK_GATEWAY_SELECTQ1, message = gamesDTO)
             
-            self.broker.public_message(exchange_name= FILTERBASIC_INPUT,
+            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
                                         routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
         
         elif operation_type == OPERATION_REVIEW_RAW:
-            self.broker.public_message(exchange_name= FILTERBASIC_INPUT,
-                                         routing_key= RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
+            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
+                                         routing_key =RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
 
     def filter_fields_item(self, operation_type, list_items):
         batch_item = []
-        if operation_type == OPERATION_GAME_RAW:
+        if operation_type == OPERATION_TYPE_GAMES_RAW:
             for a_game in list_items:
                 basic_game = self.drop_basic_item(a_game, self.game_indexes)
                 batch_item.append(basic_game)
-        elif operation_type == OPERATION_REVIEW_RAW:
+        elif operation_type == OPERATION_TYPE_REVIEWS_RAW:
             for a_review in list_items:
                 basic_review = self.drop_basic_item(a_review, self.review_indexes)
                 batch_item.append(basic_review)
@@ -80,9 +103,9 @@ class Gateway:
         return item_basic
 
     def initialize_indexes(self, operation_type, list_items):
-        if operation_type == OPERATION_GAME_RAW and self.game_index_init == True:
+        if operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == True:
             return
-        elif operation_type == OPERATION_REVIEW_RAW and self.review_index_init == True:
+        elif operation_type == OPERATION_TYPE_REVIEWS_RAW and self.review_index_init == True:
             return
         elif self.game_index_init == False:
             for i, element in enumerate(list_items[0]):

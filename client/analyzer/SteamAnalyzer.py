@@ -2,8 +2,10 @@ import logging
 from common.utils.utils import initialize_log 
 import os
 from client.fileReader.FileReader import FileReader
+from common.DTO.GamesRawDTO import GamesRawDTO
+from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 from common.socket.Socket import Socket
-from client.protocol.ClientProtocol import ClientProtocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
+from client.protocol.ClientProtocol import ClientProtocol
 
 class SteamAnalyzer:
 
@@ -23,21 +25,24 @@ class SteamAnalyzer:
     def connect_to_server(self):
         self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
         result, msg =  self.socket.connect()
-        logging.info(f"action: connect | result: {result} | msg: {msg} 👈 ")
+        logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
         self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
 
     def run(self):
         self.connect_to_server()
-        logging.info("action: The game batches send begins | result: success | 🍄 💯")
         for i in range(3):
             some_games = self.game_reader.get_next_batch()
-            logging.info(f"action: a batch of game was sent! | result: sucess 🎮 | amount of games: {len(some_games)}")
-            self.protocol.send_data_raw(OPERATION_GAME_RAW, some_games)
-        logging.info("action: The reviews batches send begins | result: success | 📰 💯")
+            if(some_games == None):
+                break
+            self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
+        logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
+
         for j in range(3):
             some_reviews = self.review_reader.get_next_batch()
-            logging.info(f"action: a batch of review was sent! | result: sucess 💌 | amount of reviews: {len(some_reviews)}")
-            self.protocol.send_data_raw(OPERATION_REVIEW_RAW, some_reviews)
+            if(some_reviews == None):
+                break
+            self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
+        logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
 
     def get_result_from_queries(self):
         resultQuerys = self.protocol.recv_string()

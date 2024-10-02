@@ -1,4 +1,6 @@
-from common.protocol.Protocol import Protocol, OPERATION_GAME_RAW, OPERATION_REVIEW_RAW
+from common.protocol.Protocol import Protocol
+from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
+from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 
 class ServerProtocol(Protocol):
     
@@ -6,8 +8,8 @@ class ServerProtocol(Protocol):
         super().__init__(socket)  #uso super para invocar al constructor del padre. 
 
     def recv_data_raw(self):
-        client_id = self.recv_number_1_byte()
         operation_type = self.recv_number_1_byte()
+        client_id = self.recv_number_1_byte()
         list_items_raw = []
         items_amount = self.recv_number_2_bytes()
         for i in range(items_amount):
@@ -17,5 +19,7 @@ class ServerProtocol(Protocol):
                 field = self.recv_string()
                 element.append(field)
             list_items_raw.append(element)
-        return client_id, operation_type, list_items_raw
+        if operation_type == OPERATION_TYPE_GAMES_RAW:
+            return GamesRawDTO(client_id =client_id, games_raw =list_items_raw)
+        return ReviewsRawDTO(client_id =client_id, reviews_raw =list_items_raw)
     

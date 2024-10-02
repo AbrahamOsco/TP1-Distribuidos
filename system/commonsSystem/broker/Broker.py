@@ -55,7 +55,6 @@ class Broker:
     def get_message(self, message):
         return self.broker_serializer.deserialize(message)
 
-
     def start_consuming(self):
         self.channel.start_consuming()
 

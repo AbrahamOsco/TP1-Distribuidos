@@ -5,6 +5,12 @@ from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
+from system.commonsSystem.DTO.PlatformDTO import PlatformDTO, OPERATION_TYPE_PLATFORM_DTO
+from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO, OPERATION_TYPE_GAMES_INDEX_DTO
+from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO, OPERATION_TYPE_REVIEWS_INDEX_DTO
+
+
+OPERATION_TYPE_STR = 27
 
 class BrokerSerializer:
     def __init__(self):
@@ -14,14 +20,19 @@ class BrokerSerializer:
             'PlatformDTO': self.serialize_PlatformDTO,
             'GenreDTO': self.serialize_GenreDTO,
             'DecadeDTO': self.serialize_DecadeDTO,
+            'GamesIndexDTO':self.serialize_a_IndexDTO,
+            'ReviewsIndexDTO':self.serialize_a_IndexDTO,
         }
+
         self.command_deserialize = {
             OperationType.OPERATION_TYPE_STR: self.deserialize_str,
             OperationType.OPERATION_TYPE_GAME: self.deserialize_gameDTO,
             OperationType.OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
             OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO,
             OperationType.OPERATION_TYPE_GENRE_DTO: self.deserialize_genreDTO,
-            OperationType.OPERATION_TYPE_DECADE_DTO: self.deserialize_decadeDTO
+            OperationType.OPERATION_TYPE_DECADE_DTO: self.deserialize_decadeDTO,
+            OPERATION_TYPE_GAMES_INDEX_DTO: self.deserialize_a_IndexDTO,
+            OPERATION_TYPE_REVIEWS_INDEX_DTO: self.deserialize_a_IndexDTO
         }
 
     def serialize(self, message):
@@ -39,7 +50,6 @@ class BrokerSerializer:
             logging.error(f"Unknown operation type: {operation_type}")
 
         return result
-
 
     def serialize_DecadeDTO(self, decadeDTO: DecadeDTO):
         decade_bytes = bytearray()
@@ -59,6 +69,54 @@ class BrokerSerializer:
         genre_bytes.extend(genreDTO.year.to_bytes(4, byteorder='big'))
         genre_bytes.extend(genreDTO.average_playtime.to_bytes(4, byteorder='big'))
         return bytes(genre_bytes)
+
+
+    def serialize_a_IndexDTO(self, aIndexDTO):
+        index_bytes = bytearray()
+        index_bytes.extend(aIndexDTO.operation_type.to_bytes(1, byteorder='big'))
+        index_bytes.extend(aIndexDTO.client_id.to_bytes(1, byteorder='big'))
+        
+        index_bytes.extend(len(aIndexDTO.data_raw).to_bytes(2, byteorder='big'))
+        for element in aIndexDTO.data_raw:
+            index_bytes.extend(len(element).to_bytes(2, byteorder='big'))
+            for field in element:
+                index_bytes.extend(self.serialize_str(field))
+
+        index_bytes.extend(len(aIndexDTO.indexes).to_bytes(1, byteorder='big'))
+        for name, index in aIndexDTO.indexes.items():
+            index_bytes.extend(self.serialize_str(name))
+            index_bytes.extend(index.to_bytes(1, byteorder='big'))
+        return bytes(index_bytes)
+
+    def deserialize_a_IndexDTO(self, data, offset):
+        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+
+        items_raw_length = int.from_bytes(data[offset:offset+2], byteorder='big')
+        offset += 2
+        items_raw = []
+        for i in range(items_raw_length):
+            a_item_length = int.from_bytes(data[offset:offset+2], byteorder='big')
+            offset += 2
+            a_item = []
+            for j in range(a_item_length):
+                field, offset = self.deserialize_str(data, offset)
+                a_item.append(field)
+            items_raw.append(a_item)
+
+        indexes_length = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        indexes = {}
+        for i in range(indexes_length):
+            name, offset = self.deserialize_str(data, offset)
+            index = int.from_bytes(data[offset:offset+1], byteorder='big')
+            offset += 1
+            indexes[name] = index
+        if operation_type == OPERATION_TYPE_GAMES_INDEX_DTO:
+            return GamesIndexDTO(client_id=client_id, indexes=indexes, games_raw= items_raw), offset
+
 
     def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
         platform_bytes = bytearray()

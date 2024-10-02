@@ -1,9 +1,6 @@
 from common.socket.Socket import Socket
 import logging
 
-OPERATION_GAME_RAW = 1 
-OPERATION_REVIEW_RAW = 2
-
 FORMAT_ENCODED = "utf-8"
 
 class Protocol:

@@ -11,7 +11,7 @@ class Queue:
         if (self.name == ''):
             self.exclusive = True # la queue se eliminara al cerrar el channel.
         self.durable = durable
-        self.properties = self.command_properties[self.durable]
+        self.properties = pika.BasicProperties(delivery_mode=2,)  # make message persistent (quiero persistir el mensaje)
         self.routing_key = ''
 
     def set_name(self, name):
