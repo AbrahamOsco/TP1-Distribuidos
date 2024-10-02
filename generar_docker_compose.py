@@ -31,7 +31,7 @@ def get_source(service_name):
         return "ERROR"
 
 def get_sink(service_name):
-    if service_name == "input":
+    if service_name == "gateway":
         return "DataParsed"
     elif service_name == "selectq1":
         return "GamesPlatform"
@@ -108,17 +108,17 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  input:
-    container_name: input
-    image: input:latest
-    entrypoint: python3 /app/system/controllers/input/main.py
+  gateway:
+    container_name: gateway
+    image: gateway:latest
+    entrypoint: python3 /app/system/controllers/gateway/main.py
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
-      - NODE_NAME:"input"
+      - NODE_NAME:"gateway"
       - NODE_ID=2
       - SOURCE=""
       - SINK=""
