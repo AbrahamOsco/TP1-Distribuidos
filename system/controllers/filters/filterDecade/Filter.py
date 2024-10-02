@@ -1,7 +1,5 @@
-import logging
 import os
 from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.GameDTO import GameDTO
 
 class Filter(Node):
     def __init__(self):
@@ -16,7 +14,7 @@ class Filter(Node):
         return data.retain(["client", "name", "avg_playtime_forever"])
 
     def send_game(self, data):
-        self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
+        self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data))
 
     def process_data(self, data):
         if self.is_correct_decade(data.release_date):

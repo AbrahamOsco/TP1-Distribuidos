@@ -21,12 +21,9 @@ class Grouper(Node):
     
     def send_result(self):
         logging.info(f"action: result | list: {self.list}")
+        self.broker.public_message(exchange_name=self.sink, message=self.list, routing_key="default")
 
     def process_data(self, data):
-        if self.is_eof(data):
-            self.send_result()
-            self.reset_list()
-            return
         if self.has_to_be_inserted(data):
             for i in range(len(self.list)):
                 if data.reviews > self.list[i].reviews:

@@ -21,6 +21,7 @@ class Grouper(Node):
     
     def send_result(self):
         logging.info(f"action: result | list: {self.list}")
+        self.broker.public_message(exchange_name=self.sink, message=self.list, routing_key="default")
 
     def process_data(self, data):
         if self.has_to_be_inserted(data):

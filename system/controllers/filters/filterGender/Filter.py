@@ -1,6 +1,6 @@
 import os
-import logging
 from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 
 class Filter(Node):
     def __init__(self):
@@ -11,10 +11,10 @@ class Filter(Node):
         return wanted_gender in genders.split(',')
     
     def trim_data(self, data):
-        return data.retain(["client", "name", "release_date", "avg_playtime_forever"])
+        return DecadeDTO.from_genreDTO(data)
     
     def send_game(self, data, gender):
-        self.broker.public_message(exchange_name=self.sink, routing_key=gender, message=self.trim_data(data).to_string())
+        self.broker.public_message(exchange_name=self.sink, routing_key=gender, message=self.trim_data(data))
 
     def process_data(self, data):
         for gender in self.genders:
