@@ -101,13 +101,15 @@ services:
       - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
       - TOP_SIZE=5
-      - HOSTNAME="localhost"
+      - HOSTNAME=gateway
     networks:
       - system_network
     restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
+      gateway:
+        condition: service_started
 
   gateway:
     container_name: gateway
