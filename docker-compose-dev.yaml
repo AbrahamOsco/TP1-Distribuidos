@@ -50,7 +50,25 @@ services:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 
- #Select Q1. No borrar 
+  filterbasic_1:
+    container_name: filterbasic_1
+    image: filterbasic:latest
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME="filterbasic_1"
+      - NODE_ID=6
+      - SOURCE=DataRaw
+      - SINK=a
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+
   selectQ1:
     container_name: selectQ1
     image: selectq1:latest
@@ -160,22 +178,7 @@ services:
   #   depends_on:
   #     - rabbitmq
 
-  filterbasic_1:
-    container_name: filterbasic_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterBasic/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterbasic_1"
-      - NODE_ID=6
-      - SOURCE=DataRaw
-      - SINK=
-      - LOGGING_LEVEL=INFO
+
 
 
   selectq2345_1:

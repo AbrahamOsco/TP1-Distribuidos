@@ -1,10 +1,9 @@
-from Filter import Filter
+from system.controllers.filters.filterBasic.FilterBasic import FilterBasic
 import signal
 
 def main():
-    filter = Filter()
-    signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
+    filter = FilterBasic()
+    #signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
     filter.run()
 
-if __name__ == "__main__":
-    main()
+main()

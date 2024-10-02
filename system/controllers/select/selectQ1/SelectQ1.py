@@ -7,8 +7,8 @@ import time as t
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
-EXCHANGE_INPUT_SELECTQ1 = "input_to_selectq1"
-RK_INPUT_SELECTQ1= "games.q1"
+FILTERBASIC_INPUT = "filterbasic.input"
+RK_GATEWAY_SELECTQ1= "games.q1"
 EXCHANGE_SELECTQ1_COUNTER = "selectq1_to_platform_counter"
 
 class SelectQ1:
@@ -16,11 +16,11 @@ class SelectQ1:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
-        self.broker.create_exchange(name =EXCHANGE_INPUT_SELECTQ1, exchange_type ='direct')
+        self.broker.create_exchange(name =FILTERBASIC_INPUT, exchange_type ='direct')
         self.broker.create_exchange(name =EXCHANGE_SELECTQ1_COUNTER, exchange_type ='direct')
         queue_name = self.broker.create_queue(durable =True, callback = self.handler_callback())
-        self.broker.bind_queue(exchange_name =EXCHANGE_INPUT_SELECTQ1, queue_name =queue_name, binding_key =RK_INPUT_SELECTQ1)
-        logging.info(f"action: SelectQ1 is bound to the exchange {EXCHANGE_INPUT_SELECTQ1} 🗡️ | result: sucess ✅")
+        self.broker.bind_queue(exchange_name =FILTERBASIC_INPUT, queue_name =queue_name, binding_key =RK_GATEWAY_SELECTQ1)
+        logging.info(f"action: SelectQ1 is bound to the exchange {FILTERBASIC_INPUT} 🗡️ | result: sucess ✅")
     
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
