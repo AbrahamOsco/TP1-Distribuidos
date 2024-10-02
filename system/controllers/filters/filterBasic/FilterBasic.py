@@ -7,7 +7,8 @@ import logging
 import os
 import time as t 
 
-from system.commonsSystem.node.node import Node
+QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
+QUEUE_FILTER_SELECTQ1 = "filterbasic_selectq1"
 
 class FilterBasic:
     def __init__(self):
@@ -17,7 +18,8 @@ class FilterBasic:
         self.game_index_init= False
         self.review_index_init= False
         self.broker = Broker()
-        self.broker.create_queue(name ='gateway_filterbasic', durable = True, callback =self.handler_callback())
+        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True, callback =self.handler_callback())
+        self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True, callback =self.handler_callback())
         self.broker.create_exchange(name ="filter_basic", exchange_type='direct')
         self.wait_for_select = False
 
@@ -25,23 +27,22 @@ class FilterBasic:
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             batch_filtered = self.filter_fields_item(result_dto)
-            #self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)            
-            logging.info(f" 🍎 🗡️ 🍍 batch_filtered: {batch_filtered} ")
+            self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
+            logging.info(f" 🍎 🗡️ 🍍 batch_filtered: {batch_filtered}")
             ch.basic_ack(delivery_tag =method.delivery_tag)
         return handler_message
 
     def send_batch_data(self, data_filtered, operation_type, client_id):
         if operation_type == OperationType.OPERATION_TYPE_GAMES_INDEX_DTO:
             gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
-            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
-                                        routing_key =RK_GATEWAY_SELECTQ1, message = gamesDTO)
-            
-            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
-                                        routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
-        
-        elif operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
-            self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
-                                         routing_key =RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
+            self.broker.public_message(queue_name= QUEUE_FILTER_SELECTQ1, message = gamesDTO.serialize())
+
+        #    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
+        #                                routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
+        #
+        #elif operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
+        #    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
+        #                                 routing_key =RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
 
     # for each game se cumple:  ['AppID', 'Name', 'Release date', 'Windows', 'Mac', 'Linux', 'Average playtime forever', 'Genres']
     # example: ['1659180', 'TD Worlds', 'Jan 9, 2022', 'True', 'False', 'False', '0', 'Indie,Strategy']

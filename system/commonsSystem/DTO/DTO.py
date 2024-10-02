@@ -1,8 +1,4 @@
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.DTO.GameDTO import GameDTO
-from system.commonsSystem.DTO.ReviewDTO import ReviewDTO
-
 class DTO:
     def __init__(self):
         pass
@@ -23,3 +19,4 @@ class DTO:
         string = data[offset:offset + string_length].decode('utf-8')
         offset += string_length
         return string, offset
+        

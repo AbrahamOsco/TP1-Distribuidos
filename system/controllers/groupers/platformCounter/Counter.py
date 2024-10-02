@@ -1,5 +1,10 @@
 import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
+from system.commonsSystem.broker.Broker import Broker
+from system.commonsSystem.DTO.GameDTO import GameDTO
+
+COUNT_BY_PLATFORM = "CountByPlatform"
+RK_COUNT_BY_PLATFORM= "count_by_platform"
 
 class Counter:
     def __init__(self):

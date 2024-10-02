@@ -82,7 +82,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      gateway:
+      filterbasic_1:
         condition: service_started 
 
  #Select Q1. No borrar 

@@ -1,4 +1,4 @@
-from system.commonsSystem.node.node import Node
+"""from system.commonsSystem.node.node import Node
 
 class Select(Node):
     def __init__(self):
@@ -11,4 +11,4 @@ class Select(Node):
         self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
 
     def process_data(self, data):
-        self.send_game(data)
+        self.send_game(data)"""

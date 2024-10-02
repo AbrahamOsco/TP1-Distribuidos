@@ -2,30 +2,29 @@ from common.utils.utils import initialize_log
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.broker.Broker import Broker
+from system.commonsSystem.DTO.DetectDTO import DetectDTO
 import logging
 import time as t
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
-FILTERBASIC_INPUT = "filterbasic.input"
-RK_GATEWAY_SELECTQ1= "games.q1"
-EXCHANGE_SELECTQ1_COUNTER = "selectq1_to_platform_counter"
+QUEUE_FILTER_SELECTQ1 = "filterbasic_selectq1"
 
 class SelectQ1:
     
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
-        self.broker.create_exchange(name =FILTERBASIC_INPUT, exchange_type ='direct')
-        self.broker.create_exchange(name =EXCHANGE_SELECTQ1_COUNTER, exchange_type ='direct')
-        queue_name = self.broker.create_queue(durable =True, callback = self.handler_callback())
-        self.broker.bind_queue(exchange_name =FILTERBASIC_INPUT, queue_name =queue_name, binding_key =RK_GATEWAY_SELECTQ1)
-        logging.info(f"action: SelectQ1 is bound to the exchange {FILTERBASIC_INPUT} 🗡️ | result: sucess ✅")
+        queue_name = self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable =True, callback = self.handler_callback())
+        logging.info(f"action: SelectQ1 is bound to the exchange 🗡️ | result: sucess ✅")
     
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
-            result = self.broker.get_message(body)
-            self.filter_platform(result)
+            logging.info(f"result  beforeee: 🪓 🪵 ")
+            result = DetectDTO(body).get_dto()
+            logging.info(f"result : 🐎 🧄 🎲 {result}")
+            for game in result.games_dto:
+                logging.info(f"WIN: {game.windows} LINUX: {game.linux} MAC: {game.mac}")
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     

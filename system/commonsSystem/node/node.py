@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
@@ -123,17 +123,18 @@ class Node:
         self.broker.close()
     
     def pre_eof_actions(self):
-        """ This method can be implemented by the child class """
-        """ Send the result of the processing to the next node """
-        """ Will be executed when receiving an EOF"""
+         This method can be implemented by the child class 
+         Send the result of the processing to the next node 
+         Will be executed when receiving an EOF
         self.send_result()
 
     def send_result(self):
-        """ This method should be implemented by the child class """
-        """ Send the result of the processing to the next node """
-        """ Called by pre_eof_actions"""
+        This method should be implemented by the child class 
+        Send the result of the processing to the next node 
+        Called by pre_eof_actions
         pass
 
     
     def process_data(self, data):
         pass
+        self.broker.close()"""

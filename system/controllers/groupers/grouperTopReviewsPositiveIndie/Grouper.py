@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import os
 from system.commonsSystem.node.node import Node
 
@@ -31,4 +31,4 @@ class Grouper(Node):
                     break
             if len(self.list) > self.top_size:
                 self.list.pop()
-            self.min_time = self.list[-1].reviews
+            self.min_time = self.list[-1].reviews"""

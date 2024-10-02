@@ -1,4 +1,6 @@
-import os
+"""import os
+import logging
+>>>>>>> 15427c4 (advances)
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 
@@ -19,4 +21,4 @@ class Filter(Node):
     def process_data(self, data):
         for gender in self.genders:
             if self.is_gender(data.genres, gender):
-                self.send_game(data, gender)
+                self.send_game(data, gender)"""

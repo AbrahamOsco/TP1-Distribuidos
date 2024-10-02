@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import os
 from system.commonsSystem.node.node import Node
 
@@ -18,4 +18,4 @@ class Filter(Node):
 
     def process_data(self, data):
         if self.has_enough_score(data["score"]):
-            self.send_game(data)
+            self.send_game(data)"""

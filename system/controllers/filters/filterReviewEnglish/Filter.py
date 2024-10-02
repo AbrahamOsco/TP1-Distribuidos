@@ -1,4 +1,4 @@
-import logging
+"""import logging
 from system.commonsSystem.node.node import Node
 import langid
 
@@ -18,4 +18,4 @@ class Filter(Node):
 
     def process_data(self, data):
         if self.is_in_english(data["review_text"]):
-            self.send_review(data)
+            self.send_review(data)"""

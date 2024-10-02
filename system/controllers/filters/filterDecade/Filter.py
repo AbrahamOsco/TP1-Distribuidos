@@ -1,5 +1,10 @@
+"""import logging
 import os
 from system.commonsSystem.node.node import Node
+
+import os
+from system.commonsSystem.DTO.GameDTO import GameDTO
+>>>>>>> 15427c4 (advances)
 
 class Filter(Node):
     def __init__(self):
@@ -18,4 +23,4 @@ class Filter(Node):
 
     def process_data(self, data):
         if self.is_correct_decade(data.release_date):
-            self.send_game(data)
+            self.send_game(data)"""
