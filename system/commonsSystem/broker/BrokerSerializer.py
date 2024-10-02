@@ -1,4 +1,5 @@
 import logging
+from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.DTO.GenreDTO import GenreDTO
@@ -12,13 +13,15 @@ class BrokerSerializer:
             'GamesDTO': self.serialize_GamesDTO,
             'PlatformDTO': self.serialize_PlatformDTO,
             'GenreDTO': self.serialize_GenreDTO,
+            'DecadeDTO': self.serialize_DecadeDTO,
         }
         self.command_deserialize = {
             OperationType.OPERATION_TYPE_STR: self.deserialize_str,
             OperationType.OPERATION_TYPE_GAME: self.deserialize_gameDTO,
             OperationType.OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
             OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO,
-            OperationType.OPERATION_TYPE_GENRE_DTO: self.deserialize_genreDTO
+            OperationType.OPERATION_TYPE_GENRE_DTO: self.deserialize_genreDTO,
+            OperationType.OPERATION_TYPE_DECADE_DTO: self.deserialize_decadeDTO
         }
 
     def serialize(self, message):
@@ -37,6 +40,15 @@ class BrokerSerializer:
 
         return result
 
+
+    def serialize_DecadeDTO(self, decadeDTO: DecadeDTO):
+        decade_bytes = bytearray()
+        decade_bytes.extend(decadeDTO.operation_type.value.to_bytes(1, byteorder='big'))
+        decade_bytes.extend(decadeDTO.client_id.to_bytes(1, byteorder='big'))
+        decade_bytes.extend(self.serialize_str(decadeDTO.name))
+        decade_bytes.extend(decadeDTO.year.to_bytes(4, byteorder='big'))
+        decade_bytes.extend(decadeDTO.average_playtime.to_bytes(4, byteorder='big'))
+        return bytes(decade_bytes)
 
     def serialize_GenreDTO(self, genreDTO: GenreDTO):
         genre_bytes = bytearray()
@@ -106,6 +118,18 @@ class BrokerSerializer:
         string = data[offset:offset + string_length].decode('utf-8')
         offset += string_length
         return string, offset
+
+    def deserialize_decadeDTO(self, data, offset):
+        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        name, offset = self.deserialize_str(data, offset)
+        year = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
+        average_playtime = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
+        return DecadeDTO(client_id=client_id, name=name, year=year, average_playtime=average_playtime), offset
 
     def deserialize_genreDTO(self, data, offset):
         operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
