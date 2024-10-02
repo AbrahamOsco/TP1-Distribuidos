@@ -1,4 +1,4 @@
-OPERATION_TYPE_GAMES_RAW = 3
+OPERATION_TYPE_GAMES_RAW = 50
 
 class GamesRawDTO:
     def __init__(self, client_id =0, games_raw=[]):

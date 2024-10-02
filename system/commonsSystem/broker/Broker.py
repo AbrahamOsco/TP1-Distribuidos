@@ -42,7 +42,8 @@ class Broker:
 
     # Si no especificamos el queue_name (casi siempre haremos esto), mandamos por el exchange con su routing_key definido. 
     def public_message(self, exchange_name='', queue_name='', routing_key='', message=''):
-        message = self.broker_serializer.serialize(message)
+        # BrokerSerializar will be deleted! 
+        #message = self.broker_serializer.serialize(message)
         if queue_name != '':
             self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,
                 properties = self.queues[queue_name].get_properties())
