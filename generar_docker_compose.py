@@ -100,6 +100,7 @@ services:
       - PYTHONPATH=/app
       - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
+      - TOP_SIZE=5
     networks:
       - system_network
     restart: on-failure
@@ -125,6 +126,7 @@ services:
       - PYTHONPATH=/app
       - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
+      - TOP_SIZE=5
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
@@ -151,6 +153,8 @@ services:
       - AMOUNT_NEEDED={cantidad}
       - DECADE=2010
       - AMOUNT_OF_NODES={cantidad}
+      - GENDERS="Action,Indie"
+      - TOP_SIZE=5
 """
         return servicios
 
