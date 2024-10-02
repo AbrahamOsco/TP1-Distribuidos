@@ -23,9 +23,6 @@ class GameDTO:
     def from_string(data):
         data = data.split("|;|")
         return GameDTO(data[1], data[3], data[4], data[5], data[6], data[7], data[8], data[9])
-
-    def is_EOF(self):
-        return False
     
     def retain(self, fields_to_keep):
         attributes = vars(self)

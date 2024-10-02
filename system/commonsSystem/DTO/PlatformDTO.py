@@ -7,3 +7,10 @@ class PlatformDTO:
         self.windows = windows
         self.mac = mac
         self.linux = linux
+
+    def get_platform_count(self):
+        return {
+            "windows": self.windows,
+            "mac": self.mac,
+            "linux": self.linux
+        }

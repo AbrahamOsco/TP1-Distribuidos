@@ -29,6 +29,21 @@ class GamesDTO:
     def get_client(self):
         return self.client_id
 
+    def is_EOF(self):
+        return False
+    
+    def get_platform_count(self):
+        count = {
+            "windows": 0,
+            "mac": 0,
+            "linux": 0
+        }
+        for game in self.games_dto:
+            count["windows"] += game.windows
+            count["linux"] += game.linux
+            count["mac"] += game.mac
+        return count
+    
     def show_games_dto(self):
         logging.info(f"action: view status GamesDTO | operation_type: {self.operation_type} | client_id: {self.client_id}" +
                      f"| size_games_dto: {len(self.games_dto)} result: success ✅")
