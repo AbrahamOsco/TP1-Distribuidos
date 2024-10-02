@@ -17,7 +17,7 @@ image_exists() {
 }
 
 # Lista de las imágenes que se deben verificar
-images=("client:latest" "input:latest" \
+images=("rabbit:latest" "client:latest" "gateway:latest" \
         "filterbasic:latest" "selectq1:latest" "platformcounter:latest" \
         "selectq2345:latest" "filtergender:latest" "filterdecade:latest" \
         "selectidnameindie:latest" "selectidnameaction:latest" "selectq345:latest" \
@@ -25,7 +25,7 @@ images=("client:latest" "input:latest" \
         "filterscorenegative:latest")
 
 # Rutas específicas de los Dockerfiles de cada imagen
-path_images=("client" "system/controllers/input"\
+path_images=("system/rabbitmq" "client" "system/controllers/gateway"\
              "system/controllers/filters/filterBasic" "system/controllers/select/selectQ1" "system/controllers/groupers/platformCounter" \
              "system/controllers/select/selectQ2345" "system/controllers/filters/filterGender" "system/controllers/filters/filterDecade" \
              "system/controllers/select/selectIDNameIndie" "system/controllers/select/selectIDNameAction" "system/controllers/select/selectQ345" \
