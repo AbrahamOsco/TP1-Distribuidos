@@ -12,7 +12,7 @@ RK_INPUT_SELECTQ1= "games.q1"
 RK_INPUT_SELECTQ2345= "games.q2345"
 RK_INPUT_SELECTQ345 = "reviews.raw"
 
-class Input:
+class Gateway:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.game_indexes = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
