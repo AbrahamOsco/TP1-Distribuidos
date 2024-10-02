@@ -30,6 +30,7 @@ class BrokerSerializer:
 
     def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
         platform_bytes = bytearray()
+        platform_bytes.extend(platformDTO.operation_type.to_bytes(1, byteorder='big'))
         platform_bytes.extend(platformDTO.client_id.to_bytes(1, byteorder='big'))
         platform_bytes.extend(platformDTO.windows.to_bytes(4, byteorder='big'))
         platform_bytes.extend(platformDTO.mac.to_bytes(4, byteorder='big'))
