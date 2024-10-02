@@ -22,7 +22,6 @@ class Gateway:
         self.review_index_init= False
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True)
-        #self.broker.create_exchange(name =FILTERBASIC_INPUT, exchange_type='direct')
         self.socket_accepter = Socket(port =12345)
 
     def accept_a_connection(self):
@@ -41,7 +40,6 @@ class Gateway:
                 games_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
                                                 games_raw =raw_dto.data_raw, indexes = self.game_indexes)
                 self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = games_index_dto.serialize())
-            
             elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
                 review_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
                                                 reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)

@@ -1,5 +1,5 @@
 from system.commonsSystem.DTO.DTO import DTO
-
+import logging
 class IndexDTO(DTO):
     def __init__(self, client_id =0, data_raw = [], indexes = {} ):
         self.client_id = client_id
@@ -10,7 +10,6 @@ class IndexDTO(DTO):
         index_bytes = bytearray()
         index_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
         index_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
-        
         index_bytes.extend(len(self.data_raw).to_bytes(2, byteorder='big'))
         for element in self.data_raw:
             index_bytes.extend(len(element).to_bytes(2, byteorder='big'))

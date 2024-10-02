@@ -19,8 +19,8 @@ class FilterBasic:
         self.review_index_init= False
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True, callback =self.handler_callback())
-        self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True, callback =self.handler_callback())
-        self.broker.create_exchange(name ="filter_basic", exchange_type='direct')
+        self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True)
+        #self.broker.create_exchange(name ="filter_basic", exchange_type='direct')
         self.wait_for_select = False
 
     def handler_callback(self):
@@ -63,6 +63,10 @@ class FilterBasic:
             for a_review in result_dto.data_raw:
                 basic_review = self.drop_basic_item(a_review, self.review_indexes)
                 batch_item.append(basic_review)
+        elif result_dto.operation_type == OperationType.OPERATION_TYPE_GAMES_DTO:
+            logging.info(f" 🤯 WTFFF{result_dto.operation_type.value} {result_dto.games_dto} {result_dto.state_games} {result_dto.client_id}") 
+            for game in result_dto.games_dto:
+                logging.info(f" {game.app_id} {game.name} {game.linux}  {game.mac} {game.windows}")
         return batch_item
 
     def drop_basic_item(self, a_item, dic_indexes):
