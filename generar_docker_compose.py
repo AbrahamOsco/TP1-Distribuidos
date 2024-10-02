@@ -99,6 +99,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - AMOUNT_NEEDED=1
+      - AMOUNT_OF_NODES=1
     networks:
       - system_network
     restart: on-failure
@@ -123,6 +124,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - AMOUNT_NEEDED=1
+      - AMOUNT_OF_NODES=1
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
@@ -147,6 +149,8 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - AMOUNT_NEEDED={cantidad}
+      - DECADE=2010
+      - AMOUNT_OF_NODES={cantidad}
 """
         return servicios
 
