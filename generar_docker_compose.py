@@ -101,6 +101,7 @@ services:
       - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
       - TOP_SIZE=5
+      - HOSTNAME="localhost"
     networks:
       - system_network
     restart: on-failure
@@ -114,6 +115,7 @@ services:
     entrypoint: python3 /app/system/controllers/gateway/main.py
     networks:
       - system_network
+    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -140,6 +142,7 @@ services:
     entrypoint: python3 /app/system/controllers/{tipo_servicio}/{nombre_servicio}/main.py
     networks:
       - system_network
+    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
