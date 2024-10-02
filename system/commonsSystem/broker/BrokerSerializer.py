@@ -1,14 +1,21 @@
 import logging
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, OPERATION_TYPE_GAMES_DTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
+from system.commonsSystem.DTO.PlatformDTO import PlatformDTO, OPERATION_TYPE_PLATFORM_DTO
 OPERATION_TYPE_STR = 27
 
 class BrokerSerializer:
     def __init__(self):
-        self.command_serialize = {'str': self.serialize_str,
-                                'GamesDTO': self.serialize_GamesDTO}
-        self.command_deserialize = {OPERATION_TYPE_STR: self.deserialize_str,
-                         OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO}
+        self.command_serialize = {
+            'str': self.serialize_str,
+            'GamesDTO': self.serialize_GamesDTO,
+            'PlatformDTO': self.serialize_PlatformDTO
+        }
+        self.command_deserialize = {
+            OPERATION_TYPE_STR: self.deserialize_str,
+            OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
+            OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO
+        }
 
     def serialize(self, message):
         type_message = type(message).__name__
@@ -20,6 +27,14 @@ class BrokerSerializer:
         operation_type = int.from_bytes(message[offset:offset+1], byteorder='big')
         result, offset = self.command_deserialize[operation_type](message, 0)
         return result
+
+    def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
+        platform_bytes = bytearray()
+        platform_bytes.extend(platformDTO.client_id.to_bytes(1, byteorder='big'))
+        platform_bytes.extend(platformDTO.windows.to_bytes(4, byteorder='big'))
+        platform_bytes.extend(platformDTO.mac.to_bytes(4, byteorder='big'))
+        platform_bytes.extend(platformDTO.linux.to_bytes(4, byteorder='big'))
+        return bytes(platform_bytes)
 
     def serialize_GamesDTO(self, gamesDTO: GamesDTO):
         games_bytes = bytearray()
@@ -70,6 +85,17 @@ class BrokerSerializer:
         string = data[offset:offset + string_length].decode('utf-8')
         offset += string_length
         return string, offset
+
+    def deserialize_platformDTO(self, data, offset):
+        client_id = int.from_bytes(data[offset:offset + 1], byteorder='big')
+        offset += 1
+        windows = int.from_bytes(data[offset:offset + 4], byteorder='big')
+        offset += 4
+        mac = int.from_bytes(data[offset:offset + 4], byteorder='big')
+        offset += 4
+        linux = int.from_bytes(data[offset:offset + 4], byteorder='big')
+        offset += 4
+        return PlatformDTO(client_id=client_id, windows=windows, mac=mac, linux=linux), offset
 
     def deserialize_gamesDTO(self, data, offset):
         operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
