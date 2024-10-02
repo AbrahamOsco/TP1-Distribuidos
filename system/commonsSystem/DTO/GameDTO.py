@@ -1,10 +1,10 @@
 import logging
-OPERATION_TYPE_GAME = 1
-
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 class GameDTO:
     def __init__(self, app_id ="", name ="", windows =0,
             mac =0, linux =0, genres ="", release_date ="", avg_playtime_forever =""):
-        self.operation_type = OPERATION_TYPE_GAME
+        
+        self.operation_type = OperationType.OPERATION_TYPE_GAME
         self.app_id = app_id
         self.name = name
         self.release_date = release_date

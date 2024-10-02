@@ -1,9 +1,9 @@
-OPERATION_TYPE_REVIEW = 4
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 INITIAL_GAME = 1
 
 class ReviewDTO:
     def __init__(self, status = INITIAL_GAME, app_id ="", client ="", review_text ="", review_score =""):
-        self.operation_type = 1
+        self.operation_type = OperationType.OPERATION_TYPE_REVIEW
         self.status = status
         self.client = client
         self.app_id = int(app_id)

@@ -1,8 +1,8 @@
 import logging
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, OPERATION_TYPE_GAMES_DTO, STATE_GAMES_INITIAL, STATE_PLATFORM
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
-from system.commonsSystem.DTO.PlatformDTO import PlatformDTO, OPERATION_TYPE_PLATFORM_DTO
-OPERATION_TYPE_STR = 27
+from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 class BrokerSerializer:
     def __init__(self):
@@ -12,9 +12,10 @@ class BrokerSerializer:
             'PlatformDTO': self.serialize_PlatformDTO
         }
         self.command_deserialize = {
-            OPERATION_TYPE_STR: self.deserialize_str,
-            OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
-            OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO
+            OperationType.OPERATION_TYPE_STR: self.deserialize_str,
+            OperationType.OPERATION_TYPE_GAME: self.deserialize_gameDTO,
+            OperationType.OPERATION_TYPE_GAMES_DTO: self.deserialize_gamesDTO,
+            OperationType.OPERATION_TYPE_PLATFORM_DTO: self.deserialize_platformDTO
         }
 
     def serialize(self, message):
@@ -25,12 +26,17 @@ class BrokerSerializer:
         offset = 0
         #Primer byte indica el tipo de operacion, usando Command, obtenemos la funcion a usar. 
         operation_type = int.from_bytes(message[offset:offset+1], byteorder='big')
-        result, offset = self.command_deserialize[operation_type](message, 0)
+
+        try:
+            result, offset = self.command_deserialize[OperationType(operation_type)](message, 0)
+        except KeyError:
+            logging.error(f"Unknown operation type: {operation_type}")
+
         return result
 
     def serialize_PlatformDTO(self, platformDTO: PlatformDTO):
         platform_bytes = bytearray()
-        platform_bytes.extend(platformDTO.operation_type.to_bytes(1, byteorder='big'))
+        platform_bytes.extend(platformDTO.operation_type.value.to_bytes(1, byteorder='big'))
         platform_bytes.extend(platformDTO.client_id.to_bytes(1, byteorder='big'))
         platform_bytes.extend(platformDTO.windows.to_bytes(4, byteorder='big'))
         platform_bytes.extend(platformDTO.mac.to_bytes(4, byteorder='big'))
@@ -39,7 +45,7 @@ class BrokerSerializer:
 
     def serialize_GamesDTO(self, gamesDTO: GamesDTO):
         games_bytes = bytearray()
-        games_bytes.extend(gamesDTO.operation_type.to_bytes(1, byteorder='big'))
+        games_bytes.extend(gamesDTO.operation_type.value.to_bytes(1, byteorder='big'))
         games_bytes.extend(gamesDTO.client_id.to_bytes(1, byteorder='big'))
         games_bytes.extend(gamesDTO.state_games.to_bytes(1, byteorder='big'))
         games_bytes.extend(len(gamesDTO.games_dto).to_bytes(2, byteorder='big'))
@@ -51,7 +57,7 @@ class BrokerSerializer:
     
     def serialize_GameDTO(self, gameDTO: GameDTO, state_games:int):
         game_bytes = bytearray()
-        game_bytes.extend(gameDTO.operation_type.to_bytes(1, byteorder='big'))
+        game_bytes.extend(gameDTO.operation_type.value.to_bytes(1, byteorder='big'))
         # Preguntar segun el state games enviar q atributos y que no. 
         if state_games == STATE_PLATFORM:
             game_bytes.extend(gameDTO.windows.to_bytes(1, byteorder='big'))
@@ -73,7 +79,7 @@ class BrokerSerializer:
     def serialize_str(self, a_string:str):
         serialized_string = bytearray()
         string_in_bytes = a_string.encode('utf-8')
-        serialized_string.extend(OPERATION_TYPE_STR.to_bytes(1, byteorder='big'))
+        serialized_string.extend(OperationType.OPERATION_TYPE_STR.value.to_bytes(1, byteorder='big'))
         serialized_string.extend(len(string_in_bytes).to_bytes(2, byteorder='big'))
         serialized_string.extend(string_in_bytes)
         return serialized_string

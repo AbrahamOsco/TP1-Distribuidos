@@ -1,12 +1,12 @@
 import logging
 from system.commonsSystem.DTO.GameDTO import GameDTO
-OPERATION_TYPE_GAMES_DTO = 2
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 STATE_GAMES_INITIAL = 1
 STATE_PLATFORM = 2
 
 class GamesDTO:
     def __init__(self, client_id:int, state_games:int,  games_raw =[], games_dto =[]):
-        self.operation_type = OPERATION_TYPE_GAMES_DTO
+        self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
         self.state_games = state_games 
         self.games_dto = games_dto
