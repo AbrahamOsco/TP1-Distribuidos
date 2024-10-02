@@ -27,9 +27,6 @@ class GameDTO:
     def is_EOF(self):
         return False
     
-    def get_client(self):
-        return 0 # borra este metodo franco. 
-    
     def retain(self, fields_to_keep):
         attributes = vars(self)
         for attr in list(attributes.keys()):

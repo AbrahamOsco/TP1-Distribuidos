@@ -23,6 +23,12 @@ class GamesDTO:
                 avg_playtime_forever =game_raw[6], genres =game_raw[7])
             self.games_dto.append(a_game_dto)
 
+    def set_state(self, state):
+        self.state_games = state
+
+    def get_client(self):
+        return self.client_id
+
     def show_games_dto(self):
         logging.info(f"action: view status GamesDTO | operation_type: {self.operation_type} | client_id: {self.client_id}" +
                      f"| size_games_dto: {len(self.games_dto)} result: success ✅")

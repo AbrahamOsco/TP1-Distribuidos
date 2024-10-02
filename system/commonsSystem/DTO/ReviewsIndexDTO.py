@@ -6,6 +6,9 @@ class ReviewsIndexDTO:
         self.client_id = client_id
         self.indexes = indexes
         self.data_raw = reviews_raw
+
+    def get_client(self):
+        return self.client_id
         
 
 

@@ -2,7 +2,6 @@ import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.DTO.DTO import getDTO
 
 class Node:
     def __init__(self):
@@ -45,9 +44,6 @@ class Node:
             level=self.config_params["log_level"],
             datefmt='%Y-%m-%d %H:%M:%S',
         )
-    
-    def send_result(self):
-        pass
 
     def send_eof(self, client):
         self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).to_string(), routing_key='default')
@@ -101,12 +97,6 @@ class Node:
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
-
-    def process_data(self, data):
-        pass
-
-    def pre_eof_actions(self):
-        self.send_result()
         
     def check_new_client(self, data):
         if data.get_client() not in self.clients:
@@ -115,7 +105,7 @@ class Node:
     def process_queue_message(self, ch, method, properties, body):
         try:
             logging.info(f"action: process_queue_message | body: {body}")
-            data = getDTO(body.decode())
+            data = body.decode()
             if data.is_EOF():
                 self.inform_eof_to_nodes(data.get_client())
             else:
@@ -130,3 +120,19 @@ class Node:
     
     def stop(self):
         self.broker.close()
+    
+    def pre_eof_actions(self):
+        """ This method can be implemented by the child class """
+        """ Send the result of the processing to the next node """
+        """ Will be executed when receiving an EOF"""
+        self.send_result()
+
+    def send_result(self):
+        """ This method should be implemented by the child class """
+        """ Send the result of the processing to the next node """
+        """ Called by pre_eof_actions"""
+        pass
+
+    
+    def process_data(self, data):
+        pass
