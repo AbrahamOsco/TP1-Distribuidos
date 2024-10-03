@@ -7,7 +7,7 @@ class Grouper(Node):
     def __init__(self):
         super().__init__()
         self.reset_list()
-        self.top_size = os.getenv("TOP_SIZE")
+        self.top_size = int(os.getenv("TOP_SIZE"))
 
     def reset_list(self):
         self.list = []
@@ -21,17 +21,21 @@ class Grouper(Node):
         return len(self.list) < self.top_size or game.avg_playtime_forever > self.min_time
     
     def send_result(self):
-        logging.info(f"action: result | list: {self.list}")
-        self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
+        for game in self.list:
+            logging.info(f"game: {game.name} time: {game.avg_playtime_forever}")
+        # self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
 
     def process_data(self, data: GamesDTO):
-        logging.info(f"action: process_data | data: {data.games_dto}")
         for game in data.games_dto:
             if self.has_to_be_inserted(game):
+                inserted = False
                 for i in range(len(self.list)):
                     if game.avg_playtime_forever > self.list[i].avg_playtime_forever:
                         self.list.insert(i, game)
+                        inserted = True
                         break
+                if not inserted:
+                    self.list.append(game)
                 if len(self.list) > self.top_size:
                     self.list.pop()
                 self.min_time = self.list[-1].avg_playtime_forever

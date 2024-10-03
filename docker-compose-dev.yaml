@@ -32,10 +32,8 @@ services:
       - system_network
     restart: on-failure
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      gateway:
-        condition: service_started
+      - rabbitmq
+      - gateway
 
   gateway:
     container_name: gateway
@@ -49,10 +47,9 @@ services:
       - system_network
     restart: on-failure
     depends_on:
-      rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      selectQ2345:
-        condition: service_started
+      - rabbitmq
+      - selectQ2345
+      - selectQ345
       # selectQ1:
       #   condition: service_started
 
@@ -95,10 +92,28 @@ services:
       - system_network
     restart: on-failure
     depends_on:
-      rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      filtergender_1:
-        condition: service_started 
+      - rabbitmq
+      - filtergender_1
+
+  selectQ345:
+    container_name: selectQ345
+    image: selectq345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectQ345
+      - NODE_ID=1
+      - SOURCE=DataParsed
+      - SOURCE_KEY=reviews
+      - SOURCE_TYPE=topic
+      - SINK=ReviewsQ345
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - filterscorepositive_1
 
   # platformcounter_1:
   #   container_name: platformcounter_1
@@ -166,52 +181,127 @@ services:
       - NODE_ID=1
       - SOURCE=GamesQ2345
       - SINK=GenderGames
+      - SINK_TYPE=topic
       - LOGGING_LEVEL=INFO
       - GENDERS=Indie,Action
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      filterdecade_1:
-        condition: service_started
+      - rabbitmq
+      - selectidname
+      # filterdecade_1:
+      #   condition: service_started
 
-  filterdecade_1:
-    container_name: filterdecade_1
-    image: filterdecade:latest
-    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+  selectidname:
+    container_name: selectidname
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectidname
+      - NODE_ID=1
+      - SOURCE=GenderGames
+      - SOURCE_KEY=Indie
+      - SOURCE_TYPE=topic
+      - SINK=MonitorQ3Games
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - monitorstorageq3
+
+  filterscorepositive_1:
+    container_name: filterscorepositive_1
+    image: filterscorepositive:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
     networks:
       - system_network
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterdecade
+      - NODE_NAME=filterscorepositive
       - NODE_ID=1
-      - SOURCE=GenderGames
-      - SOURCE_KEY=Indie
-      - SINK=DecadeGames
-      - DECADE=2010
+      - SOURCE=ReviewsQ345
+      - SINK=ReviewsPositives
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      # groupertopaverageplaytime:
-      #   condition: service_started
+      - rabbitmq
+      - monitorstorageq3
+      
+  monitorstorageq3:
+    container_name: monitorstorageq3
+    image: monitorstorageq3:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
+    networks:
+      - system_network
+    depends_on:
+      - rabbitmq
+      - groupertopreviewspositiveindie
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=monitorstorageq3
+      - NODE_ID=1
+      - SOURCE=ReviewsPositives,MonitorQ3Games
+      - SOURCE_KEY=default,default
+      - SOURCE_TYPE=direct,direct
+      - SINK=IndieGamesReviewed
+
+  # filterdecade_1:
+  #   container_name: filterdecade_1
+  #   image: filterdecade:latest
+  #   entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+  #   networks:
+  #     - system_network
+  #   environment:
+  #     - LOGGING_LEVEL=INFO
+  #     - PYTHONPATH=/app
+  #     - NODE_NAME=filterdecade
+  #     - NODE_ID=1
+  #     - SOURCE=GenderGames
+  #     - SOURCE_KEY=Indie
+  #     - SINK=DecadeGames
+  #     - DECADE=2010
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     groupertopaverageplaytime:
+  #       condition: service_started
 
   # # sortertop10averageplaytime:
   # groupertopaverageplaytime:
   #   container_name: groupertopaverageplaytime
-  #   image: filterdecade:latest
-  #   entrypoint: python3 /app/system/groupers/grouperTopAveragePlaytime/main.py
+  #   image: groupertopaverageplaytime:latest
+  #   entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
   #   networks:
   #     - system_network
   #   depends_on:
   #     rabbitmq:
   #       condition: service_healthy
   #   environment:
-  #     - NODE_NAME="groupertopaverageplaytime"
+  #     - LOGGING_LEVEL=INFO
+  #     - PYTHONPATH=/app
+  #     - NODE_NAME=groupertopaverageplaytime
   #     - NODE_ID=1
   #     - SOURCE=DecadeGames
-  #     - SINK="output"
+  #     - SINK=output
   #     - TOP_SIZE=10
-  #     - LOGGING_LEVEL=INFO
+
+  groupertopreviewspositiveindie:
+    container_name: groupertopreviewspositiveindie
+    image: groupertopreviewspositiveindie:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
+    networks:
+      - system_network
+    depends_on:
+      - rabbitmq
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=groupertopreviewspositiveindie
+      - NODE_ID=1
+      - SOURCE=IndieGamesReviewed
+      - SINK=output
+      - TOP_SIZE=5
 
   # groupertopreviewspositiveindie:
   #   container_name: groupertopreviewspositiveindie
@@ -278,40 +368,6 @@ services:
   #     - SINK=
   #     - LOGGING_LEVEL=INFO
 
-  # selectidnameindie_1:
-  #   container_name: selectidnameindie_1
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     - NODE_NAME="selectidnameindie_1"
-  #     - NODE_ID=6
-  #     - SOURCE=GamesIndieQ3
-  #     - SINK=
-  #     - LOGGING_LEVEL=INFO
-
-  # selectidnameaction_1:
-  #   container_name: selectidnameaction_1
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     - NODE_NAME="selectidnameaction_1"
-  #     - NODE_ID=6
-  #     - SOURCE=GamesActionQ45
-  #     - SINK=
-  #     - LOGGING_LEVEL=INFO
-
   # selectq345_1:
   #   container_name: selectq345_1
   #   build:
@@ -327,23 +383,6 @@ services:
   #     - NODE_ID=6
   #     - SOURCE=DataParsed
   #     - SINK=
-  #     - LOGGING_LEVEL=INFO
-
-  # filterscorepositive_1:
-  #   container_name: filterscorepositive_1
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     - NODE_NAME="filterscorepositive_1"
-  #     - NODE_ID=6
-  #     - SOURCE=ERROR
-  #     - SINK=ERROR
   #     - LOGGING_LEVEL=INFO
 
   # filterreviewenglish_1:

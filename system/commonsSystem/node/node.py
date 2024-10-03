@@ -16,8 +16,8 @@ class Node:
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
         self.source = os.getenv("SOURCE").split(',')
-        self.source_key = os.getenv("SOURCE_KEY", "default")
-        self.source_type = os.getenv("SOURCE_TYPE", "direct")
+        self.source_key = os.getenv("SOURCE_KEY", "default").split(',')
+        self.source_type = os.getenv("SOURCE_TYPE", "direct").split(',')
         self.sink = os.getenv("SINK")
         self.sink_type = os.getenv("SINK_TYPE", "direct")
         self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
@@ -29,10 +29,10 @@ class Node:
 
     def initialize_queues(self):
         ## Source and destination for all workers
-        for source in self.source:
+        for i, source in enumerate(self.source):
             self.broker.create_source(name=source, callback=self.process_queue_message)
-            self.broker.create_sink(type=self.source_type, name=source)
-            self.broker.bind_queue(queue_name=source, sink=source, routing_key=self.source_key)
+            self.broker.create_sink(type=self.source_type[i], name=source)
+            self.broker.bind_queue(queue_name=source, sink=source, routing_key=self.source_key[i])
         self.broker.create_sink(type=self.sink_type, name=self.sink)
         if self.amount_of_nodes < 2:
             return

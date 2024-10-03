@@ -1,6 +1,5 @@
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 from system.commonsSystem.DTO.DTO import DTO
-import logging
 
 indexMap = {
     "AppID": "app_id",

@@ -45,6 +45,8 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
+        
+        self.protocol.send_eof()
 
     def get_result_from_queries(self):
         resultQuerys = self.protocol.recv_string()

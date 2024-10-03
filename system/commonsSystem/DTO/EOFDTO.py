@@ -1,5 +1,5 @@
 class EOFDTO:
-    def __init__(self, type, client, confirmation=True):
+    def __init__(self, type, client:int, confirmation=True):
         self.operation_type = type
         self.client = client
         self.confirmation = confirmation
@@ -21,8 +21,11 @@ class EOFDTO:
         return bytes(eof_bytes)
     
     def deserialize(data, offset):
+        offset -= 1
+        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
         client = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
         confirmation = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
-        return EOFDTO(client, confirmation), offset
+        return EOFDTO(operation_type, client, confirmation), offset

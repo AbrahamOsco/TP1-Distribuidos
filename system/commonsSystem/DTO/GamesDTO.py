@@ -4,21 +4,24 @@ from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 from system.commonsSystem.DTO.StateQ2345DTO import StateQ2345DTO
-from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
+from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlaytimeDTO import PlaytimeDTO
+from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
 
 STATE_GAMES_MINIMAL = 1
 STATE_PLATFORM = 2
 STATE_Q2345 = 3
-STATE_DECADE = 4
+STATE_GENRE = 4
 STATE_PLAYTIME = 5
+STATE_IDNAME = 6
 
 stateToClass = {
     STATE_GAMES_MINIMAL: GameMinimalDTO,
     STATE_PLATFORM: PlatformDTO,
     STATE_Q2345: StateQ2345DTO,
-    STATE_DECADE: DecadeDTO,
+    STATE_GENRE: GenreDTO,
     STATE_PLAYTIME: PlaytimeDTO,
+    STATE_IDNAME: GameIDNameDTO
 }
 
 class GamesDTO(DTO):
@@ -76,6 +79,12 @@ class GamesDTO(DTO):
             count["linux"] += platform["linux"]
         return count
 
+    def is_reviews(self):
+        return False
+    
+    def is_games(self):
+        return True
+    
     def filter_games(self, filter_func):
         self.games_dto = list(filter(filter_func, self.games_dto))
 
