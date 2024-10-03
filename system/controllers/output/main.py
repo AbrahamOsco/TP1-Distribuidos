@@ -1,4 +1,4 @@
-from system.controllers.output.Output import Output
+"""from system.controllers.output.Output import Output
 
 def main():
     a_output = Output()
@@ -7,3 +7,4 @@ def main():
 main()
 
 
+"""

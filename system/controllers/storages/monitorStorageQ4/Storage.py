@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import os
 from system.commonsSystem.node.node import Node
 
@@ -23,4 +23,4 @@ class Grouper(Node):
             self.list[data.app_id] = 0
         self.list[data.app_id] += 1
         if self.list[data.app_id] == self.amount_needed:
-            self.send_result(data.app_id)
+            self.send_result(data.app_id)"""

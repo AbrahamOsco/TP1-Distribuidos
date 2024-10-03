@@ -1,4 +1,4 @@
-from Storage import Storage
+"""from Storage import Storage
 import signal
 
 def main():
@@ -7,4 +7,4 @@ def main():
     storage.run()
 
 if __name__ == "__main__":
-    main()
+    main()"""

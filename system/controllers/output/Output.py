@@ -1,4 +1,4 @@
-from common.utils.utils import initialize_log 
+"""from common.utils.utils import initialize_log 
 import logging
 import os
 import time as t 
@@ -8,4 +8,4 @@ class Output:
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
     
     def run(self):
-        logging.info("Output started")
+        logging.info("Output started")"""

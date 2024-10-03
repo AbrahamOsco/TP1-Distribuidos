@@ -1,4 +1,4 @@
-import os
+"""import os
 from system.commonsSystem.node.node import Node, UnfinishedBusinessException
 from system.commonsSystem.DTO.ReviewedGameDTO import ReviewedGameDTO
 
@@ -39,4 +39,4 @@ class Storage(Node):
         if data.is_game():
             if self.status == STATUS_REVIEWING:
                 raise UnfinishedBusinessException()
-            self.list.add(data.name)
+            self.list.add(data.name)"""
