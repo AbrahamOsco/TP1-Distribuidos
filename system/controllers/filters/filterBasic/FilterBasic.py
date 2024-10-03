@@ -20,15 +20,16 @@ class FilterBasic:
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True, callback =self.handler_callback())
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True)
-        #self.broker.create_exchange(name ="filter_basic", exchange_type='direct')
         self.wait_for_select = False
 
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
+            if (result_dto.operation_type != OperationType.OPERATION_TYPE_GAMES_INDEX_DTO and 
+                result_dto.operation_type != OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO):
+                    logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")  
             batch_filtered = self.filter_fields_item(result_dto)
             self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
-            logging.info(f" 🍎 🗡️ 🍍 batch_filtered: {batch_filtered}")
             ch.basic_ack(delivery_tag =method.delivery_tag)
         return handler_message
 
@@ -63,10 +64,6 @@ class FilterBasic:
             for a_review in result_dto.data_raw:
                 basic_review = self.drop_basic_item(a_review, self.review_indexes)
                 batch_item.append(basic_review)
-        elif result_dto.operation_type == OperationType.OPERATION_TYPE_GAMES_DTO:
-            logging.info(f" 🤯 WTFFF{result_dto.operation_type.value} {result_dto.games_dto} {result_dto.state_games} {result_dto.client_id}") 
-            for game in result_dto.games_dto:
-                logging.info(f" {game.app_id} {game.name} {game.linux}  {game.mac} {game.windows}")
         return batch_item
 
     def drop_basic_item(self, a_item, dic_indexes):

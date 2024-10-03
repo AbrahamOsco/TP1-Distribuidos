@@ -9,7 +9,6 @@ import logging
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
-#FILTERBASIC_INPUT = "filterbasic.input"
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 
 class Gateway:

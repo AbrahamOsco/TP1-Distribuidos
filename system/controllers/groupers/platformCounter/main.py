@@ -1,10 +1,9 @@
-"""from Counter import Counter
-import signal"""
+from system.controllers.groupers.platformCounter.PlatformCounter import PlatformCounter
+import signal
 
-"""def main():
-    counter = Counter()
-    signal.signal(signal.SIGTERM, lambda _n,_f: counter.stop())
-    counter.run()
+def main():
+    platformCounter = PlatformCounter()
+    #signal.signal(signal.SIGTERM, lambda _n,_f: counter.stop())
+    platformCounter.run()
 
-if __name__ == "__main__":
-    main()"""
+main()
