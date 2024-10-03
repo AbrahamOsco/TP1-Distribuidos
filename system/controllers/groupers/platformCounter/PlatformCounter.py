@@ -31,7 +31,6 @@ class PlatformCounter:
         return handler_message
 
     def count_platforms(self, gamesDTO:GamesDTO):
-        client_id = gamesDTO.client_id
         if not self.registered_counter:
             self.platform.client_id = gamesDTO.client_id
             self.registered_counter = True
@@ -39,7 +38,7 @@ class PlatformCounter:
             self.platform.windows += a_game.windows
             self.platform.linux += a_game.linux
             self.platform.mac += a_game.mac
-        logging.info(f"action: Amount of platforms 🕹️🐕:  Window:{self.platform.windows}"\
+        logging.info(f"action: Amount of platforms 🕹️🐕 🔥  Window:{self.platform.windows}"\
                      f"Linux:{self.platform.linux} Mac:{self.platform.mac} | success: ✅")
         self.count_baches +=1
         if self.count_baches == 3:
