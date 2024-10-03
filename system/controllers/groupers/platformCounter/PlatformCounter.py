@@ -16,7 +16,7 @@ class PlatformCounter:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.platform = PlatformDTO()
-        self.registered_counter = False
+        self.registered_client = False
         self.broker = Broker()
         self.count_baches = 0 #borrar esto es de prueba debe tenerminar ucando sea EOF pero lo hago para q llege a 3 y mande al reducer
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, durable =True, callback =self.handler_callback())
@@ -34,9 +34,9 @@ class PlatformCounter:
         return handler_message
 
     def count_platforms(self, gamesDTO:GamesDTO):
-        if not self.registered_counter:
+        if not self.registered_client:
             self.platform.client_id = gamesDTO.client_id
-            self.registered_counter = True
+            self.registered_client = True
         for a_game in gamesDTO.games_dto:
             self.platform.windows += a_game.windows
             self.platform.linux += a_game.linux

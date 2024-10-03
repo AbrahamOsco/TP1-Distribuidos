@@ -134,6 +134,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      - PYTHONPATH=/app
       - NODE_NAME="platformreducer"
       - NODE_ID=4
       - SOURCE="CountByPlatform"
