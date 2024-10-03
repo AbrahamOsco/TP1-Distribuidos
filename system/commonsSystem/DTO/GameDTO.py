@@ -2,8 +2,9 @@ import logging
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.DTO import DTO
 
+STATE_GAMES_INITIAL = 1
 STATE_PLATFORM = 2
-
+STATE_GENRES = 3
 class GameDTO(DTO):
     def __init__(self, app_id =0, name ="", windows =0,
             mac =0, linux =0, genres ="", release_date ="", avg_playtime_forever =0):
@@ -16,8 +17,13 @@ class GameDTO(DTO):
         self.linux = int(linux)
         self.avg_playtime_forever = avg_playtime_forever
         self.genres = genres
+        #self.select_features_serialize= {STATE_GAMES_INITIAL: self.selectComplete, 
+        #                    STATE_PLATFORM: self.selectPlatforms,
+        #                    STATE_GENDER: self.selectGenres, }
 
     def serialize(self, state_games:int):
+        #self.select_features_serialize[state_games]()
+
         game_bytes = bytearray()
         game_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
         # Preguntar segun el state games enviar q atributos y que no. 
