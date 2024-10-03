@@ -5,8 +5,8 @@ from system.commonsSystem.DTO.DTO import DTO
 STATE_PLATFORM = 2
 
 class GameDTO(DTO):
-    def __init__(self, app_id ="", name ="", windows =0,
-            mac =0, linux =0, genres ="", release_date ="", avg_playtime_forever =""):
+    def __init__(self, app_id =0, name ="", windows =0,
+            mac =0, linux =0, genres ="", release_date ="", avg_playtime_forever =0):
         self.operation_type = OperationType.OPERATION_TYPE_GAME
         self.app_id = app_id
         self.name = name
@@ -26,13 +26,13 @@ class GameDTO(DTO):
             game_bytes.extend(self.mac.to_bytes(1, byteorder='big'))
             game_bytes.extend(self.linux.to_bytes(1, byteorder='big'))
             return game_bytes
-        game_bytes.extend(self.serialize_str(self.app_id))
+        game_bytes.extend(self.app_id.to_bytes(8, byteorder='big'))
         game_bytes.extend(self.serialize_str(self.name))
         game_bytes.extend(self.serialize_str(self.release_date))
         game_bytes.extend(self.windows.to_bytes(1, byteorder='big'))
         game_bytes.extend(self.mac.to_bytes(1, byteorder='big'))
         game_bytes.extend(self.linux.to_bytes(1, byteorder='big'))
-        game_bytes.extend(self.serialize_str(self.avg_playtime_forever))
+        game_bytes.extend(self.avg_playtime_forever.to_bytes(8, byteorder='big'))
         game_bytes.extend(self.serialize_str(self.genres))
         return game_bytes
 
@@ -48,7 +48,8 @@ class GameDTO(DTO):
             offset += 1
             return GameDTO(windows =windows, mac =mac, linux =linux), offset
         
-        app_id, offset = self.deserialize_str(data, offset)
+        app_id = int.from_bytes(data[offset:offset+8], byteorder='big')
+        offset += 8
         name, offset = self.deserialize_str(data, offset)
         release_date, offset = self.deserialize_str(data, offset)
         windows = int.from_bytes(data[offset:offset+1], byteorder='big')
@@ -57,27 +58,9 @@ class GameDTO(DTO):
         offset += 1
         linux = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
-        avg_playtime_forever, offset = self.deserialize_str(data, offset)
+        avg_playtime_forever = int.from_bytes(data[offset:offset+8], byteorder='big')
+        offset += 8
         genres, offset = self.deserialize_str(data, offset)
         return GameDTO(app_id =app_id, name =name, windows =windows,
                        mac =mac, linux =linux, genres =genres, release_date =release_date, 
                        avg_playtime_forever =avg_playtime_forever), offset
-
-
-    #def show_game(self):
-    #    logging.info(f"action: Show Game: {self.app_id}, {self.name}, {self.windows}, {self.mac}, {self.linux}, {self.genres}, {self.release_date}, {self.avg_playtime_forever}")
-    #
-    #def to_string(self):
-    #    return f"GAME|;|{self.app_id}|;|{self.name}|;|{self.windows}|;|{self.mac}|;|{self.linux}|;|{self.genres}|;|{self.release_date}|;|{self.avg_playtime_forever}"
-    #
-    #def from_string(data):
-    #    data = data.split("|;|")
-    #    return GameDTO(data[1], data[3], data[4], data[5], data[6], data[7], data[8], data[9])
-    #
-
-    #def retain(self, fields_to_keep):
-    #    attributes = vars(self)
-    #    for attr in list(attributes.keys()):
-    #        if attr not in fields_to_keep:
-    #            setattr(self, attr, None)
-    #    return self
