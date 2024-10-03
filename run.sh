@@ -4,6 +4,7 @@ docker build -f ./system/controllers/filters/filterBasic/Dockerfile -t "filterba
 docker build -f ./system/controllers/select/selectQ1/Dockerfile -t "selectq1:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
 docker build -f ./system/controllers/groupers/platformCounter/Dockerfile -t "platformcounter:latest" .
+docker build -f ./system/controllers/reducers/platformReducer/Dockerfile -t "platformreducer:latest" .
 
 #docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
 #docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .

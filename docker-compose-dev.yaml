@@ -110,7 +110,7 @@ services:
     container_name: output
     build:
       context: .
-      dockerfile: system/controllers/output/Dockerfile
+      dockerfile: system/controllers/output/Dockerfile 
     networks:
       - system_network
     depends_on:
@@ -125,11 +125,11 @@ services:
 
   platformreducer:
     container_name: platformreducer
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/platformCounter/Dockerfile
+    image: platformreducer:latest
+    entrypoint: python3 /app/system/controllers/reducers/platformReducer/main.py
     networks:
       - system_network
+    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
