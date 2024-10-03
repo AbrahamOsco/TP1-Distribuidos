@@ -1,3 +1,5 @@
+chmod +x run.sh stop.sh
+./stop.sh
 docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
 docker build -f ./system/controllers/filters/filterBasic/Dockerfile -t "filterbasic:latest" .

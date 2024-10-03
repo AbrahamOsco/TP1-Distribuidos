@@ -39,6 +39,15 @@ class Broker:
     def create_exchange(self, exchange_type, name=''):
         logging.info(f"action: Created a Exchange: | name: {name} | type: {exchange_type} | result: sucess ✅")
         self.channel.exchange_declare(exchange =name, exchange_type =exchange_type)
+    
+    # Crea un Exchange de tipo direct y bindea una queue anonima durable! ⭐.
+    def create_exchange_and_bind(self, name_exchange ="", binding_key ="", callback= None):
+        self.create_exchange(name =name_exchange, exchange_type='direct')
+        name_anonymous_queue = self.create_queue(durable =True, callback =callback)
+        self.bind_queue(exchange_name =name_exchange, queue_name =name_anonymous_queue,
+                                binding_key =binding_key)
+
+
 
     # Si no especificamos el queue_name (casi siempre haremos esto), mandamos por el exchange con su routing_key definido. 
     def public_message(self, exchange_name='', queue_name='', routing_key='', message=''):

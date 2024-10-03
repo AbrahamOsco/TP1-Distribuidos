@@ -54,17 +54,18 @@ class FilterBasic:
             if not self.game_index_init:
                 self.game_indexes = result_dto.indexes
                 self.game_index_init = True
-            for a_game in result_dto.data_raw:
-                basic_game = self.drop_basic_item(a_game, self.game_indexes)
-                batch_item.append(basic_game)
+            self.filter_fields_by(batch_item, result_dto, self.game_indexes)
         elif result_dto.operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
             if not self.review_index_init:
                 self.review_indexes = result_dto.indexes
                 self.review_index_init = True
-            for a_review in result_dto.data_raw:
-                basic_review = self.drop_basic_item(a_review, self.review_indexes)
-                batch_item.append(basic_review)
+            self.filter_fields_by(batch_item, result_dto, self.review_indexes)
         return batch_item
+
+    def filter_fields_by(self, batch_item, result_dto, indexes):
+        for a_game in result_dto.data_raw:
+            basic_game = self.drop_basic_item(a_game, indexes)
+            batch_item.append(basic_game)
 
     def drop_basic_item(self, a_item, dic_indexes):
         #logging.info(f"Dic Indexes 🦃 : {dic_indexes}")

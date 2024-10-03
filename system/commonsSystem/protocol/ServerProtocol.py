@@ -6,8 +6,8 @@ from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 class ServerProtocol(Protocol):
     
     def __init__(self, socket):
-        super().__init__(socket)  #uso super para invocar al constructor del padre. 
-
+        super().__init__(socket) 
+        
     def recv_data_raw(self):
         operation_type = self.recv_number_1_byte()
         if operation_type == ALL_DATA_WAS_SENT:

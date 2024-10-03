@@ -25,13 +25,9 @@ class Gateway:
         self.review_index_init= False
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True)
-        
         #Exchange query1
-        self.broker.create_exchange(name =EXCHANGE_RESULTQ1_GATEWAY, exchange_type='direct')
-        queue_result_q1 = self.broker.create_queue(durable =True, callback=self.handler_callback_q1())
-        self.broker.bind_queue(exchange_name =EXCHANGE_RESULTQ1_GATEWAY, queue_name =queue_result_q1,
-                                binding_key =ROUTING_KEY_RESULT_QUERY_1)
-
+        self.broker.create_exchange_and_bind(name_exchange=EXCHANGE_RESULTQ1_GATEWAY,
+                                         binding_key =ROUTING_KEY_RESULT_QUERY_1, callback =self.handler_callback_q1())
         self.socket_accepter = Socket(port =12345)
     
     def handler_callback_q1(self):
@@ -76,13 +72,13 @@ class Gateway:
             return
         elif self.game_index_init == False:
             self.find_main_index(list_items, self.game_indexes, self.game_index_init)
-        
+            self.game_index_init = True
         elif self.review_index_init == False:
             self.find_main_index(list_items, self.review_indexes, self.review_index_init)
+            self.review_index_init = True
     
     def find_main_index(self, list_items, dic_index, index_init):
         for i, element in enumerate(list_items[0]):
                 if element in dic_index.keys():
                     dic_index[element] = i
         list_items.pop(0)
-        index_init = True

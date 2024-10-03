@@ -19,10 +19,8 @@ class PlatformReducer:
         self.registered_client = False
         self.total_platform = PlatformDTO()
         # Exchange del lado del consumer hace un bind_queue /tiene un bindingkey para filtrar los mensajes. 
-        self.broker.create_exchange(name =EXCHANGE_PLATFORMCOUNTER_REDUCER, exchange_type ='direct')
-        queue_platform_reducer = self.broker.create_queue(durable =True, callback =self.handler_callback_exchange())
-        self.broker.bind_queue(exchange_name =EXCHANGE_PLATFORMCOUNTER_REDUCER, queue_name =queue_platform_reducer,
-                                binding_key =ROUTING_KEY_PLATFORMCOUNTER)
+        self.broker.create_exchange_and_bind(name_exchange=EXCHANGE_PLATFORMCOUNTER_REDUCER,
+                                    binding_key =ROUTING_KEY_PLATFORMCOUNTER, callback =self.handler_callback_exchange())
         #Exchange del lado del producer solo crea el exchange.
         self.broker.create_exchange(name = EXCHANGE_RESULTQ1_GATEWAY, exchange_type='direct')
 
@@ -30,28 +28,25 @@ class PlatformReducer:
     def handler_callback_exchange(self):
         def handler_message(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
-            logging.info(f"Handler message of exchange 🤯 🌵 🚦 🅱️ ⛑️ {result}")
             if result.operation_type != OperationType.OPERATION_TYPE_PLATFORM_DTO:
+                # Here! recien we send the PlatformDTO by exchange !! 
                 logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
             logging.info(f" Result: {result} {result.operation_type} {result.operation_type.value}")
             self.count_all_platforms(result)
-            logging.info(f"Answer from exchange: 😶‍🌫️ 🇬🇦 💇‍♂️ 🤯 🌵 🚦 🅱️ ⛑️ {result}")
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
-
 
     def count_all_platforms(self, platformDTO: PlatformDTO):
         if not self.registered_client:
             self.total_platform.client_id = platformDTO.client_id
             self.registered_client = True
-        logging.info(f"plaformDTO Recv {platformDTO.client_id} 🅰️ Win:{platformDTO.windows}  ⛏️{platformDTO.mac} 🥊 {platformDTO.linux} ")
         self.total_platform.windows += platformDTO.windows
         self.total_platform.linux += platformDTO.linux
         self.total_platform.mac += platformDTO.mac
-        logging.info(f"action: Total Reducer current 🤯 💯 Windows:{self.total_platform.windows} Linux: {self.total_platform.linux}"\
+        logging.info(f"action: Total reducer current 🤯 💯 Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
                      f"Mac: {self.total_platform.mac} | success: ✅ ")
         self.broker.public_message(exchange_name =EXCHANGE_RESULTQ1_GATEWAY, routing_key =ROUTING_KEY_RESULT_QUERY_1,
-                                    message=self.total_platform.serialize())
+                                    message =self.total_platform.serialize())
     def run(self):
         self.broker.start_consuming()
         logging.info("action: Initialize PlatformReducer 🦅 | success: ✅")
