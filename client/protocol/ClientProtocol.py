@@ -16,4 +16,12 @@ class ClientProtocol(Protocol):
             for field in item:
                 self.send_string(field)
 
-
+    def recv_platform_q1(self):
+        operation_type = self.recv_number_1_byte()
+        client_id = self.recv_number_1_byte()
+        windows = self.recv_number_4_bytes()
+        linux = self.recv_number_4_bytes()
+        mac = self.recv_number_4_bytes()
+        return {"ClientID": client_id,
+                "Windows": windows, "Linux": linux, "Mac": mac}
+        

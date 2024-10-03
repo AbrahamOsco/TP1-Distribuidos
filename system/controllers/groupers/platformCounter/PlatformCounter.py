@@ -8,9 +8,8 @@ import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 
 QUEUE_SELECTQ1_PLATFORMCOUNTER = "selectq1_platformCounter"
-QUEUE_PLATFORMCOUNTER_REDUCER = "platformCounter_platformReducer"
 EXCHANGE_PLATFORMCOUNTER_REDUCER = "exchange_platformCounter_platformReducer"
-ROUTING_KEY_PLATFORMCOUNTER = "platform.counter.reducer"
+ROUTING_KEY_PLATFORMCOUNTER = "platformCounter.platformReducer"
 
 class PlatformCounter:
     def __init__(self):
@@ -20,7 +19,8 @@ class PlatformCounter:
         self.broker = Broker()
         self.count_baches = 0 #borrar esto es de prueba debe tenerminar ucando sea EOF pero lo hago para q llege a 3 y mande al reducer
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, durable =True, callback =self.handler_callback())
-        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, durable =True)
+        
+        # Exchange del lado del producer, solo crea el exchange y luego publica mensajes                      
         self.broker.create_exchange(name =EXCHANGE_PLATFORMCOUNTER_REDUCER, exchange_type ='direct')
 
     def handler_callback(self):
@@ -47,7 +47,6 @@ class PlatformCounter:
         if self.count_baches == 3:
             self.broker.public_message(exchange_name =EXCHANGE_PLATFORMCOUNTER_REDUCER,
                                         routing_key =ROUTING_KEY_PLATFORMCOUNTER, message =self.platform.serialize())
-            self.broker.public_message(queue_name =QUEUE_PLATFORMCOUNTER_REDUCER, message =self.platform.serialize())
 
     def run(self):
         self.broker.start_consuming()

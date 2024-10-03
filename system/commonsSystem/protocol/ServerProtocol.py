@@ -23,3 +23,10 @@ class ServerProtocol(Protocol):
             return GamesRawDTO(client_id =client_id, games_raw =list_items_raw)
         return ReviewsRawDTO(client_id =client_id, reviews_raw =list_items_raw)
     
+    def send_platform_q1(self, platformDTO):
+        self.send_number_1_byte(platformDTO.operation_type.value)
+        self.send_number_1_byte(platformDTO.client_id)
+        self.send_number_4_bytes(platformDTO.windows)
+        self.send_number_4_bytes(platformDTO.linux)
+        self.send_number_4_bytes(platformDTO.mac)
+    

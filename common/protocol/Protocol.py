@@ -15,7 +15,24 @@ class Protocol:
         if bytes_sent != len(number_in_bytes):
             self.socket.close()
             raise RuntimeError(f"action: send_number_1_byte | result: fail | number: {a_number}")
-    
+
+    def send_number_4_bytes(self, a_number):
+        number_in_bytes = (a_number).to_bytes(4, byteorder='big')
+        bytes_sent = 0 
+        bytes_sent += self.socket.send_all(number_in_bytes)
+        if bytes_sent != len(number_in_bytes):
+            self.socket.close()
+            raise RuntimeError(f"action: send_number_4_byte | result: fail | number: {a_number}")
+
+    def recv_number_4_bytes(self):
+        number_in_bytes, bytes_recv = self.socket.recv_all(4)
+        if bytes_recv != 4:
+            self.socket.close()
+            raise RuntimeError("action: recv_number_4_byte | result: fail |")
+        number_int = int.from_bytes(number_in_bytes, byteorder='big') 
+        return number_int
+
+
     def recv_number_1_byte(self):
         number_in_bytes, bytes_recv = self.socket.recv_all(1)
         if bytes_recv != 1:
