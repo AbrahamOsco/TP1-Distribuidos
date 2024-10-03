@@ -1,4 +1,4 @@
-from system.controllers.joiners.MonitorJoinerQ4.Joiner import Joiner
+"""from system.controllers.joiners.MonitorJoinerQ4.Joiner import Joiner
 import signal
 
 def main():
@@ -7,4 +7,4 @@ def main():
     joiner.run()
 
 if __name__ == "__main__":
-    main()
+    main()"""

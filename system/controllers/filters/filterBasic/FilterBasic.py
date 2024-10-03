@@ -27,7 +27,7 @@ class FilterBasic:
             result_dto = DetectDTO(body).get_dto()
             if (result_dto.operation_type != OperationType.OPERATION_TYPE_GAMES_INDEX_DTO and 
                 result_dto.operation_type != OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO):
-                    logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")  
+                    logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
             batch_filtered = self.filter_fields_item(result_dto)
             self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
             ch.basic_ack(delivery_tag =method.delivery_tag)
