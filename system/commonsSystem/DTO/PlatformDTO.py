@@ -26,6 +26,8 @@ class PlatformDTO(DTO):
         return bytes(platform_bytes)
     
     def deserialize(self, data, offset):
+        operation_tpe = int.from_bytes(data[offset:offset + 1], byteorder='big')
+        offset += 1
         client_id = int.from_bytes(data[offset:offset + 1], byteorder='big')
         offset += 1
         windows = int.from_bytes(data[offset:offset + 4], byteorder='big')
