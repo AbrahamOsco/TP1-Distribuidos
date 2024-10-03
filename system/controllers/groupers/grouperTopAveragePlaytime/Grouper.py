@@ -1,6 +1,7 @@
 import logging
 import os
 from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 
 class Grouper(Node):
     def __init__(self):
@@ -21,14 +22,16 @@ class Grouper(Node):
     
     def send_result(self):
         logging.info(f"action: result | list: {self.list}")
-        self.broker.public_message(exchange_name=self.sink, message=self.list, routing_key="default")
+        self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
 
-    def process_data(self, data):
-        if self.has_to_be_inserted(data):
-            for i in range(len(self.list)):
-                if data.avg_playtime_forever > self.list[i].avg_playtime_forever:
-                    self.list.insert(i, data)
-                    break
-            if len(self.list) > self.top_size:
-                self.list.pop()
-            self.min_time = self.list[-1].avg_playtime_forever
+    def process_data(self, data: GamesDTO):
+        logging.info(f"action: process_data | data: {data.games_dto}")
+        for game in data.games_dto:
+            if self.has_to_be_inserted(game):
+                for i in range(len(self.list)):
+                    if game.avg_playtime_forever > self.list[i].avg_playtime_forever:
+                        self.list.insert(i, game)
+                        break
+                if len(self.list) > self.top_size:
+                    self.list.pop()
+                self.min_time = self.list[-1].avg_playtime_forever

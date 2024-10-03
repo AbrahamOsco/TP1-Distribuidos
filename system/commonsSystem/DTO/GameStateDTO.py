@@ -16,3 +16,6 @@ class GameStateDTO(DTO):
 
     def deserialize(data, offset):
         pass
+
+    def from_state(game):
+        return GameStateDTO()

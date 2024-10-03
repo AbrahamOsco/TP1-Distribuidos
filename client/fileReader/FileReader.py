@@ -1,12 +1,14 @@
 import os
 import csv
+import sys
 import logging
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 0.10
+PERCENT_OF_FILE_FOR_USE = 1
 
 class FileReader:
     def __init__(self, file_name, batch_size):
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
+        csv.field_size_limit(sys.maxsize)
         self.file_name = file_name
         self.batch_size = batch_size
         self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8")
@@ -15,6 +17,7 @@ class FileReader:
         self.bytes_read = 0
         self.is_closed = False
         self.fix_header_game = False
+        self.last_read = None
 
     def get_next_batch(self):
         games = []
@@ -22,13 +25,24 @@ class FileReader:
             logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
             return None
         try:
+            current_size = 0
+            if self.last_read is not None:
+                games.append(self.last_read)
+                total_size_raw = sum(len(element) for element in self.last_read)
+                self.bytes_read += (total_size_raw + len(self.last_read))
+                current_size += total_size_raw
+                self.last_read = None
             for _ in range(self.batch_size):
                 if self.bytes_read > self.usage_limit:
                     self.close()
                     break
                 data_raw = next(self.reader)
                 total_size_raw = sum(len(element) for element in data_raw)
+                if current_size + total_size_raw > 2**24:
+                    self.last_read = data_raw
+                    break
                 self.bytes_read += (total_size_raw + len(data_raw))
+                current_size += total_size_raw
                 if self.fix_header_game == False and self.file_name == 'games':
                     data_raw.insert(INDEX_TO_FIX_HEADER, 'Unknown') # add a new column to synchronize the header
                     self.fix_header_game = True

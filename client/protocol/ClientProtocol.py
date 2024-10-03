@@ -1,4 +1,5 @@
 from common.protocol.Protocol import Protocol
+from common.DTO.EOFDTO import OPERATION_TYPE_EOF
 
 class ClientProtocol(Protocol):
     
@@ -16,4 +17,6 @@ class ClientProtocol(Protocol):
             for field in item:
                 self.send_string(field)
 
+    def send_eof(self):
+        self.send_number_1_byte(OPERATION_TYPE_EOF)
 

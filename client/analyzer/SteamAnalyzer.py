@@ -37,6 +37,8 @@ class SteamAnalyzer:
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
 
+        self.protocol.send_eof()
+
         while True:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):

@@ -1,6 +1,5 @@
 from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
-from system.commonsSystem.broker.BrokerSerializer import BrokerSerializer
 import logging
 import pika
 
@@ -11,7 +10,6 @@ class Broker:
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
-        self.broker_serializer = BrokerSerializer()
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
     def create_source(self, name ='', callback =None):

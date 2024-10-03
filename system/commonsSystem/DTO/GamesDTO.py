@@ -2,17 +2,27 @@ from system.commonsSystem.DTO.DTO import DTO
 from system.commonsSystem.DTO.GameMinimalDTO import GameMinimalDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
+from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
+from system.commonsSystem.DTO.StateQ2345DTO import StateQ2345DTO
+from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
+from system.commonsSystem.DTO.PlaytimeDTO import PlaytimeDTO
 
 STATE_GAMES_MINIMAL = 1
 STATE_PLATFORM = 2
+STATE_Q2345 = 3
+STATE_DECADE = 4
+STATE_PLAYTIME = 5
 
 stateToClass = {
     STATE_GAMES_MINIMAL: GameMinimalDTO,
     STATE_PLATFORM: PlatformDTO,
+    STATE_Q2345: StateQ2345DTO,
+    STATE_DECADE: DecadeDTO,
+    STATE_PLAYTIME: PlaytimeDTO,
 }
 
 class GamesDTO(DTO):
-    def __init__(self, client_id:int=0, state_games:int=0, games_dto =[]):
+    def __init__(self, client_id:int=0, state_games:int=0, games_dto: list[GameStateDTO] =[]):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
         self.state_games = state_games 
@@ -40,20 +50,37 @@ class GamesDTO(DTO):
         for _ in range(games_dto_length):
             game, offset = stateToClass[state_games].deserialize(data, offset)
             some_games_dto.append(game)
-        gamesDTO = GamesDTO(state_games=state_games, client_id=client_id, games_dto=some_games_dto)
+        gamesDTO = GamesDTO(client_id=client_id, state_games=state_games, games_dto=some_games_dto)
         return gamesDTO, offset
 
     def set_state(self, state_games):
         self.state_games = state_games
+        self.games_dto = list(map(lambda game: stateToClass[state_games].from_state(game), self.games_dto))
 
     def is_EOF(self):
         return False
     
     def get_client(self):
         return self.client_id
+    
+    def get_platform_count(self):
+        count = {
+            "windows": 0,
+            "mac": 0,
+            "linux": 0
+        }
+        for game in self.games_dto:
+            platform = game.get_platform_count()
+            count["windows"] += platform["windows"]
+            count["mac"] += platform["mac"]
+            count["linux"] += platform["linux"]
+        return count
 
-    def from_raw(client_id, data_raw, indexes):
+    def filter_games(self, filter_func):
+        self.games_dto = list(filter(filter_func, self.games_dto))
+
+    def from_raw(client_id: int, data_raw:str, indexes):
         games_dto = []
         for game_raw in data_raw:
             games_dto.append(GameMinimalDTO.from_raw(game_raw, indexes))
-        return GamesDTO(client_id=client_id, games_dto=games_dto)
+        return GamesDTO(client_id=client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto)

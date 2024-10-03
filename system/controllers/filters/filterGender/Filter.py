@@ -1,8 +1,7 @@
-"""import os
+import os
 import logging
->>>>>>> 15427c4 (advances)
 from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_DECADE
 
 class Filter(Node):
     def __init__(self):
@@ -12,13 +11,15 @@ class Filter(Node):
     def is_gender(self, genders, wanted_gender):
         return wanted_gender in genders.split(',')
     
-    def trim_data(self, data):
-        return DecadeDTO.from_genreDTO(data)
-    
-    def send_game(self, data, gender):
-        self.broker.public_message(exchange_name=self.sink, routing_key=gender, message=self.trim_data(data))
+    def send_game(self, data:GamesDTO, gender):
+        data.set_state(STATE_DECADE)
+        self.broker.public_message(exchange_name=self.sink, routing_key=gender, message=data.serialize())
 
-    def process_data(self, data):
+    def process_data(self, data: GamesDTO):
         for gender in self.genders:
-            if self.is_gender(data.genres, gender):
-                self.send_game(data, gender)"""
+            games_in_gender = []
+            for game in data.games_dto:
+                if self.is_gender(game.genres, gender):
+                    games_in_gender.append(game)
+            if len(games_in_gender) > 0:
+                self.send_game(GamesDTO(client_id=data.client_id, state_games=STATE_DECADE, games_dto=games_in_gender), gender)

@@ -1,8 +1,7 @@
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 
 class PlatformDTO(GameStateDTO):
-    def __init__(self, client_id: int =0, windows: int =0, mac: int = 0, linux: int = 0):
-        self.client_id = client_id
+    def __init__(self, windows: int =0, mac: int = 0, linux: int = 0):
         self.windows = windows
         self.mac = mac
         self.linux = linux
@@ -16,19 +15,19 @@ class PlatformDTO(GameStateDTO):
     
     def serialize(self):
         platform_bytes = bytearray()
-        platform_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
         platform_bytes.extend(self.windows.to_bytes(4, byteorder='big'))
         platform_bytes.extend(self.mac.to_bytes(4, byteorder='big'))
         platform_bytes.extend(self.linux.to_bytes(4, byteorder='big'))
         return bytes(platform_bytes)
 
-    def deserialize(self, data, offset):
-        client_id = int.from_bytes(data[offset:offset + 1], byteorder='big')
-        offset += 1
+    def deserialize(data, offset):
         windows = int.from_bytes(data[offset:offset + 4], byteorder='big')
         offset += 4
         mac = int.from_bytes(data[offset:offset + 4], byteorder='big')
         offset += 4
         linux = int.from_bytes(data[offset:offset + 4], byteorder='big')
         offset += 4
-        return PlatformDTO(client_id=client_id, windows=windows, mac=mac, linux=linux), offset
+        return PlatformDTO(windows=windows, mac=mac, linux=linux), offset
+    
+    def from_state(game):
+        return PlatformDTO(windows=game.windows, mac=game.mac, linux=game.linux)

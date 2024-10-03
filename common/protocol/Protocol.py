@@ -31,7 +31,7 @@ class Protocol:
         if bytes_sent != len(number_in_bytes):
             self.socket.close()
             raise RuntimeError(f"action: send_number_2_byte | result: fail | number: {a_number}")
-    
+        
     def recv_number_2_bytes(self):
         number_in_bytes, bytes_recv = self.socket.recv_all(2)
         if bytes_recv != 2:
@@ -39,21 +39,36 @@ class Protocol:
             raise RuntimeError("action: recv_number_2_byte | result: fail |")
         number_int = int.from_bytes(number_in_bytes, byteorder='big') 
         return number_int 
-
+        
+    def send_number_3_bytes(self, a_number):
+        number_in_bytes = (a_number).to_bytes(3, byteorder='big')
+        bytes_sent = 0 
+        bytes_sent += self.socket.send_all(number_in_bytes)
+        if bytes_sent != len(number_in_bytes):
+            self.socket.close()
+            raise RuntimeError(f"action: send_number_3_byte | result: fail | number: {a_number}")
+        
+    def recv_number_3_bytes(self):
+        number_in_bytes, bytes_recv = self.socket.recv_all(3)
+        if bytes_recv != 3:
+            self.socket.close()
+            raise RuntimeError("action: recv_number_3_byte | result: fail |")
+        number_int = int.from_bytes(number_in_bytes, byteorder='big') 
+        return number_int 
 
     def send_string(self, a_string):
         bytes_sent = 0
         string_in_bytes = a_string.encode(FORMAT_ENCODED)
         size_string_bytes = len(string_in_bytes)
         
-        self.send_number_2_bytes(size_string_bytes)
+        self.send_number_3_bytes(size_string_bytes)
         bytes_sent += self.socket.send_all(string_in_bytes) 
         if bytes_sent != size_string_bytes:
             self.socket.close()
             raise RuntimeError(f"action: send_string | result: fail | string: {a_string} ")
 
     def recv_string(self):
-        size_string_bytes = self.recv_number_2_bytes()
+        size_string_bytes = self.recv_number_3_bytes()
         str_in_bytes, bytes_recv = self.socket.recv_all(size_string_bytes) 
         if size_string_bytes != bytes_recv:
             self.socket.close()

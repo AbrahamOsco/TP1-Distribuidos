@@ -1,5 +1,6 @@
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 from system.commonsSystem.DTO.DTO import DTO
+import logging
 
 indexMap = {
     "AppID": "app_id",
@@ -58,9 +59,9 @@ class GameMinimalDTO(GameStateDTO):
         for i, value in enumerate(data_raw):
             if i in indexes.keys():
                 if indexes[i] == "Windows" or indexes[i] == "Mac" or indexes[i] == "Linux":
-                    setattr(attributes, indexMap[indexes[i]], command_platform[value])
+                    attributes[indexMap[indexes[i]]] = command_platform[value]
                 else:
-                    setattr(attributes, indexMap[indexes[i]], value)
+                    attributes[indexMap[indexes[i]]] = value
         return GameMinimalDTO(app_id=attributes["app_id"], name=attributes["name"],
                               windows=attributes["windows"], mac=attributes["mac"], linux=attributes["linux"],
                               genres=attributes["genres"], release_date=attributes["release_date"],

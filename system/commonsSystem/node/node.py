@@ -3,6 +3,7 @@ import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 class UnfinishedBusinessException(Exception):
     pass
@@ -31,7 +32,7 @@ class Node:
         for source in self.source:
             self.broker.create_source(name=source, callback=self.process_queue_message)
             self.broker.create_sink(type=self.source_type, name=source)
-            self.broker.bind_queue(queue_name=source, sink=source, binding_key=self.source_key)
+            self.broker.bind_queue(queue_name=source, sink=source, routing_key=self.source_key)
         self.broker.create_sink(type=self.sink_type, name=self.sink)
         if self.amount_of_nodes < 2:
             return
@@ -53,10 +54,10 @@ class Node:
         )
 
     def send_eof(self, client):
-        self.broker.public_message(exchange_name=self.sink, message=EOFDTO(client, False).serialize(), routing_key='default')
+        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key='default')
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client,True).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True).serialize())
 
     def check_confirmations(self, client):
         self.confirmations += 1
@@ -89,7 +90,7 @@ class Node:
         self.confirmations = 1
         self.clients_pending_confirmations.append(client)
         logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
@@ -105,7 +106,6 @@ class Node:
 
     def process_queue_message(self, ch, method, properties, body):
         try:
-            logging.info(f"action: process_queue_message | body: {body}")
             data = DetectDTO(body).get_dto()
             if data.is_EOF():
                 self.inform_eof_to_nodes(data.get_client())

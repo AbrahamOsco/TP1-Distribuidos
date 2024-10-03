@@ -1,5 +1,6 @@
 from common.protocol.Protocol import Protocol
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
+from common.DTO.EOFDTO import EOFDTO, OPERATION_TYPE_EOF
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 
 class ServerProtocol(Protocol):
@@ -9,6 +10,8 @@ class ServerProtocol(Protocol):
 
     def recv_data_raw(self):
         operation_type = self.recv_number_1_byte()
+        if operation_type == OPERATION_TYPE_EOF:
+            return EOFDTO()
         client_id = self.recv_number_1_byte()
         list_items_raw = []
         items_amount = self.recv_number_2_bytes()
