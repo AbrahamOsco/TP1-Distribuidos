@@ -1,4 +1,4 @@
-"""import os
+import os
 import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
@@ -21,6 +21,3 @@ class Filter(Node):
         for gender in self.genders:
             if self.is_gender(data.genres, gender):
                 self.send_game(data, gender)
-                
-                
-"""

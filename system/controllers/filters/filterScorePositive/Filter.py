@@ -1,4 +1,4 @@
-"""from system.commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
 
 class Filter(Node):
     def __init__(self):
@@ -12,4 +12,4 @@ class Filter(Node):
 
     def process_data(self, data):
         if data["review_score"] == 1:
-            self.send_review(data)"""
+            self.send_review(data)
