@@ -1,4 +1,4 @@
-from common.utils.utils import initialize_log 
+from common.utils.utils import initialize_log, ALL_DATA_WAS_SENT
 from client.fileReader.FileReader import FileReader
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -8,6 +8,7 @@ from client.resultWriter.ResultWriter import ResultWriter
 import logging
 import csv
 import os
+
 
 class SteamAnalyzer:
 
@@ -39,6 +40,7 @@ class SteamAnalyzer:
             if(some_games == None):
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
+            i += 1
         logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
         i = 0
         while i < 3 :
@@ -46,10 +48,13 @@ class SteamAnalyzer:
             if(some_reviews == None):
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
+            i += 1
+        self.protocol.send_number_1_byte(ALL_DATA_WAS_SENT)
         logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
 
     def get_result_from_queries(self):
         while True:
+            logging.info("action: Waiting for results from queries | result: pending ⌚")
             result_query = self.protocol.recv_result_query()
             self.result_writer.run(result_query)
 
