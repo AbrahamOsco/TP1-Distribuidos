@@ -1,4 +1,5 @@
 import os
+import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLAYTIME
 
@@ -15,7 +16,7 @@ class Filter(Node):
 
     def send_game(self, data:GamesDTO):
         data.set_state(STATE_PLAYTIME)
-        self.broker.public_message(exchange_name=self.sink, message=data.serialize(), routing_key="default")
+        self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data:GamesDTO):
         data.filter_games(lambda x: self.is_correct_decade(x.release_date))

@@ -2,15 +2,27 @@ from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
 import logging
 import pika
+import time
+import socket
 
 class Broker:
 
     def __init__(self):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+        self.stablish_connection()
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
+
+    def stablish_connection(self, retries=5):
+        for attempt in range(retries):
+            try:
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+                return
+            except socket.gaierror as e:
+                print(f"Attempt {attempt + 1} failed with error: {e}. Retrying in {3} seconds...")
+                time.sleep(3)
+        raise Exception("Failed to establish connection after multiple retries.")
 
     def create_source(self, name ='', callback =None):
         durable = name != ''
