@@ -11,7 +11,6 @@ class Broker:
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
-        self.broker_serializer = BrokerSerializer()
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
     def create_queue(self, name ='', durable =False, callback =None):
@@ -47,12 +46,9 @@ class Broker:
         self.bind_queue(exchange_name =name_exchange, queue_name =name_anonymous_queue,
                                 binding_key =binding_key)
 
-
-
-    # Si no especificamos el queue_name (casi siempre haremos esto), mandamos por el exchange con su routing_key definido. 
+    # Si no especificamos el queue_name es una queue anonyma mandamos por el exchange con su routing_key definido.
+    # Si especifciamos el name es una working queue y ultiples workers deben estar conectadas a esta hacer.  
     def public_message(self, exchange_name='', queue_name='', routing_key='', message=''):
-        # BrokerSerializar will be deleted! 
-        #message = self.broker_serializer.serialize(message)
         if queue_name != '':
             self.channel.basic_publish(exchange =exchange_name, routing_key =queue_name, body=message,
                 properties = self.queues[queue_name].get_properties())
@@ -62,14 +58,21 @@ class Broker:
             self.channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=message,
                                        properties=pika.BasicProperties(delivery_mode=2))
 
-    def get_message(self, message):
-        return self.broker_serializer.deserialize(message)
-
     def start_consuming(self):
-        self.channel.start_consuming()
+        try:
+            logging.info("action: Start consuming from RabbitMQ queues | result: pending ⏳")
+            self.channel.start_consuming()
+        except Exception as e:
+                logging.error(f"Error during consuming: Closing consume?: ✅  {e}🗡️")
 
+    #  self.channel.basic_cancel(self.consumer_tag)  # Cancelar el consumo de cada queue q tenemos registrada cierto?  aca un for por el dic. y guardame el tag
     def close(self):
+        self.channel.stop_consuming()
+        logging.info("action: Stopping consuming from RabbitMQ queues | result: success ✅")
+        self.channel.close()
+        logging.info("action: Closing RabbitMQ channel | result: success ✅")
         self.connection.close()
+        logging.info("action: Closing RabbitMQ connection | result: success ✅")
 
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
