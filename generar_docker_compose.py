@@ -94,6 +94,7 @@ services:
     volumes:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
+      - ./results:/results
     environment:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
