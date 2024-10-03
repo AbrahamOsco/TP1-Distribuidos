@@ -1,4 +1,12 @@
 import logging
+from enum import Enum
+
+class ResultType(Enum):
+    RESULT_QUERY_1 = 1
+    RESULT_QUERY_2 = 2
+    RESULT_QUERY_3 = 3
+    RESULT_QUERY_4 = 4
+    RESULT_QUERY_5 = 5
 
 def initialize_log(logging_level):
     logging.basicConfig(
@@ -6,3 +14,4 @@ def initialize_log(logging_level):
         level=logging_level,
         datefmt='%Y-%m-%d %H:%M:%S',
     )
+

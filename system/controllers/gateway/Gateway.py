@@ -1,10 +1,10 @@
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
-from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 from system.commonsSystem.broker.Broker import Broker
+from common.utils.utils import initialize_log
 
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
@@ -46,8 +46,6 @@ class Gateway:
             self.protocol.send_platform_q1(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_result_q1
-
-        pass
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")

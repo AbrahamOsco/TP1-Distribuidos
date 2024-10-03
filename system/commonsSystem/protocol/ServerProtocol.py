@@ -1,3 +1,4 @@
+from common.utils.utils import ResultType
 from common.protocol.Protocol import Protocol
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -24,7 +25,7 @@ class ServerProtocol(Protocol):
         return ReviewsRawDTO(client_id =client_id, reviews_raw =list_items_raw)
     
     def send_platform_q1(self, platformDTO):
-        self.send_number_1_byte(platformDTO.operation_type.value)
+        self.send_number_1_byte(ResultType.RESULT_QUERY_1.value)
         self.send_number_1_byte(platformDTO.client_id)
         self.send_number_4_bytes(platformDTO.windows)
         self.send_number_4_bytes(platformDTO.linux)

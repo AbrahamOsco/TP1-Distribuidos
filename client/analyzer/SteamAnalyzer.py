@@ -1,12 +1,13 @@
-import logging
-import csv
 from common.utils.utils import initialize_log 
-import os
 from client.fileReader.FileReader import FileReader
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 from common.socket.Socket import Socket
 from client.protocol.ClientProtocol import ClientProtocol
+from client.resultWriter.ResultWriter import ResultWriter
+import logging
+import csv
+import os
 
 class SteamAnalyzer:
 
@@ -14,6 +15,7 @@ class SteamAnalyzer:
         self.initialize_config()
         self.game_reader = FileReader(file_name='games', batch_size=5)
         self.review_reader = FileReader(file_name='reviews', batch_size=5)
+        self.result_writer = ResultWriter()
         self.run()
 
     def initialize_config(self):
@@ -31,30 +33,25 @@ class SteamAnalyzer:
 
     def run(self):
         self.connect_to_server()
-        for i in range(3):
+        i = 0
+        while  i < 3:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
-        logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-
-        for j in range(3):
+        logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
+        i = 0
+        while i < 3 :
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
-        logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-
-    def write_query1_file(self, result_q1):
-        logging.info(f"action: Recv result Q1 🕹️ : {result_q1}| success: ✅")
-        with open("results/query1.csv", mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=result_q1.keys())
-            writer.writeheader() # Escribimos las key del dic
-            writer.writerow(result_q1) # Escribimos las values del dic
+        logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
 
     def get_result_from_queries(self):
-        result_q1 = self.protocol.recv_platform_q1()
-        self.write_query1_file(result_q1)        
-        result_q1 = self.protocol.recv_platform_q1()
+        while True:
+            result_query = self.protocol.recv_result_query()
+            self.result_writer.run(result_query)
+
 
 
