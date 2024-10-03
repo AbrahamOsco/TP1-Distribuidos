@@ -11,8 +11,8 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name='games', batch_size=5)
-        self.review_reader = FileReader(file_name='reviews', batch_size=5)
+        self.game_reader = FileReader(file_name='games', batch_size=25)
+        self.review_reader = FileReader(file_name='reviews', batch_size=2000)
         self.run()
 
     def initialize_config(self):
@@ -45,7 +45,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        
+
         self.protocol.send_eof()
 
     def get_result_from_queries(self):

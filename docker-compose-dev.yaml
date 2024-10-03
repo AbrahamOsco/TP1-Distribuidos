@@ -49,7 +49,7 @@ services:
     depends_on:
       - rabbitmq
       - selectQ2345
-      - selectQ345
+      - filterscorepositive_1
       # selectQ1:
       #   condition: service_started
 
@@ -95,25 +95,25 @@ services:
       - rabbitmq
       - filtergender_1
 
-  selectQ345:
-    container_name: selectQ345
-    image: selectq345:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ345/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=selectQ345
-      - NODE_ID=1
-      - SOURCE=DataParsed
-      - SOURCE_KEY=reviews
-      - SOURCE_TYPE=topic
-      - SINK=ReviewsQ345
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      - rabbitmq
-      - filterscorepositive_1
+  # selectQ345:
+  #   container_name: selectQ345
+  #   image: selectq345:latest
+  #   entrypoint: python3 /app/system/controllers/select/selectQ345/main.py
+  #   environment:
+  #     - LOGGING_LEVEL=INFO
+  #     - PYTHONPATH=/app
+  #     - NODE_NAME=selectQ345
+  #     - NODE_ID=1
+  #     - SOURCE=DataParsed
+  #     - SOURCE_KEY=reviews
+  #     - SOURCE_TYPE=topic
+  #     - SINK=ReviewsQ345
+  #   networks:
+  #     - system_network
+  #   restart: on-failure
+  #   depends_on:
+  #     - rabbitmq
+  #     - filterscorepositive_1
 
   # platformcounter_1:
   #   container_name: platformcounter_1
@@ -221,7 +221,9 @@ services:
       - PYTHONPATH=/app
       - NODE_NAME=filterscorepositive
       - NODE_ID=1
-      - SOURCE=ReviewsQ345
+      - SOURCE=DataParsed
+      - SOURCE_KEY=reviews
+      - SOURCE_TYPE=topic
       - SINK=ReviewsPositives
     depends_on:
       - rabbitmq

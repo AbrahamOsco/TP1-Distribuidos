@@ -5,7 +5,10 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
-class UnfinishedBusinessException(Exception):
+class UnfinishedGamesException(Exception):
+    pass
+
+class UnfinishedReviewsException(Exception):
     pass
 
 class Node:
@@ -30,9 +33,9 @@ class Node:
     def initialize_queues(self):
         ## Source and destination for all workers
         for i, source in enumerate(self.source):
-            self.broker.create_source(name=source, callback=self.process_queue_message)
+            self.broker.create_source(name=self.node_name, callback=self.process_queue_message)
             self.broker.create_sink(type=self.source_type[i], name=source)
-            self.broker.bind_queue(queue_name=source, sink=source, routing_key=self.source_key[i])
+            self.broker.bind_queue(queue_name=self.node_name, sink=source, routing_key=self.source_key[i])
         self.broker.create_sink(type=self.sink_type, name=self.sink)
         if self.amount_of_nodes < 2:
             return
@@ -113,8 +116,11 @@ class Node:
                 self.check_new_client(data)
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
-        except UnfinishedBusinessException as e:
-            logging.info(f"action: error | Unfinished Business Exception")
+        except UnfinishedGamesException as e:
+            logging.info(f"action: error | Unfinished Games Exception")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        except UnfinishedReviewsException as e:
+            logging.info(f"action: error | Unfinished Reviews Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             logging.error(f"action: error | result: {e}")

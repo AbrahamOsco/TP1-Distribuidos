@@ -16,7 +16,7 @@ command_platform = {"True":1, "False":0}
 class GameMinimalDTO(GameStateDTO):
     def __init__(self, app_id="", name="", windows=0,
             mac=0, linux=0, genres="", release_date="", avg_playtime_forever=""):
-        self.app_id = app_id
+        self.app_id = int(app_id)
         self.name = name
         self.release_date = release_date
         self.windows = int(windows)
@@ -27,7 +27,7 @@ class GameMinimalDTO(GameStateDTO):
 
     def serialize(self):
         game_bytes = bytearray()
-        game_bytes.extend(DTO.serialize_str(self.app_id))
+        game_bytes.extend(self.app_id.to_bytes(4, byteorder='big'))
         game_bytes.extend(DTO.serialize_str(self.name))
         game_bytes.extend(DTO.serialize_str(self.release_date))
         game_bytes.extend(self.windows.to_bytes(1, byteorder='big'))
@@ -38,7 +38,8 @@ class GameMinimalDTO(GameStateDTO):
         return game_bytes
 
     def deserialize(data, offset):
-        app_id, offset = DTO.deserialize_str(data, offset)
+        app_id = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
         name, offset = DTO.deserialize_str(data, offset)
         release_date, offset = DTO.deserialize_str(data, offset)
         windows = int.from_bytes(data[offset:offset+1], byteorder='big')

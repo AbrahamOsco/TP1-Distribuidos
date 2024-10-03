@@ -2,8 +2,8 @@ from system.commonsSystem.DTO.ReviewStateDTO import ReviewStateDTO
 from system.commonsSystem.DTO.DTO import DTO
 
 class ReviewTextDTO(ReviewStateDTO):
-    def __init__(self, app_id="", review_text=""):
-        self.app_id = app_id
+    def __init__(self, app_id:int=0, review_text=""):
+        self.app_id = int(app_id)
         self.review_text = review_text
 
     def serialize(self):

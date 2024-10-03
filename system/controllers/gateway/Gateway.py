@@ -18,7 +18,7 @@ class Gateway:
         self.game_indexes_inverted = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
                             "Genres": 0, "Release date": 0, "Average playtime forever": 0}
         self.game_indexes = {}
-        self.review_indexes_inverted = { 'app_name':0, 'review_text':0, 'review_score':0 }
+        self.review_indexes_inverted = { 'app_id':0, 'review_text':0, 'review_score':0 }
         self.review_indexes = {}
         self.game_index_init= False
         self.review_index_init= False
@@ -62,7 +62,7 @@ class Gateway:
             return
         elif operation_type == OPERATION_TYPE_REVIEWS_RAW and self.review_index_init == True:
             return
-        elif self.game_index_init == False:
+        elif operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == False:
             for i, element in enumerate(list_items[0]):
                 if element in self.game_indexes_inverted.keys():
                     self.game_indexes_inverted[element] = i
@@ -70,7 +70,7 @@ class Gateway:
             self.game_index_init = True
             self.game_indexes = {v: k for k, v in self.game_indexes_inverted.items()}
         
-        elif self.review_index_init == False:
+        elif operation_type == OPERATION_TYPE_REVIEWS_RAW and self.review_index_init == False:
             for i, element in enumerate(list_items[0]):
                 if element in self.review_indexes_inverted.keys():
                     self.review_indexes_inverted[element] = i

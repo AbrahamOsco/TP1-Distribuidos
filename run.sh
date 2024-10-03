@@ -2,7 +2,6 @@ docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
 docker build -f ./system/controllers/select/selectQ1/Dockerfile -t "selectq1:latest" .
 docker build -f ./system/controllers/select/selectQ2345/Dockerfile -t "selectq2345:latest" .
-docker build -f ./system/controllers/select/selectQ345/Dockerfile -t "selectq345:latest" .
 docker build -f ./client/Dockerfile -t "client:latest" .
 docker build -f ./system/controllers/groupers/platformCounter/Dockerfile -t "platformcounter:latest" .
 docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .

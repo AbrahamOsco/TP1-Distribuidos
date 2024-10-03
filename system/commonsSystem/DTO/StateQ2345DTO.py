@@ -2,8 +2,8 @@ from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 from system.commonsSystem.DTO.DTO import DTO
 
 class StateQ2345DTO(GameStateDTO):
-    def __init__(self, app_id="", name="", genres="", release_date="", avg_playtime_forever=""):
-        self.app_id = app_id
+    def __init__(self, app_id:int=0, name="", genres="", release_date="", avg_playtime_forever=""):
+        self.app_id = int(app_id)
         self.name = name
         self.release_date = release_date
         self.avg_playtime_forever = avg_playtime_forever
@@ -11,7 +11,7 @@ class StateQ2345DTO(GameStateDTO):
     
     def serialize(self):
         platform_bytes = bytearray()
-        platform_bytes.extend(DTO.serialize_str(self.app_id))
+        platform_bytes.extend(self.app_id.to_bytes(4, byteorder='big'))
         platform_bytes.extend(DTO.serialize_str(self.name))
         platform_bytes.extend(DTO.serialize_str(self.release_date))
         platform_bytes.extend(DTO.serialize_str(self.avg_playtime_forever))
@@ -19,7 +19,8 @@ class StateQ2345DTO(GameStateDTO):
         return bytes(platform_bytes)
 
     def deserialize(data, offset):
-        app_id, offset = DTO.deserialize_str(data, offset)
+        app_id = int.from_bytes(data[offset:offset+4], byteorder='big')
+        offset += 4
         name, offset = DTO.deserialize_str(data, offset)
         release_date, offset = DTO.deserialize_str(data, offset)
         avg_playtime_forever, offset = DTO.deserialize_str(data, offset)
