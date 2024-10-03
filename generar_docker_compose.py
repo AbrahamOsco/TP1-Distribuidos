@@ -98,7 +98,6 @@ services:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
       - TOP_SIZE=5
       - HOSTNAME=gateway
@@ -128,13 +127,30 @@ services:
       - SINK=""
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_NEEDED=1
       - AMOUNT_OF_NODES=1
       - TOP_SIZE=5
+
+  platformreducer:
+    container_name: platformreducer
+    image: platformreducer:latest
+    entrypoint: python3 /app/system/controllers/reducers/platformReducer/main.py
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONPATH=/app
+      - NODE_NAME="platformreducer"
+      - NODE_ID=3
+      - SOURCE="CountByPlatform"
+      - SINK={get_sink("platformreducer")}
+      - LOGGING_LEVEL=INFO
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""
-        id = 5
+        id = 4
         for i in range(1, int(cantidad) + 1):
             id += 1
             servicios += f"""
@@ -155,7 +171,7 @@ services:
       - SINK={get_sink(nombre_servicio.lower())}
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_NEEDED={cantidad}
+      - AMOUNT_NEEDED=5000
       - DECADE=2010
       - AMOUNT_OF_NODES={cantidad}
       - GENDERS="Action,Indie"
