@@ -2,6 +2,7 @@ import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
+from system.commonsSystem.DTO.DetectDTO import DetectDTO
 
 class UnfinishedBusinessException(Exception):
     pass
@@ -88,7 +89,7 @@ class Node:
         self.confirmations = 1
         self.clients_pending_confirmations.append(client)
         logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False))
+        self.broker.public_message(exchange_name=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
@@ -105,7 +106,7 @@ class Node:
     def process_queue_message(self, ch, method, properties, body):
         try:
             logging.info(f"action: process_queue_message | body: {body}")
-            data = self.broker.get_message(body)
+            data = DetectDTO(body).get_dto()
             if data.is_EOF():
                 self.inform_eof_to_nodes(data.get_client())
             else:

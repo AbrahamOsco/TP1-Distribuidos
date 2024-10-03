@@ -1,14 +1,8 @@
 class EOFDTO:
-    def __init__(self, client, confirmation=True):
+    def __init__(self, type, client, confirmation=True):
+        self.operation_type = type
         self.client = client
         self.confirmation = confirmation
-
-    def to_string(self):
-        return f"EOF|{self.client}|{int(self.confirmation)}"
-
-    def from_string(data):
-        data = data.split("|")
-        return EOFDTO(data[1], bool(int(data[2])))
     
     def is_confirmation(self):
         return self.confirmation
@@ -18,3 +12,17 @@ class EOFDTO:
     
     def is_EOF(self):
         return True
+    
+    def serialize(self):
+        eof_bytes = bytearray()
+        eof_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.client.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.confirmation.to_bytes(1, byteorder='big'))
+        return bytes(eof_bytes)
+    
+    def deserialize(data, offset):
+        client = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        confirmation = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        return EOFDTO(client, confirmation), offset

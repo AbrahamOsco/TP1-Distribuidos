@@ -46,6 +46,12 @@ class GamesDTO(DTO):
     def set_state(self, state_games):
         self.state_games = state_games
 
+    def is_EOF(self):
+        return False
+    
+    def get_client(self):
+        return self.client_id
+
     def from_raw(client_id, data_raw, indexes):
         games_dto = []
         for game_raw in data_raw:
