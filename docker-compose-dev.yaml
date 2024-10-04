@@ -43,6 +43,7 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+      - NODE_ID=2
     networks:
       - system_network
     depends_on:
@@ -57,7 +58,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_NAME="filterbasic_1"
-      - NODE_ID=6
+      - NODE_ID=3
       - SOURCE=DataRaw
       - SINK=a
     networks:
@@ -66,6 +67,43 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+  filterbasic_2:
+    container_name: filterbasic_2
+    image: filterbasic:latest
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME="filterbasic_2"
+      - NODE_ID=4
+      - SOURCE=DataRaw
+      - SINK=a
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+  filterbasic_3:
+    container_name: filterbasic_3
+    image: filterbasic:latest
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME="filterbasic_3"
+      - NODE_ID=5
+      - SOURCE=DataRaw
+      - SINK=a
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
 
 
   selectQ1:

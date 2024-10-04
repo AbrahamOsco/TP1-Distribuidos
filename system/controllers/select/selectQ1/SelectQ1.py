@@ -25,8 +25,9 @@ class SelectQ1:
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
-            if result.operation_type != OperationType.OPERATION_TYPE_GAMES_DTO:
-                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
+            if result.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO:
+                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺")
+                return
             self.filter_platform(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message

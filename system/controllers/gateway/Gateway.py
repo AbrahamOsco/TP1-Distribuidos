@@ -80,6 +80,7 @@ class Gateway:
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
             logging.info(f"action: EOF of Games 🕹️ is Received | result: success ✅")
             raw_dto.set_amount_data_and_type(self.amount_games)
+            #Aca mandamos el EOF por ahora de solo los games!. 
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
             logging.info(f"action: EOF of Reviews 📰 Received | result: sucess ✅")
@@ -89,7 +90,6 @@ class Gateway:
         else:
             self.handler_games_and_reviews(raw_dto)
 
-
     def handler_games_and_reviews(self,raw_dto):
         self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
         a_index_dto = None
@@ -97,11 +97,12 @@ class Gateway:
             self.amount_games +=1
             a_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
                                             games_raw =raw_dto.data_raw, indexes = self.game_indexes)
-        elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-            self.amount_reviews +=1
-            a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
-                                            reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
-        self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
+            self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
+        #elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
+        #    self.amount_reviews +=1
+        #    a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
+        #                                    reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
+        #self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
         
 
     def initialize_indexes(self, operation_type, list_items):
