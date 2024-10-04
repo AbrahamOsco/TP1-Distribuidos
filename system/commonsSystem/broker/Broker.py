@@ -19,7 +19,8 @@ class Broker:
         a_queue.set_name(result.method.queue)
         self.queues[a_queue.get_name()] = a_queue
         if callback != None:
-            self.channel.basic_consume(queue =a_queue.get_name(), auto_ack =False, on_message_callback =callback)
+            consumer_tag = self.channel.basic_consume(queue =a_queue.get_name(), auto_ack =False, on_message_callback =callback)
+            a_queue.set_consumer_tag(consumer_tag)
         a_queue.show_status()
         return a_queue.get_name()
 
@@ -63,10 +64,12 @@ class Broker:
             logging.info("action: Start consuming from RabbitMQ queues | result: pending ⏳")
             self.channel.start_consuming()
         except Exception as e:
-                logging.error(f"Error during consuming: Closing consume?: ✅  {e}🗡️")
+                logging.error(f"Error Provocado por mi mismo!  ✅  {e}🗡️")
+                self.close()
 
-    #  self.channel.basic_cancel(self.consumer_tag)  # Cancelar el consumo de cada queue q tenemos registrada cierto?  aca un for por el dic. y guardame el tag
     def close(self):
+        #  self.channel.basic_cancel(self.consumer_tag)  
+        # # Cancelar el consumo de cada queue q tenemos registrada cierto?  aca un for por el dic. y guardame el tag
         self.channel.stop_consuming()
         logging.info("action: Stopping consuming from RabbitMQ queues | result: success ✅")
         self.channel.close()

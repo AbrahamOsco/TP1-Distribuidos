@@ -13,10 +13,14 @@ class Queue:
         self.durable = durable
         self.properties = pika.BasicProperties(delivery_mode= pika.DeliveryMode.Persistent,)  # make message persistent (quiero persistir el mensaje)
         self.routing_key = ''
+        self.consumer_tag = ''
 
     def set_name(self, name):
         self.name = name
     
+    def set_consumer_tag(self, consumer_tag):
+        self.consumer_tag = consumer_tag
+
     def set_binding_key(self, binding_key):
         self.binding_key = binding_key
 

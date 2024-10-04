@@ -15,9 +15,7 @@ import logging
 import os
 
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
-
-EXCHANGE_RESULTQ1_GATEWAY = "platformReducer_gateway"
-ROUTING_KEY_RESULT_QUERY_1 = "result.query.1"
+QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
 
 class Gateway:
     def __init__(self):
@@ -31,8 +29,7 @@ class Gateway:
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True)
         #Exchange query1
-        self.broker.create_exchange_and_bind(name_exchange =EXCHANGE_RESULTQ1_GATEWAY,
-                                         binding_key =ROUTING_KEY_RESULT_QUERY_1, callback =self.handler_callback_q1())
+        self.broker.create_queue(name=QUEUE_RESULTQ1_GATEWAY, durable =True, callback= self.handler_callback_q1())
         self.socket_accepter = Socket(port =12345)
     
     def handler_callback_q1(self):
@@ -65,8 +62,7 @@ class Gateway:
     def handler_sigterm(self, signum, frame):
         logging.info(f"action: signal SIGTERM {signum} has been caught sending EOF | result: pending ⌚ ")
         self.there_was_sigterm = True
-        self.broker.public_message(queue_name= QUEUE_GATEWAY_FILTER, message =EOFDTO().serialize() )
-        time.sleep(5)
+        #self.broker.public_message(queue_name= QUEUE_GATEWAY_FILTER, message =EOFDTO().serialize() )
         self.socket_peer.close()
         self.socket_accepter.close()
         self.broker.close()

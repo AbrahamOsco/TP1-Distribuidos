@@ -6,11 +6,9 @@ import os
 import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 
-EXCHANGE_PLATFORMCOUNTER_REDUCER = "exchange_platformCounter_platformReducer"
-ROUTING_KEY_PLATFORMCOUNTER = "platformCounter.platformReducer"
 
-EXCHANGE_RESULTQ1_GATEWAY = "platformReducer_gateway"
-ROUTING_KEY_RESULT_QUERY_1 = "result.query.1"
+QUEUE_PLATFORMCOUNTER_REDUCER = "platformCounter_platformReducer"
+QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
 
 class PlatformReducer:
     def __init__(self):
@@ -18,12 +16,8 @@ class PlatformReducer:
         self.broker = Broker()
         self.registered_client = False
         self.total_platform = PlatformDTO()
-        # Exchange del lado del consumer hace un bind_queue /tiene un bindingkey para filtrar los mensajes. 
-        self.broker.create_exchange_and_bind(name_exchange=EXCHANGE_PLATFORMCOUNTER_REDUCER,
-                                    binding_key =ROUTING_KEY_PLATFORMCOUNTER, callback =self.handler_callback_exchange())
-        #Exchange del lado del producer solo crea el exchange.
-        self.broker.create_exchange(name = EXCHANGE_RESULTQ1_GATEWAY, exchange_type='direct')
-
+        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, durable =True, callback=self.handler_callback_exchange())
+        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, durable =True)
     
     def handler_callback_exchange(self):
         def handler_message(ch, method, properties, body):
@@ -45,8 +39,9 @@ class PlatformReducer:
         self.total_platform.mac += platformDTO.mac
         logging.info(f"action: Total reducer current 🤯 💯 Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
                      f"Mac: {self.total_platform.mac} | success: ✅ ")
-        self.broker.public_message(exchange_name =EXCHANGE_RESULTQ1_GATEWAY, routing_key =ROUTING_KEY_RESULT_QUERY_1,
-                                    message =self.total_platform.serialize())
+        self.broker.public_message(queue_name =QUEUE_RESULTQ1_GATEWAY, message =self.total_platform.serialize())
+
+
     def run(self):
         self.broker.start_consuming()
         logging.info("action: Initialize PlatformReducer 🦅 | success: ✅")
