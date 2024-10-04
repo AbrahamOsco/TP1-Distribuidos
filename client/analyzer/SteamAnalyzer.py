@@ -19,8 +19,6 @@ class SteamAnalyzer:
         self.review_reader = FileReader(file_name='reviews', batch_size=5)
         self.result_writer = ResultWriter()
         self.there_was_sigterm = False
-        self.sent_all_games = False
-        self.sent_all_reviews = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
 
     def initialize_config(self):
@@ -56,33 +54,31 @@ class SteamAnalyzer:
         self.game_reader.close()
 
     def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡signal SIGTERM {signum} has been caught sending EOF | result: sucess ✅ ")
+        logging.info(f"action:⚡ signal SIGTERM {signum} has been caught sending EOF | result: sucess ✅ ")
         self.there_was_sigterm = True
         self.free_all_resource()
 
     def send_games(self):
         i = 0
-        while  not self.sent_all_games and i < 3:
+        while  not self.game_reader.read_all_data() and i < 3:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
-                self.sent_all_games = True
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
             i += 1
-        time.sleep(5)
-        if self.sent_all_games:
+        if self.game_reader.read_all_data():
             logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
 
     def send_reviews(self):
         i = 0
-        while not self.sent_all_reviews and i < 3:
+        time.sleep(8)
+        while not self.review_reader.read_all_data() and i < 3:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
-                self.sent_all_reviews = True
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
             i += 1
-        if self.sent_all_reviews:
+        if self.review_reader.read_all_data():
             logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
 
     def get_result_from_queries(self):

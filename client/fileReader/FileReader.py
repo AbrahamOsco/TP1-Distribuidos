@@ -15,6 +15,10 @@ class FileReader:
         self.bytes_read = 0
         self.is_closed = False
         self.fix_header_game = False
+        self.read_all = False
+
+    def read_all_data(self):
+        return self.read_all
 
     def get_next_batch(self):
         games = []
@@ -24,6 +28,7 @@ class FileReader:
         try:
             for _ in range(self.batch_size):
                 if self.bytes_read > self.usage_limit:
+                    self.read_all = True
                     self.close()
                     break
                 data_raw = next(self.reader) #retorn a list of string ej: ['123232', 'mario bros', '2022', ...]
@@ -37,10 +42,11 @@ class FileReader:
                 games.append(data_raw)
         except StopIteration:
             self.close()
+            self.read_all = True
         return games
 
     def close(self):
          if not self.is_closed:
             self.file.close()
             self.is_closed = True
-            logging.info(f"action: 👉file_associated_with_{self.file_name}_is_closed | result: sucess | file closed : {self.is_closed} 🆓")
+            logging.info(f"action: 👉File associated with {self.file_name} is closed | result: sucess | file closed : {self.is_closed} 🆓")

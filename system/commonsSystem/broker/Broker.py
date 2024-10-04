@@ -62,11 +62,10 @@ class Broker:
 
     def start_consuming(self):
         try:
-            logging.info("action: Start consuming from RabbitMQ queues | result: pending ⏳")
             self.channel.start_consuming()
         except Exception as e:
-            if self.was_closed == True:
-                logging.error(f" action: Handling a error provocated | result: success ✅")
+            if self.was_closed == False:
+                logging.error(f" action: Handling a error {e} | result: success ✅")
             self.close()
             
 
