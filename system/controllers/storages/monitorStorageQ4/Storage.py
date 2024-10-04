@@ -1,26 +1,31 @@
 import logging
 import os
 from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 
-class Grouper(Node):
+class Storage(Node):
     def __init__(self):
         super().__init__()
         self.reset_list()
-        self.amount_needed = os.getenv("AMOUNT_NEEDED")
+        self.amount_needed = int(os.getenv("AMOUNT_NEEDED"))
 
     def reset_list(self):
         self.list = {}
+        self.current_client = 0
 
     def pre_eof_actions(self):
         self.reset_list()
     
-    def send_result(self, app_id):
-        logging.info(f"action: result | list: {app_id}")
-        self.broker.public_message(exchange_name=self.sink, message=app_id, routing_key="default")
+    def send_result(self, name):
+        logging.info(f"Game fullfils criteria: {name}")
+        # self.broker.public_message(sink=self.sink, message=app_id, routing_key="default")
 
-    def process_data(self, data):
-        if data.app_id not in self.list:
-            self.list[data.app_id] = 0
-        self.list[data.app_id] += 1
-        if self.list[data.app_id] == self.amount_needed:
-            self.send_result(data.app_id)
+    def process_data(self, data: ReviewsDTO):
+        self.current_client = data.get_client()
+        for review in data.reviews_dto:
+            if review.name not in self.list:
+                self.list[review.name] = 1
+            else:
+                self.list[review.name] += 1
+            if self.list[review.name] == self.amount_needed:
+                self.send_result(review.name)

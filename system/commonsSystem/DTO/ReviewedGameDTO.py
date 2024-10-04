@@ -2,7 +2,7 @@ from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.DTO import DTO
 
 class ReviewedGameDTO:
-    def __init__(self, client_id:int=0, name="", reviews=""):
+    def __init__(self, client_id:int=0, name="", reviews:int=0):
         self.operation_type = OperationType.OPERATION_TYPE_REVIEWED_GAME_DTO
         self.client_id = client_id
         self.name = name
@@ -22,7 +22,7 @@ class ReviewedGameDTO:
         name, offset = DTO.deserialize_str(data, offset)
         reviews = int.from_bytes(data[offset:offset+4], byteorder='big')
         offset += 4
-        return ReviewedGameDTO(name=name, reviews=reviews), offset
+        return ReviewedGameDTO(client_id=client_id, name=name, reviews=reviews), offset
 
     def is_EOF(self):
         return False

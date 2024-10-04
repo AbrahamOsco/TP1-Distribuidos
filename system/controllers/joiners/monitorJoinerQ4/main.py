@@ -1,4 +1,4 @@
-from system.controllers.joiners.MonitorJoinerQ4.Joiner import Joiner
+from system.controllers.joiners.monitorJoinerQ4.Joiner import Joiner
 import signal
 
 def main():

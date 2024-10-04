@@ -3,13 +3,16 @@ from system.commonsSystem.DTO.ReviewMinimalDTO import ReviewMinimalDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.ReviewStateDTO import ReviewStateDTO
 from system.commonsSystem.DTO.ReviewTextDTO import ReviewTextDTO
+from system.commonsSystem.DTO.ReviewNameDTO import ReviewNameDTO
 
 STATE_REVIEW_MINIMAL = 1
 STATE_TEXT = 2
+STATE_NAME = 3
 
 stateToClass = {
     STATE_REVIEW_MINIMAL: ReviewMinimalDTO,
     STATE_TEXT: ReviewTextDTO,
+    STATE_NAME: ReviewNameDTO,
 }
 
 class ReviewsDTO(DTO):
@@ -62,6 +65,10 @@ class ReviewsDTO(DTO):
 
     def filter_reviews(self, filter_func):
         self.reviews_dto = list(filter(filter_func, self.reviews_dto))
+
+    def apply_on_reviews(self, func):
+        for review in self.reviews_dto:
+            func(review)
 
     def from_raw(client_id: int, data_raw:str, indexes):
         reviews_dto = []

@@ -10,5 +10,8 @@ class ReviewStateDTO(DTO):
     def deserialize(data, offset):
         pass
 
-    def from_state(game):
+    def from_state(review):
         return ReviewStateDTO()
+    
+    def set_name(self):
+        pass

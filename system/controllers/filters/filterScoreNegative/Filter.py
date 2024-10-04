@@ -1,15 +1,18 @@
-"""from system.commonsSystem.node.node import Node
+from system.commonsSystem.node.node import Node
+from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_TEXT
 
 class Filter(Node):
     def __init__(self):
         super().__init__()
+
+    def is_correct_score(self, score):
+        return score == -1
     
-    def trim_data(self, data):
-        return data.retain(["client", "id", "review_text"])
-
     def send_review(self, data):
-        self.broker.public_message(exchange_name=self.sink, message=self.trim_data(data).to_string())
+        data.set_state(STATE_TEXT)
+        self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
-    def process_data(self, data):
-        if data["review_score"] == 0:
-            self.send_review(data)"""
+    def process_data(self, data: ReviewsDTO):
+        data.filter_reviews(lambda x: self.is_correct_score(x.review_score))
+        if len(data.reviews_dto) > 0:
+            self.send_review(data)

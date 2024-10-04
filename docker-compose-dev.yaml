@@ -1,4 +1,3 @@
-version: '3.8'
 services:
 
   rabbitmq:
@@ -47,9 +46,12 @@ services:
       - system_network
     restart: on-failure
     depends_on:
-      - rabbitmq
-      - selectQ2345
-      - filterscorepositive_1
+      rabbitmq:
+        condition: service_healthy
+      selectQ2345:
+        condition: service_started
+      filterscorepositive_1:
+        condition: service_started
       # selectQ1:
       #   condition: service_started
 
@@ -92,8 +94,10 @@ services:
       - system_network
     restart: on-failure
     depends_on:
-      - rabbitmq
-      - filtergender_1
+      rabbitmq:
+        condition: service_healthy
+      filtergender_1:
+        condition: service_started
 
   # selectQ345:
   #   container_name: selectQ345
@@ -185,8 +189,10 @@ services:
       - LOGGING_LEVEL=INFO
       - GENDERS=Indie,Action
     depends_on:
-      - rabbitmq
-      - selectidname
+      rabbitmq:
+        condition: service_healthy
+      selectidnameaction_1:
+        condition: service_started
       # filterdecade_1:
       #   condition: service_started
 
@@ -222,13 +228,16 @@ services:
       - SOURCE=GenderGames
       - SOURCE_KEY=Action
       - SOURCE_TYPE=topic
-      - SINK=MonitorQ45Games
+      - SINK=MonitorQ45
+      - SINK_TYPE=fanout
     networks:
       - system_network
     restart: on-failure
     depends_on:
-      - rabbitmq
-      - monitorjoinerq4
+      rabbitmq:
+        condition: service_healthy
+      monitorjoinerq4:
+        condition: service_started
 
   filterscorepositive_1:
     container_name: filterscorepositive_1
@@ -247,9 +256,11 @@ services:
       - SINK=ReviewsPositives
       - SINK_TYPE=fanout
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
       # - monitorstorageq3
-      - monitorjoinerq4
+      monitorjoinerq4:
+        condition: service_started
       
   # monitorstorageq3:
   #   container_name: monitorstorageq3
@@ -277,27 +288,31 @@ services:
     networks:
       - system_network
     depends_on:
-      - rabbitmq
-      - filterreviewenglish_1
+      rabbitmq:
+        condition: service_healthy
+      filterreviewenglish_1:
+        condition: service_started
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_NAME=monitorjoinerq4
       - NODE_ID=1
-      - SOURCE=ReviewsPositives,MonitorQ45Games
-      - SOURCE_KEY=default,fanout
-      - SOURCE_TYPE=direct,direct
+      - SOURCE=ReviewsPositives,MonitorQ45
+      - SOURCE_KEY=default,default
+      - SOURCE_TYPE=fanout,fanout
       - SINK=ActionGamesReviewed
 
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
-    image: monitorjoinerq4:latest
+    image: filterreviewenglish:latest
     entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
     networks:
       - system_network
     depends_on:
-      - rabbitmq
-      - monitorstorageq4
+      rabbitmq:
+        condition: service_healthy
+      monitorstorageq4:
+        condition: service_started
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -313,7 +328,8 @@ services:
     networks:
       - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -321,6 +337,7 @@ services:
       - NODE_ID=1
       - SOURCE=ActionGamesEnglishReviews
       - SINK=output
+      - AMOUNT_NEEDED=5000
 
   # filterdecade_1:
   #   container_name: filterdecade_1
