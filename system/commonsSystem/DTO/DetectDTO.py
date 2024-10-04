@@ -7,6 +7,7 @@ from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
+from system.commonsSystem.DTO.EOFDTO import EOFDTO
 
 class DetectDTO:
     def __init__(self, dto_in_bytes):
@@ -19,6 +20,7 @@ class DetectDTO:
             OperationType.OPERATION_TYPE_DECADE_DTO: DecadeDTO(),
             OperationType.OPERATION_TYPE_GAMES_INDEX_DTO: GamesIndexDTO(),
             OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO: ReviewsIndexDTO(),
+            OperationType.OPERATION_TYPE_EOF_INITIAL: EOFDTO(),
         }
 
     def get_dto(self):

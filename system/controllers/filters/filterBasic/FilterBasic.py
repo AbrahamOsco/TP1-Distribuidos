@@ -27,9 +27,8 @@ class FilterBasic:
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            if (result_dto.operation_type != OperationType.OPERATION_TYPE_GAMES_INDEX_DTO and 
-                result_dto.operation_type != OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO):
-                    logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
+            if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL):
+                    logging.info(f"HANDLER: EOF! 🔚 🏮 🗡️")
             batch_filtered = self.filter_fields_item(result_dto)
             self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
             ch.basic_ack(delivery_tag =method.delivery_tag)
@@ -84,3 +83,13 @@ class FilterBasic:
         logging.info(f"action: Filter basic started to consume | result: sucess ✅")
     
     
+
+
+#    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
+#                                routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
+#
+#elif operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
+#    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
+#                                 routing_key =RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
+# for each game se cumple:  ['AppID', 'Name', 'Release date', 'Windows', 'Mac', 'Linux', 'Average playtime forever', 'Genres']
+# example: ['1659180', 'TD Worlds', 'Jan 9, 2022', 'True', 'False', 'False', '0', 'Indie,Strategy']
