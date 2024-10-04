@@ -14,7 +14,9 @@ import os
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 
 EXCHANGE_RESULTQ1_GATEWAY = "platformReducer_gateway"
+EXCHANGE_RESULTQ2_GATEWAY = "topAveragePlaytime_gateway"
 ROUTING_KEY_RESULT_QUERY_1 = "result.query.1"
+ROUTING_KEY_RESULT_QUERY_2 = "result.query.2"
 
 class Gateway:
     def __init__(self):
@@ -28,6 +30,10 @@ class Gateway:
         #Exchange query1
         self.broker.create_exchange_and_bind(name_exchange=EXCHANGE_RESULTQ1_GATEWAY,
                                          binding_key =ROUTING_KEY_RESULT_QUERY_1, callback =self.handler_callback_q1())
+        
+        #Query2
+        self.broker.create_queue(name =ROUTING_KEY_RESULT_QUERY_2, durable =True, callback = self.handler_callback_q2())
+
         self.socket_accepter = Socket(port =12345)
     
     def handler_callback_q1(self):
@@ -35,10 +41,21 @@ class Gateway:
             result = DetectDTO(body).get_dto()
             if result.operation_type != OperationType.OPERATION_TYPE_PLATFORM_DTO:
                 logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
-            logging.info(f"Action: Gateway Recv result Q1: 🕹️ {result.operation_type.value} sucess: ✅")
+            logging.info(f"Action: Gateway Recv result Q1: 🕹️ {result.operation_type.value} success: ✅")
             self.protocol.send_platform_q1(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_result_q1
+    
+    def handler_callback_q2(self):
+        def handler_result_q2(ch, method, properties, body):
+            result = DetectDTO(body).get_dto()
+            logging.info(f"Action: Gateway Recv result Q2: 🕹️ {result.operation_type.value} success: ✅")
+            if result.operation_type != OperationType.OPERATION_TYPE_GROUPER_TOP_AVERAGE_PLAYTIME_DTO:
+                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
+            logging.info(f"Action: Gateway Recv result Q2: 🕹️ {result.operation_type.value} success: ✅")
+            self.protocol.send(result)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        return handler_result_q2
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
