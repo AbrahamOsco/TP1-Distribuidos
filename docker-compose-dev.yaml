@@ -30,7 +30,6 @@ services:
     entrypoint: python3 /app/client/main.py
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -46,7 +45,6 @@ services:
       - PYTHONPATH=/app
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
