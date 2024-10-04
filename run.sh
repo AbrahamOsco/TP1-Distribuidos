@@ -10,12 +10,12 @@ docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectid
 docker build -f ./system/controllers/groupers/grouperTopAveragePlaytime/Dockerfile -t "groupertopaverageplaytime:latest" .
 docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertopreviewspositiveindie:latest" .
 docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
+docker build -f ./system/controllers/filters/filterScoreNegative/Dockerfile -t "filterscorenegative:latest" .
 docker build -f ./system/controllers/storages/monitorStorageQ3/Dockerfile -t "monitorstorageq3:latest" .
 docker build -f ./system/controllers/filters/filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
 docker build -f ./system/controllers/storages/monitorStorageQ4/Dockerfile -t "monitorstorageq4:latest" .
 docker build -f ./system/controllers/joiners/monitorJoinerQ4/Dockerfile -t "monitorjoinerq4:latest" .
+docker build -f ./system/controllers/storages/monitorStorageQ5/Dockerfile -t "monitorstorageq5:latest" .
 
 docker compose -f docker-compose-dev.yaml up -d
 docker compose -f docker-compose-dev.yaml logs -f
-#docker compose -f docker-compose-dev.yaml down -t 7
-#docker compose -f docker-compose-dev.yaml up

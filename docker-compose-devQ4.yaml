@@ -50,10 +50,8 @@ services:
         condition: service_healthy
       selectQ2345:
         condition: service_started
-      filterscorenegative_1:
+      filterscorepositive_1:
         condition: service_started
-      # filterscorepositive_1:
-      #   condition: service_started
       # selectQ1:
       #   condition: service_started
 
@@ -238,56 +236,32 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      monitorstorageq5:
+      monitorjoinerq4:
         condition: service_started
-      # monitorjoinerq4:
-      #   condition: service_started
 
-  # filterscorepositive_1:
-  #   container_name: filterscorepositive_1
-  #   image: filterscorepositive:latest
-  #   entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
-  #   networks:
-  #     - system_network
-  #   environment:
-  #     - LOGGING_LEVEL=INFO
-  #     - PYTHONPATH=/app
-  #     - NODE_NAME=filterscorepositive
-  #     - NODE_ID=1
-  #     - SOURCE=DataParsed
-  #     - SOURCE_KEY=reviews
-  #     - SOURCE_TYPE=topic
-  #     - SINK=ReviewsPositives
-  #     - SINK_TYPE=fanout
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     # - monitorstorageq3
-  #     monitorjoinerq4:
-  #       condition: service_started
-      
-  filterscorenegative_1:
-    container_name: filterscorenegative_1
-    image: filterscorenegative:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+  filterscorepositive_1:
+    container_name: filterscorepositive_1
+    image: filterscorepositive:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
     networks:
       - system_network
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterscorenegative
+      - NODE_NAME=filterscorepositive
       - NODE_ID=1
       - SOURCE=DataParsed
       - SOURCE_KEY=reviews
       - SOURCE_TYPE=topic
-      - SINK=ReviewsNegatives
+      - SINK=ReviewsPositives
       - SINK_TYPE=fanout
     depends_on:
       rabbitmq:
         condition: service_healthy
-      monitorstorageq5:
+      # - monitorstorageq3
+      monitorjoinerq4:
         condition: service_started
-
+      
   # monitorstorageq3:
   #   container_name: monitorstorageq3
   #   image: monitorstorageq3:latest
@@ -307,82 +281,63 @@ services:
   #     - SOURCE_TYPE=direct,direct
   #     - SINK=IndieGamesReviewed
 
-  monitorstorageq5:
-    container_name: monitorstorageq5
-    image: monitorstorageq5:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
+  monitorjoinerq4:
+    container_name: monitorjoinerq4
+    image: monitorjoinerq4:latest
+    entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
     networks:
       - system_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      filterreviewenglish_1:
+        condition: service_started
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=monitorstorageq5
+      - NODE_NAME=monitorjoinerq4
       - NODE_ID=1
-      - PERCENTILE=0.9
-      - SOURCE=ReviewsNegatives,MonitorQ45
+      - SOURCE=ReviewsPositives,MonitorQ45
       - SOURCE_KEY=default,default
       - SOURCE_TYPE=fanout,fanout
+      - SINK=ActionGamesReviewed
+
+  filterreviewenglish_1:
+    container_name: filterreviewenglish_1
+    image: filterreviewenglish:latest
+    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      monitorstorageq4:
+        condition: service_started
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterreviewenglish
+      - NODE_ID=1
+      - SOURCE=ActionGamesReviewed
+      - SINK=ActionGamesEnglishReviews
+
+  monitorstorageq4:
+    container_name: monitorstorageq4
+    image: monitorstorageq4:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=monitorstorageq4
+      - NODE_ID=1
+      - SOURCE=ActionGamesEnglishReviews
       - SINK=output
-
-  # monitorjoinerq4:
-  #   container_name: monitorjoinerq4
-  #   image: monitorjoinerq4:latest
-  #   entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     filterreviewenglish_1:
-  #       condition: service_started
-  #   environment:
-  #     - LOGGING_LEVEL=INFO
-  #     - PYTHONPATH=/app
-  #     - NODE_NAME=monitorjoinerq4
-  #     - NODE_ID=1
-  #     - SOURCE=ReviewsPositives,MonitorQ45
-  #     - SOURCE_KEY=default,default
-  #     - SOURCE_TYPE=fanout,fanout
-  #     - SINK=ActionGamesReviewed
-
-  # filterreviewenglish_1:
-  #   container_name: filterreviewenglish_1
-  #   image: filterreviewenglish:latest
-  #   entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     monitorstorageq4:
-  #       condition: service_started
-  #   environment:
-  #     - LOGGING_LEVEL=INFO
-  #     - PYTHONPATH=/app
-  #     - NODE_NAME=filterreviewenglish
-  #     - NODE_ID=1
-  #     - SOURCE=ActionGamesReviewed
-  #     - SINK=ActionGamesEnglishReviews
-
-  # monitorstorageq4:
-  #   container_name: monitorstorageq4
-  #   image: monitorstorageq4:latest
-  #   entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #     - LOGGING_LEVEL=INFO
-  #     - PYTHONPATH=/app
-  #     - NODE_NAME=monitorstorageq4
-  #     - NODE_ID=1
-  #     - SOURCE=ActionGamesEnglishReviews
-  #     - SINK=output
-  #     - AMOUNT_NEEDED=5000
+      - AMOUNT_NEEDED=5000
 
   # filterdecade_1:
   #   container_name: filterdecade_1
