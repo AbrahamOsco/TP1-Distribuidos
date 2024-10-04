@@ -225,6 +225,7 @@ services:
       - SOURCE_KEY=reviews
       - SOURCE_TYPE=topic
       - SINK=ReviewsPositives
+      - SINK_TYPE=fanout
     depends_on:
       - rabbitmq
       - monitorstorageq3
@@ -245,7 +246,7 @@ services:
       - NODE_ID=1
       - SOURCE=ReviewsPositives,MonitorQ3Games
       - SOURCE_KEY=default,default
-      - SOURCE_TYPE=direct,direct
+      - SOURCE_TYPE=fanout,direct
       - SINK=IndieGamesReviewed
 
   # filterdecade_1:

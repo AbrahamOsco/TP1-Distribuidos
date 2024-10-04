@@ -210,7 +210,26 @@ services:
       - rabbitmq
       - monitorstorageq3
 
-  filterscorepositive_1:
+  # filterscorepositive_1:
+  #   container_name: filterscorepositive_1
+  #   image: filterscorepositive:latest
+  #   entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+  #   networks:
+  #     - system_network
+  #   environment:
+  #     - LOGGING_LEVEL=INFO
+  #     - PYTHONPATH=/app
+  #     - NODE_NAME=filterscorepositive
+  #     - NODE_ID=1
+  #     - SOURCE=DataParsed
+  #     - SOURCE_KEY=reviews
+  #     - SOURCE_TYPE=topic
+  #     - SINK=ReviewsPositives
+  #   depends_on:
+  #     - rabbitmq
+  #     - monitorstorageq3
+      
+  filterscorepositive_2:
     container_name: filterscorepositive_1
     image: filterscorepositive:latest
     entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
@@ -225,6 +244,7 @@ services:
       - SOURCE_KEY=reviews
       - SOURCE_TYPE=topic
       - SINK=ReviewsPositives
+      - SINK_TYPE=fanout
     depends_on:
       - rabbitmq
       - monitorstorageq3
