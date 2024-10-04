@@ -14,15 +14,19 @@ class Broker:
         self.broker_serializer = BrokerSerializer()
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
-    def create_queue(self, name ='', durable =False, callback =None):
-        a_queue = Queue(name =name, durable =durable, callback =callback)
-        result = self.channel.queue_declare(queue =name, durable =durable, exclusive =a_queue.get_exclusive())
-        a_queue.set_name(result.method.queue)
-        self.queues[a_queue.get_name()] = a_queue
-        if callback != None:
-            self.channel.basic_consume(queue =a_queue.get_name(), auto_ack =False, on_message_callback =callback)
-        a_queue.show_status()
-        return a_queue.get_name()
+    def create_queue(self, name='', durable=False, callback=None):
+        try:
+            a_queue = Queue(name=name, durable=durable, callback=callback)
+            result = self.channel.queue_declare(queue=name, durable=durable, exclusive=a_queue.get_exclusive())
+            a_queue.set_name(result.method.queue)
+            self.queues[a_queue.get_name()] = a_queue
+            if callback is not None:
+                self.channel.basic_consume(queue=a_queue.get_name(), auto_ack=False, on_message_callback=callback)
+            a_queue.show_status()
+            return a_queue.get_name()
+        except Exception as e:
+            logging.error(f"Failed to create queue {name}: {e}")
+            raise
 
     # Connect a exchange with a queue with a binding!. La binding key es la 'key' de la queue. 
     # if the routing key del mensaje coincicide con la binding key,esta queue recibira el mensaje. 

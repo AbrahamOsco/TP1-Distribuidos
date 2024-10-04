@@ -1,4 +1,4 @@
-"""from Filter import Filter
+from Filter import Filter
 import signal
 
 def main():
@@ -7,4 +7,4 @@ def main():
    filter.run()
 
 if __name__ == "__main__":
-   main()"""
+   main()

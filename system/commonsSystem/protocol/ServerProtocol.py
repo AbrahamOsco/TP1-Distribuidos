@@ -33,3 +33,8 @@ class ServerProtocol(Protocol):
         self.send_number_4_bytes(platformDTO.linux)
         self.send_number_4_bytes(platformDTO.mac)
     
+    def send_top_average_playtime_q2(self, top_average_playtimeDTO):
+        self.send_number_1_byte(ResultType.RESULT_QUERY_2.value)
+        self.send_number_1_byte(top_average_playtimeDTO.client_id)
+        self.send_number_4_bytes(top_average_playtimeDTO.average_playtime)
+        self.send_string(top_average_playtimeDTO.name)

@@ -22,7 +22,7 @@ images=("rabbit:latest" "client:latest" "gateway:latest" \
         "selectq2345:latest" "filtergender:latest" "filterdecade:latest" \
         "selectidnameindie:latest" "selectidnameaction:latest" "selectq345:latest" \
         "filterscorepositive:latest" "filterreviewenglish:latest" "filterscorexpositives:latest" \
-        "filterscorenegative:latest" "platformreducer:latest")
+        "filterscorenegative:latest" "platformreducer:latest" "groupertopaverageplaytime:latest")
 
 # Rutas específicas de los Dockerfiles de cada imagen
 path_images=("system/rabbitmq" "client" "system/controllers/gateway"\
@@ -30,7 +30,7 @@ path_images=("system/rabbitmq" "client" "system/controllers/gateway"\
              "system/controllers/select/selectQ2345" "system/controllers/filters/filterGender" "system/controllers/filters/filterDecade" \
              "system/controllers/select/selectIDNameIndie" "system/controllers/select/selectIDNameAction" "system/controllers/select/selectQ345" \
              "system/controllers/filters/filterScorePositive" "system/controllers/filters/filterReviewEnglish" "system/controllers/filters/filterScoreXPositives" \
-             "system/controllers/filters/filterScoreNegative" "system/controllers/reducers/platformReducer")
+             "system/controllers/filters/filterScoreNegative" "system/controllers/reducers/platformReducer" "system/controllers/groupers/grouperTopAveragePlaytime")
 
 # Verificar si las imágenes existen, y si no, construirlas desde la ruta correspondiente
 for i in "${!images[@]}"; do

@@ -36,7 +36,11 @@ class ClientProtocol(Protocol):
                 "Windows": windows, "Linux": linux, "Mac": mac}
 
     def recv_result_query_2(self):
-        pass
+        client_id = self.recv_number_1_byte()
+        name = self.recv_string()
+        average_playtime = self.recv_number_4_bytes()
+        return {"ResultType":ResultType.RESULT_QUERY_2, "ClientID": client_id,
+                "Name": name, "Average playtime": average_playtime}
 
     def recv_result_query_3(self):
         pass

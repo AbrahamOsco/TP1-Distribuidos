@@ -31,7 +31,14 @@ class Protocol:
             raise RuntimeError("action: recv_number_4_byte | result: fail |")
         number_int = int.from_bytes(number_in_bytes, byteorder='big') 
         return number_int
-
+    
+    def recv_number_8_bytes(self):
+        number_in_bytes, bytes_recv = self.socket.recv_all(8)
+        if bytes_recv != 8:
+            self.socket.close()
+            raise RuntimeError("action: recv_number_8_byte | result: fail |")
+        number_int = int.from_bytes(number_in_bytes, byteorder='big') 
+        return number_int
 
     def recv_number_1_byte(self):
         number_in_bytes, bytes_recv = self.socket.recv_all(1)

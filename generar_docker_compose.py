@@ -148,6 +148,25 @@ services:
       - SOURCE="CountByPlatform"
       - SINK={get_sink("platformreducer")}
       - LOGGING_LEVEL=INFO
+
+  groupertopaverageplaytime:
+    container_name: groupertopaverageplaytime
+    image: groupertopaverageplaytime:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONPATH=/app
+      - NODE_NAME="groupertopaverageplaytime"
+      - NODE_ID=4
+      - SOURCE="GamesIndieDecadeQ2"
+      - SINK={get_sink("groupertopaverageplaytime")}
+      - LOGGING_LEVEL=INFO
+      - TOP_SIZE=10
 """
     def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
         servicios = ""

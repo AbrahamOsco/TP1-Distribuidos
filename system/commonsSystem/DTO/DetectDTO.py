@@ -1,3 +1,4 @@
+import logging
 from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO

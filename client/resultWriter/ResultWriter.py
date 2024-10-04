@@ -23,7 +23,7 @@ class ResultWriter:
             json.dump(result_query, json_file, indent=4)
         
     def write_query2(self, result_query):
-        pass
+         logging.info(f"action: Result Query2: 🕹️")
 
     def write_query3(self, result_query):
         pass
