@@ -1,25 +1,23 @@
-
 version: '3.8'
-
 services:
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbit:latest
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"  # Puerto para conexion con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
       - system_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:15672"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "curl", "-f", "http://localhost:15672"] # -f hace q curl falle silenciosamente si la web no funciona
+      interval: 10s #verifica salud de rabbit each 10 s
+      timeout: 5s # si rabbit no responde en 5s falla 
+      retries: 10 # luego de 10 intentos => no es saludable
 
   client1:
     container_name: client1
     image: client:latest
-    entrypoint: python3 /app/client/main.py
     volumes:
       - ./data/games/games.csv:/data/games.csv
       - ./data/reviews/dataset.csv:/data/dataset.csv
@@ -28,12 +26,10 @@ services:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_OF_NODES=1
-      - TOP_SIZE=5
       - HOSTNAME=gateway
+    entrypoint: python3 /app/client/main.py
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -43,22 +39,88 @@ services:
   gateway:
     container_name: gateway
     image: gateway:latest
-    entrypoint: python3 /app/system/controllers/gateway/main.py
+    entrypoint: python3 /app/system/controllers/gateway/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+  filterbasic_1:
+    container_name: filterbasic_1
+    image: filterbasic:latest
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME="filterbasic_1"
+      - NODE_ID=6
+      - SOURCE=DataRaw
+      - SINK=a
     networks:
       - system_network
     restart: on-failure
     depends_on:
       rabbitmq:
-        condition: service_healthy
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+
+
+  selectQ1:
+    container_name: selectQ1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
     environment:
-      - NODE_NAME:"gateway"
-      - NODE_ID=2
-      - SOURCE=""
-      - SINK=""
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_OF_NODES=1
-      - TOP_SIZE=5
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      filterbasic_1:
+        condition: service_started 
+
+ #Select Q1. No borrar 
+  platformcounter_1:
+    container_name: platformcounter_1
+    image: platformcounter:latest
+    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=platformcounter_1
+      - NODE_ID=6
+      - SOURCE=GamesPlatform
+      - SINK=
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+      selectQ1:
+        condition: service_started  
+
+  output:
+    container_name: output
+    build:
+      context: .
+      dockerfile: system/controllers/output/Dockerfile 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - NODE_NAME="output"
+      - NODE_ID=3
+      - SOURCE="response_exchange"
+      - SINK=""
+      - LOGGING_LEVEL=INFO
 
   platformreducer:
     container_name: platformreducer
@@ -73,328 +135,221 @@ services:
     environment:
       - PYTHONPATH=/app
       - NODE_NAME="platformreducer"
-      - NODE_ID=3
-      - SOURCE="CountByPlatform"
-      - SINK={get_sink("platformreducer")}
-      - LOGGING_LEVEL=INFO
-
-  groupertopaverageplaytime:
-    container_name: groupertopaverageplaytime
-    image: groupertopaverageplaytime:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - PYTHONPATH=/app
-      - NODE_NAME="groupertopaverageplaytime"
       - NODE_ID=4
-      - SOURCE="GamesIndieDecadeQ2"
-      - SINK={get_sink("groupertopaverageplaytime")}
+      - SOURCE="CountByPlatform"
+      - SINK=""
       - LOGGING_LEVEL=INFO
-      - TOP_SIZE=10
 
-  selectq1_1:
-    container_name: selectq1_1
-    image: selectq1:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+  # sortertop10averageplaytime:
+  #   container_name: sortertop10averageplaytime
+  #   build:
+  #     context: .
+  #     dockerfile: sortertop10averageplaytime/Dockerfile
+  #   networks:
+  #     - system_network
+  #   depends_on:
+  #     - rabbitmq
+
+  groupertopreviewspositiveindie:
+    container_name: groupertopreviewspositiveindie
+    build:
+      context: .
+      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
-      - NODE_NAME="selectq1_1"
+      - NODE_NAME="groupertopreviewspositiveindie"
       - NODE_ID=5
-      - SOURCE=DataParsed
-      - SINK=GamesPlatform
+      - SOURCE=""
+      - SINK=""
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
+      
 
-  filterbasic_1:
-    container_name: filterbasic_1
-    image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterbasic_1"
-      - NODE_ID=5
-      - SOURCE=DataRaw
-      - SINK=ERROR
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
+  # gamein90thpercentile:
+  #   container_name: gamein90thpercentile
+  #   build:
+  #     context: .
+  #     dockerfile: system/controllers/gamein90thpercentile/Dockerfile
+  #   networks:
+  #     - system_network
+  #   depends_on:
+  #     - rabbitmq
 
-  platformcounter_1:
-    container_name: platformcounter_1
-    image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="platformcounter_1"
-      - NODE_ID=5
-      - SOURCE=GamesPlatform
-      - SINK=countbyplatform
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
+
+
 
   selectq2345_1:
     container_name: selectq2345_1
-    image: selectq2345:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectQ2345/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="selectq2345_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=DataParsed
-      - SINK=GamesQ2345
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filtergender_1:
     container_name: filtergender_1
-    image: filtergender:latest
-    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterGender/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filtergender_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=GamesQ2345
-      - SINK=ERROR
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filterdecade_1:
     container_name: filterdecade_1
-    image: filterdecade:latest
-    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterDecade/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filterdecade_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=GamesIndieQ2
-      - SINK=GamesIndieDecadeQ2
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   selectidnameindie_1:
     container_name: selectidnameindie_1
-    image: selectidnameindie:latest
-    entrypoint: python3 /app/system/controllers/select/selectIDNameIndie/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="selectidnameindie_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=GamesIndieQ3
-      - SINK=GamesIndieQ3Sumarized
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   selectidnameaction_1:
     container_name: selectidnameaction_1
-    image: selectidnameaction:latest
-    entrypoint: python3 /app/system/controllers/select/selectIDNameAction/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="selectidnameaction_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=GamesActionQ45
-      - SINK=GamesActionQ45Sumarized
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   selectq345_1:
     container_name: selectq345_1
-    image: selectq345:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ345/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/select/selectQ345/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="selectq345_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=DataParsed
-      - SINK=ERROR
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filterscorepositive_1:
     container_name: filterscorepositive_1
-    image: filterscorepositive:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorepositive_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=ERROR
       - SINK=ERROR
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
-    image: filterreviewenglish:latest
-    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filterreviewenglish_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=GamesActionPositives
-      - SINK=ReviewsEnglishPositives
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filterscorexpositives_1:
     container_name: filterscorexpositives_1
-    image: filterscorexpositives:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreXPositives/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorexpositives_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=ERROR
       - SINK=ERROR
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
   filterscorenegative_1:
     container_name: filterscorenegative_1
-    image: filterscorenegative:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    build:
+      context: .
+      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
       - NODE_NAME="filterscorenegative_1"
-      - NODE_ID=5
+      - NODE_ID=6
       - SOURCE=ReviewsRaw
-      - SINK=ReviewsNegatives
+      - SINK=
       - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES=1
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
 
 networks:
   system_network:
