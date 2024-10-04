@@ -49,24 +49,32 @@ class Gateway:
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
-        self.accept_a_connection()
-        logging.info(f"action: Gateway started 🔥 | result: sucess ✅")
-        while not self.there_was_sigterm:
-            raw_dto = self.protocol.recv_data_raw()
-            if raw_dto == ALL_DATA_WAS_SENT:
-                break
-            self.handler_games_and_reviews(raw_dto)
-        logging.info(f"action: All customer data was received! 💯 | result: sucess ✅")
-        self.broker.start_consuming()
-    
-    def handler_sigterm(self, signum, frame):
-        logging.info(f"action: signal SIGTERM {signum} has been caught sending EOF | result: pending ⌚ ")
-        self.there_was_sigterm = True
-        #self.broker.public_message(queue_name= QUEUE_GATEWAY_FILTER, message =EOFDTO().serialize() )
+        try:
+            self.accept_a_connection()
+            logging.info(f"action: Gateway started 🔥 | result: sucess ✅")
+            while True:
+                raw_dto = self.protocol.recv_data_raw()
+                if raw_dto == ALL_DATA_WAS_SENT:
+                    break
+                self.handler_games_and_reviews(raw_dto)
+            logging.info(f"action: All customer data was received! 💯 | result: sucess ✅")
+            self.broker.start_consuming()
+        except Exception as e:
+            if self.there_was_sigterm == False:
+                logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
+        finally:
+            self.free_all_resource()
+            logging.info("action: Release all resource | result: success ✅")
+
+    def free_all_resource(self):
         self.socket_peer.close()
         self.socket_accepter.close()
         self.broker.close()
-        logging.info("action: signal SIGTERM has been caught sending EOF | result: sucess ✅ ")
+
+    def handler_sigterm(self, signum, frame):
+        logging.info(f"action:⚡signal SIGTERM {signum} has been caught sending EOF | result: sucess ✅ ")
+        self.there_was_sigterm = True
+        self.free_all_resource()
 
     def handler_games_and_reviews(self,raw_dto):
         self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)

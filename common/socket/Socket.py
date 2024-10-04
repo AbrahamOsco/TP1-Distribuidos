@@ -40,9 +40,10 @@ class Socket:
         return True, ""
     
     def close(self):
-        self.socket.close()
-        self.was_closed = self.socket._closed
-    
+        if self.was_closed == False:
+            self.socket.close()
+            self.was_closed = self.socket._closed
+        
     def is_closed(self) -> bool:
         return self.was_closed
     

@@ -19,7 +19,6 @@ class PlatformCounter:
         self.count_baches = 0 #borrar esto es de prueba debe tenerminar ucando sea EOF pero lo hago para q llege a 3 y mande al reducer
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, durable =True, callback =self.handler_callback())
         self.broker.create_queue(name=QUEUE_PLATFORMCOUNTER_REDUCER, durable =True)
-        # Exchange del lado del producer, solo crea el exchange y luego publica mensajes                      
 
     def handler_callback(self):
         def handler_message(ch, method, properties, body):

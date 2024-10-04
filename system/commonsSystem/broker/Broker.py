@@ -11,6 +11,7 @@ class Broker:
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
+        self.was_closed = False
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
     def create_queue(self, name ='', durable =False, callback =None):
@@ -64,18 +65,21 @@ class Broker:
             logging.info("action: Start consuming from RabbitMQ queues | result: pending ⏳")
             self.channel.start_consuming()
         except Exception as e:
-                logging.error(f"Error Provocado por mi mismo!  ✅  {e}🗡️")
-                self.close()
+            if self.was_closed == True:
+                logging.error(f" action: Handling a error provocated | result: success ✅")
+            self.close()
+            
 
     def close(self):
-        #  self.channel.basic_cancel(self.consumer_tag)  
-        # # Cancelar el consumo de cada queue q tenemos registrada cierto?  aca un for por el dic. y guardame el tag
+        if self.was_closed:
+            return 
         self.channel.stop_consuming()
         logging.info("action: Stopping consuming from RabbitMQ queues | result: success ✅")
         self.channel.close()
         logging.info("action: Closing RabbitMQ channel | result: success ✅")
         self.connection.close()
         logging.info("action: Closing RabbitMQ connection | result: success ✅")
+        self.was_closed = True
 
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
