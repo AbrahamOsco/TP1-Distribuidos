@@ -54,7 +54,7 @@ class SteamAnalyzer:
         self.game_reader.close()
 
     def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡ signal SIGTERM {signum} has been caught sending EOF | result: sucess ✅ ")
+        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
         self.there_was_sigterm = True
         self.free_all_resource()
 

@@ -4,6 +4,7 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
+import signal
 import logging
 import time as t
 import os
@@ -17,6 +18,7 @@ class SelectQ1:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
+        signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable =True, callback = self.handler_callback())
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, durable =True)
     
@@ -38,7 +40,9 @@ class SelectQ1:
         self.broker.public_message(queue_name =QUEUE_SELECTQ1_PLATFORMCOUNTER,  message = new_gamesDTO.serialize())
         logging.info(f"action: Send GamesDTO 🏑 to platform_counter | count: {len(new_gamesDTO.games_dto)} | result: success ✅")
 
+    def handler_sigterm(self, signum, frame):
+        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
+        self.broker.close()
+
     def run(self):
         self.broker.start_consuming()
-        # self.broker.close() # Solo hacer el close cuando recibamos la signal y acabe todo ordenado!!. 
-

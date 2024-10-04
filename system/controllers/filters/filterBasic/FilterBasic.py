@@ -5,7 +5,7 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
 from system.commonsSystem.broker.Broker import Broker
 import logging
 import os
-import time as t 
+import signal
 
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 QUEUE_FILTER_SELECTQ1 = "filterbasic_selectq1"
@@ -18,6 +18,7 @@ class FilterBasic:
         self.review_indexes = {}
         self.game_index_init= False
         self.review_index_init= False
+        signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True, callback =self.handler_callback())
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True)
@@ -39,16 +40,6 @@ class FilterBasic:
             gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
             self.broker.public_message(queue_name= QUEUE_FILTER_SELECTQ1, message = gamesDTO.serialize())
             self.broker.public_message(queue_name= QUEUE_FILTER_SELECTQ2345, message = gamesDTO.serialize())
-        
-        #    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
-        #                                routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
-        #
-        #elif operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
-        #    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
-        #                                 routing_key =RK_GATEWAY_SELECTQ345, message ="Some data 🛡️ 👨‍🔧 🗡️")
-
-    # for each game se cumple:  ['AppID', 'Name', 'Release date', 'Windows', 'Mac', 'Linux', 'Average playtime forever', 'Genres']
-    # example: ['1659180', 'TD Worlds', 'Jan 9, 2022', 'True', 'False', 'False', '0', 'Indie,Strategy']
 
     def filter_fields_item(self, result_dto):
         batch_item = []
@@ -77,6 +68,10 @@ class FilterBasic:
                 #logging.info(f"index: {i} value: {a_item[i]}")
                 item_basic.append(a_item[i])
         return item_basic    
+
+    def handler_sigterm(self, signum, frame):
+        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
+        self.broker.close()
 
     def run(self):
         self.broker.start_consuming()

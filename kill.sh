@@ -1,1 +1,1 @@
-docker kill --signal=SIGTERM gateway
+docker compose -f docker-compose-dev.yaml stop -t 7

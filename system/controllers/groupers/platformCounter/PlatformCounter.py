@@ -6,6 +6,7 @@ from system.commonsSystem.DTO.DetectDTO import DetectDTO
 import os
 import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
+import signal 
 
 QUEUE_SELECTQ1_PLATFORMCOUNTER = "selectq1_platformCounter"
 QUEUE_PLATFORMCOUNTER_REDUCER = "platformCounter_platformReducer"
@@ -15,6 +16,7 @@ class PlatformCounter:
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.platform = PlatformDTO()
         self.registered_client = False
+        signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker = Broker()
         self.count_baches = 0 #borrar esto es de prueba debe tenerminar ucando sea EOF pero lo hago para q llege a 3 y mande al reducer
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, durable =True, callback =self.handler_callback())
@@ -44,9 +46,12 @@ class PlatformCounter:
         if self.count_baches == 3:
             self.broker.public_message(queue_name =QUEUE_PLATFORMCOUNTER_REDUCER, message =self.platform.serialize())
 
+    def handler_sigterm(self, signum, frame):
+        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
+        self.broker.close()
+
     def run(self):
         self.broker.start_consuming()
-        # self.broker.close() # Solo hacer el close cuando recibamos la signal y acabe todo ordenado!!. 
 
 
 
