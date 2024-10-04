@@ -36,5 +36,5 @@ class PlatformDTO(DTO):
         offset += 4
         linux = int.from_bytes(data[offset:offset + 4], byteorder='big')
         offset += 4
-        return PlatformDTO(client_id =client_id, windows =windows, mac =mac, linux =linux), offset
+        return PlatformDTO(client_id =client_id, windows =windows, mac =mac, linux =linux)
     

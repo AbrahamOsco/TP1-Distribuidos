@@ -50,3 +50,8 @@ class ClientProtocol(Protocol):
     
     def recv_result_query_5(self):
         pass
+
+    def send_eof(self, type_file_finish, client_id):
+        self.send_number_1_byte(type_file_finish)
+        self.send_number_1_byte(client_id)
+    

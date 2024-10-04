@@ -11,4 +11,4 @@ class ReviewsIndexDTO(IndexDTO):
         return self.client_id
         
     def get_instance(self, client_id, indexes, items_raw, offset):
-        return ReviewsIndexDTO(client_id =client_id, indexes =indexes, reviews_raw =items_raw), offset
+        return ReviewsIndexDTO(client_id =client_id, indexes =indexes, reviews_raw =items_raw)

@@ -8,4 +8,4 @@ class GamesIndexDTO(IndexDTO):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_INDEX_DTO
 
     def get_instance(self, client_id, indexes, items_raw, offset):
-        return GamesIndexDTO(client_id =client_id, indexes =indexes, games_raw =items_raw), offset 
+        return GamesIndexDTO(client_id =client_id, indexes =indexes, games_raw =items_raw) 

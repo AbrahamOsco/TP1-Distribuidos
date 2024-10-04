@@ -31,4 +31,4 @@ class GenreDTO(DTO):
         offset += 4
         average_playtime = int.from_bytes(data[offset:offset+4], byteorder='big')
         offset += 4
-        return GenreDTO(client_id=client_id, name=name, gender=gender, year=year, average_playtime=average_playtime), offset
+        return GenreDTO(client_id=client_id, name=name, gender=gender, year=year, average_playtime=average_playtime)

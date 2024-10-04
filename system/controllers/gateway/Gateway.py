@@ -16,7 +16,6 @@ import os
 
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
-
 ROUTING_KEY_RESULT_QUERY_2 = "result.query.2"
 
 class Gateway:
@@ -25,6 +24,8 @@ class Gateway:
         self.game_indexes = DIC_GAME_FEATURES_TO_USE
         self.review_indexes = DIC_REVIEW_FEATURES_TO_USE
         self.game_index_init= False
+        self.amount_games = 0
+        self.amount_reviews = 0
         self.review_index_init= False
         self.there_was_sigterm = False
         self.all_client_data_was_recv = False
@@ -41,7 +42,7 @@ class Gateway:
             result = DetectDTO(body).get_dto()
             if result.operation_type != OperationType.OPERATION_TYPE_PLATFORM_DTO:
                 logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
-            logging.info(f"Action: Gateway Recv result Q1: 🕹️ {result.operation_type.value} success: ✅")
+            logging.info(f"Action: Gateway Recv result Q1: 🕹️ success: ✅")
             self.protocol.send_platform_q1(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_result_q1
@@ -56,8 +57,7 @@ class Gateway:
         try:
             self.accept_a_connection()
             while not self.all_client_data_was_recv:
-                raw_dto = self.protocol.recv_data_raw()
-                self.handler_messages(raw_dto)
+                self.handler_messages(self.protocol.recv_data_raw())
             logging.info(f"action: Gateway start to consume 🔥 | result : sucess ✅")
             self.broker.start_consuming()
         except Exception as e:
@@ -77,12 +77,14 @@ class Gateway:
         self.free_all_resource()
 
     def handler_messages(self, raw_dto):
-        if raw_dto == ALL_GAMES_WAS_SENT:
-            logging.info(f"action: We Recv EOF of Games 🕹️ | result: success ✅")
-            #eof_dto = EOFDTO(client_id =self.protocol.client_id)
-        elif raw_dto == ALL_REVIEWS_WAS_SENT:
-            logging.info(f"action: We Recv EOF of Reviews 📰 | result: sucess ✅")
+        if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
+            logging.info(f"action: EOF of Games 🕹️ is Received | result: success ✅")
+            raw_dto.set_amount_data_and_type(self.amount_games)
+            self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
+        elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
+            logging.info(f"action: EOF of Reviews 📰 Received | result: sucess ✅")
             self.all_client_data_was_recv = True
+            raw_dto.set_amount_data_and_type(self.amount_reviews)
             # todo create A ReviewEOF? o usar el mismo EOFDTO? tendra casi el mismo comportamiento verlo!. 
         else:
             self.handler_games_and_reviews(raw_dto)
@@ -92,9 +94,11 @@ class Gateway:
         self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
         a_index_dto = None
         if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
+            self.amount_games +=1
             a_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
                                             games_raw =raw_dto.data_raw, indexes = self.game_indexes)
         elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
+            self.amount_reviews +=1
             a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
                                             reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
         self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())

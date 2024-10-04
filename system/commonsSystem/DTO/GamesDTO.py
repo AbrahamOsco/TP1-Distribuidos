@@ -54,4 +54,4 @@ class GamesDTO(DTO):
             game, offset = GameDTO().deserialize(data, offset, state_games)
             some_games_dto.append(game)
         gamesDTO = GamesDTO(state_games =state_games, client_id =client_id, games_dto =some_games_dto)
-        return gamesDTO, offset
+        return gamesDTO

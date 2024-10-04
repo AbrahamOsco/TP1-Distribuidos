@@ -29,7 +29,8 @@ class FilterBasic:
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL):
-                    logging.info(f"HANDLER: EOF! 🔚 🏮 🗡️")
+                logging.info(f"HANDLER: EOF!!! 🔚 🏮 🗡️")
+                return
             batch_filtered = self.filter_fields_item(result_dto)
             self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
             ch.basic_ack(delivery_tag =method.delivery_tag)

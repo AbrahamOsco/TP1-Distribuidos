@@ -65,7 +65,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
             i += 1
-        self.protocol.send_number_1_byte(ALL_GAMES_WAS_SENT)
+        self.protocol.send_eof(ALL_GAMES_WAS_SENT, self.config_params['id'])
         if self.game_reader.read_all_data():
             logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
 
@@ -77,7 +77,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
             i += 1
-        self.protocol.send_number_1_byte(ALL_REVIEWS_WAS_SENT)
+        self.protocol.send_eof(ALL_REVIEWS_WAS_SENT, self.config_params['id'])
         if self.review_reader.read_all_data():
             logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
 
@@ -86,6 +86,4 @@ class SteamAnalyzer:
             logging.info("action: Waiting for results from queries | result: pending ⌚")
             result_query = self.protocol.recv_result_query()
             self.result_writer.run(result_query)
-
-
 
