@@ -1,4 +1,4 @@
-from common.utils.utils import ResultType, ALL_DATA_WAS_SENT
+from common.utils.utils import ResultType, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
 from common.protocol.Protocol import Protocol
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -10,8 +10,8 @@ class ServerProtocol(Protocol):
         
     def recv_data_raw(self):
         operation_type = self.recv_number_1_byte()
-        if operation_type == ALL_DATA_WAS_SENT:
-            return operation_type  
+        if operation_type == ALL_GAMES_WAS_SENT or operation_type == ALL_REVIEWS_WAS_SENT:
+            return operation_type
         client_id = self.recv_number_1_byte()
         list_items_raw = []
         items_amount = self.recv_number_2_bytes()

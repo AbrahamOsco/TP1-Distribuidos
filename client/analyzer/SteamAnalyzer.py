@@ -1,4 +1,4 @@
-from common.utils.utils import initialize_log, ALL_DATA_WAS_SENT
+from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
 from client.fileReader.FileReader import FileReader
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -39,11 +39,10 @@ class SteamAnalyzer:
             self.connect_to_server()
             self.send_games()
             self.send_reviews()
-            self.protocol.send_number_1_byte(ALL_DATA_WAS_SENT)
             self.get_result_from_queries()
         except Exception as e:
             if self.there_was_sigterm == False:
-                logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
+                logging.error(f"action: Handling a error | error: ❌ {e} | result: sucess ✅")
         finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
@@ -66,18 +65,19 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
             i += 1
+        self.protocol.send_number_1_byte(ALL_GAMES_WAS_SENT)
         if self.game_reader.read_all_data():
             logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
 
     def send_reviews(self):
         i = 0
-        time.sleep(8)
         while not self.review_reader.read_all_data() and i < 3:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
             i += 1
+        self.protocol.send_number_1_byte(ALL_REVIEWS_WAS_SENT)
         if self.review_reader.read_all_data():
             logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
 
