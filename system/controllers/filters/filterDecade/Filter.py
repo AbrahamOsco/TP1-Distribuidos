@@ -7,7 +7,6 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 
 QUEUE_GAMESINDIEQ2 = "GamesIndieQ2"
