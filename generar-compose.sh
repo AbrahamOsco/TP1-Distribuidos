@@ -84,7 +84,7 @@ else
   NUM_FILTER_REVIEW_ENGLISH=1
 fi
 
-if [ "$QUERIES" == "A" ] then
+if [ "$QUERIES" == "A" ]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q1 \
@@ -97,25 +97,25 @@ if [ "$QUERIES" == "A" ] then
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH
-elif [[ "$QUERIES" == *"1"* ]] then
+elif [[ "$QUERIES" == *"1"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER
-elif [[ "$QUERIES" == *"2"* ]] then
+elif [[ "$QUERIES" == *"2"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_FILTER_DECADE
-elif [[ "$QUERIES" == *"3"* ]] then
+elif [[ "$QUERIES" == *"3"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_INDIE \
       $NUM_FILTER_SCORE_POSITIVE
-elif [[ "$QUERIES" == *"4"* ]] then
+elif [[ "$QUERIES" == *"4"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q2345 \
@@ -123,7 +123,7 @@ elif [[ "$QUERIES" == *"4"* ]] then
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH
-elif [[ "$QUERIES" == *"5"* ]] then
+elif [[ "$QUERIES" == *"5"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_SELECT_Q2345 \

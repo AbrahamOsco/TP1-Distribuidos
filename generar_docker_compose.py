@@ -138,67 +138,57 @@ depends = {
 def special_envs(service_name):
     if service_name == "filtergender":
         return """
-            - GENDERS=Indie,Action
-"""
+        - GENDERS=Indie,Action"""
     if service_name == "filterdecade":
         return """
-            - DECADE=2010
-"""
+        - DECADE=2010"""
     if service_name == "groupertopaverageplaytime":
         return """
-            - TOP_SIZE=10
-"""
+        - TOP_SIZE=10"""
     if service_name == "groupertopreviewspositiveindie":
         return """
-            - TOP_SIZE=5
-"""
+        - TOP_SIZE=5"""
     if service_name == "monitorstorageq4":
         return """
-            - AMOUNT_NEEDED=5000
-"""
+        - AMOUNT_NEEDED=5000"""
     if service_name == "monitorstorageq5":
         return """
-            - PERCENTILE=0.9
-"""
+        - PERCENTILE=0.9"""
     return ""
 
-def get_depends_and_envs(queries, service_name, i=0):
+def get_depends_and_envs(queries, service_name:str, i:int=0):
     base = f"""
-        depends_on:
-            rabbitmq:
-                condition: service_healthy
-"""
-    service_depends = depends.get(service_name)
+    depends_on:
+        rabbitmq:
+            condition: service_healthy"""
+    service_depends = depends.get(service_name, [])
     for depend in service_depends:
         if not service_should_be_included[depend](queries):
             continue
         if depend not in node_amounts:
             base += f"""
-            {depend}:
-                condition: service_started
-"""
+        {depend}:
+            condition: service_started"""
         else:
             for j in range(node_amounts[depend]):
                 base += f"""
-            {depend}_{j}:
-                condition: service_started
-"""
+        {depend}_{j}:
+            condition: service_started"""
     base += f"""
-        environment:
-            - LOGGING_LEVEL=INFO
-            - PYTHONPATH=/app
-            - NODE_NAME:{service_name}
-            - NODE_ID={i}
-            - SOURCE={sources[service_name]}
-            - SOURCE_KEY={source_keys.get(service_name, "default")}
-            - SOURCE_TYPE={source_types.get(service_name, "direct")}
-            - SINK={sinks[service_name]}
-            - SINK_TYPE={sink_types.get(service_name, "direct")}
-"""
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME={service_name}
+        - NODE_ID={i}
+        - SOURCE={sources[service_name]}
+        - SOURCE_KEY={source_keys.get(service_name, "default")}
+        - SOURCE_TYPE={source_types.get(service_name, "direct")}
+        - SINK={sinks[service_name]}
+        - SINK_TYPE={sink_types.get(service_name, "direct")}"""
     base += special_envs(service_name)
     return base
 
-def generar_servicio_escalable(service_name, queries):
+def generar_servicio_escalable(queries, service_name):
     if not service_should_be_included[service_name](queries):
         return ""
     amount = node_amounts[service_name]
@@ -206,38 +196,34 @@ def generar_servicio_escalable(service_name, queries):
     for i in range(amount):
         base += f"""
 
-    {service_name}_{i}:
-        container_name: {service_name}_{i}
-        image: {images.get(service_name, service_name)}:latest
-        entrypoint: python3 {entrypoints[service_name]}
-        networks:
-            - system_network
-        restart: on-failure
-        {get_depends_and_envs(queries, service_name, i)}
-"""
+  {service_name}_{i}:
+    container_name: {service_name}_{i}
+    image: {images.get(service_name, service_name)}:latest
+    entrypoint: python3 {entrypoints[service_name]}
+    networks:
+        - system_network
+    restart: on-failure{get_depends_and_envs(queries, service_name, i)}"""
     return base
         
-def generar_servicio_no_escalable(service_name, queries):
+def generar_servicio_no_escalable(queries, service_name):
     if not service_should_be_included[service_name](queries):
         return ""
     base = f"""
 
-    {service_name}:
-        container_name: {service_name}
-        image: {images.get(service_name, service_name)}:latest
-        entrypoint: python3 {entrypoints[service_name]}
-        networks:
-            - system_network
-        restart: on-failure
-        {get_depends_and_envs(service_name)}
-"""
+  {service_name}:
+    container_name: {service_name}
+    image: {images.get(service_name, service_name)}:latest
+    entrypoint: python3 {entrypoints[service_name]}
+    networks:
+        - system_network
+    restart: on-failure{get_depends_and_envs(queries, service_name)}"""
     return base
 
 
 def get_gateway(queries, select_q1:int=0, select_q2345:int=0, filter_score_positive:int=0, filter_score_negative:int=0):
     base = """
 
-gateway:
+  gateway:
     container_name: gateway
     image: gateway:latest
     entrypoint: python3 /app/system/controllers/gateway/main.py
@@ -253,32 +239,27 @@ gateway:
         - SINK=DataParsed
     depends_on:
       rabbitmq:
-        condition: service_healthy
-"""
+        condition: service_healthy"""
     if 1 in queries:
         for i in range(select_q1):
             base += f"""
       selectQ1_{i}:
-        condition: service_started
-"""
+        condition: service_started"""
     if 2 in queries or 3 in queries or 4 in queries or 5 in queries:
         for i in range(select_q2345):
             base += f"""
       selectQ2345{i}:
-        condition: service_started
-"""
+        condition: service_started"""
     if 3 in queries:
         for i in range(filter_score_positive):
             base += f"""
       filterscorepositive_{i}:
-        condition: service_started
-"""
+        condition: service_started"""
     if 4 in queries or 5 in queries:
         for i in range(filter_score_negative):
             base += f"""
       filterscorenegative_{i}:
-        condition: service_started
-"""
+        condition: service_started"""
     return base
 
 def generar_docker_compose(output_file:str, queries=[], select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
@@ -330,8 +311,7 @@ services:
       rabbitmq:
         condition: service_healthy
       gateway:
-        condition: service_started
-"""
+        condition: service_started"""
 
     compose += get_gateway(queries)
 
@@ -345,6 +325,7 @@ services:
     compose += generar_servicio_escalable(queries, "selectidnameindie")
     compose += generar_servicio_escalable(queries, "filterscorepositive")
     compose += generar_servicio_no_escalable(queries, "monitorstorageq3")
+    compose += generar_servicio_no_escalable(queries, "groupertopreviewspositiveindie")
     compose += generar_servicio_escalable(queries, "selectidnameaction")
     compose += generar_servicio_escalable(queries, "filterscorenegative")
     compose += generar_servicio_no_escalable(queries, "monitorjoinerq4")
