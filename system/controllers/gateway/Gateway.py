@@ -51,12 +51,12 @@ class Gateway:
                 if raw_dto.operation_type == OPERATION_TYPE_EOF and not self.review_index_init:
                     amount_of_games = int(self.client_stats[self.current_client]['games']) 
                     logging.info(f"action: Sending EOF to client {self.current_client} con amount_of_games {amount_of_games} | result: success ✅")
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=self.current_client, confirmation=False).serialize(), routing_key="games")
+                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]['games'] ).serialize(), routing_key="games")
                     continue
                 elif raw_dto.operation_type == OPERATION_TYPE_EOF:
                     amount_of_reviews = int(self.client_stats[self.current_client]['reviews'])
                     logging.info(f"action: Sending EOF to client {self.current_client} con amount_of_reviews {amount_of_reviews} | result: success ✅")
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=self.current_client, confirmation=False).serialize(), routing_key="reviews")
+                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]['reviews']).serialize(), routing_key="reviews")
                     break
                 self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
                 self.current_client = raw_dto.client_id

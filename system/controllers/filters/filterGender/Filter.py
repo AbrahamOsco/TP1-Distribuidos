@@ -15,7 +15,7 @@ class Filter(Node):
     
     def send_eof(self, client):
         for gender in self.genders:
-            self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key=gender)
+            self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, self.node_stats[client]['games']).serialize(), routing_key=gender)
     
     def send_game(self, data:GamesDTO, gender):
         data.set_state(STATE_GENRE)

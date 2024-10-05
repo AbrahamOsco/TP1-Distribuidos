@@ -66,10 +66,10 @@ class Node:
         self.node_stats[client_id]['reviews'] += reviews
 
     def send_eof(self, client):
-        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key='default')
+        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, self.node_stats[client]['games'] ).serialize(), routing_key='default')
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True, self.node_stats[client]['games']).serialize())
 
     def check_confirmations(self, client):
         self.confirmations += 1
