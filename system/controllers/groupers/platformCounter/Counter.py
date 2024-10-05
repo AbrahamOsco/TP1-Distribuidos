@@ -1,6 +1,6 @@
 import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.node.node import Node
 
 class Counter(Node):
@@ -21,7 +21,7 @@ class Counter(Node):
         self.reset_counter()
 
     def trim_data(self, data):
-        return GamesDTO(client_id=data["client_id"], games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
+        return GamesDTO(client_id=data["client_id"], state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
 
     def send_result(self, data):
         logging.info(f"action: send_result | data: {data}")

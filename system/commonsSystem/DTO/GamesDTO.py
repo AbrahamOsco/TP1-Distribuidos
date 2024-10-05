@@ -7,6 +7,7 @@ from system.commonsSystem.DTO.StateQ2345DTO import StateQ2345DTO
 from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlaytimeDTO import PlaytimeDTO
 from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
+from system.commonsSystem.DTO.RawDTO import RawDTO
 
 STATE_GAMES_MINIMAL = 1
 STATE_PLATFORM = 2
@@ -88,8 +89,8 @@ class GamesDTO(DTO):
     def filter_games(self, filter_func):
         self.games_dto = list(filter(filter_func, self.games_dto))
 
-    def from_raw(client_id: int, data_raw:str, indexes):
+    def from_raw(raw_dto: RawDTO, indexes):
         games_dto = []
-        for game_raw in data_raw:
+        for game_raw in raw_dto.raw_data:
             games_dto.append(GameMinimalDTO.from_raw(game_raw, indexes))
-        return GamesDTO(client_id=client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto)
+        return GamesDTO(client_id=raw_dto.client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto)

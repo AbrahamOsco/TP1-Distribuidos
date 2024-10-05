@@ -3,7 +3,7 @@ import csv
 import sys
 import logging
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 1
+PERCENT_OF_FILE_FOR_USE = 0.1
 
 class FileReader:
     def __init__(self, file_name, batch_size):
@@ -16,8 +16,8 @@ class FileReader:
         self.usage_limit = PERCENT_OF_FILE_FOR_USE * os.path.getsize(FILE_PATHS[file_name])
         self.bytes_read = 0
         self.is_closed = False
-        self.fix_header_game = False
         self.last_read = None
+        next(self.reader) # skip header
 
     def get_next_batch(self):
         games = []
@@ -43,9 +43,6 @@ class FileReader:
                     break
                 self.bytes_read += (total_size_raw + len(data_raw))
                 current_size += total_size_raw
-                if self.fix_header_game == False and self.file_name == 'games':
-                    data_raw.insert(INDEX_TO_FIX_HEADER, 'Unknown') # add a new column to synchronize the header
-                    self.fix_header_game = True
                 games.append(data_raw)
         except StopIteration:
             self.close()

@@ -1,16 +1,6 @@
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
 from system.commonsSystem.DTO.DTO import DTO
 
-indexMap = {
-    "AppID": "app_id",
-    "Name": "name",
-    "Release date": "release_date",
-    "Windows": "windows",
-    "Mac": "mac",
-    "Linux": "linux",
-    "Average playtime forever": "avg_playtime_forever",
-    "Genres": "genres"
-}
 command_platform = {"True":1, "False":0}
 
 class GameMinimalDTO(GameStateDTO):
@@ -58,10 +48,10 @@ class GameMinimalDTO(GameStateDTO):
         attributes = {}
         for i, value in enumerate(data_raw):
             if i in indexes.keys():
-                if indexes[i] == "Windows" or indexes[i] == "Mac" or indexes[i] == "Linux":
-                    attributes[indexMap[indexes[i]]] = command_platform[value]
+                if indexes[i] == "windows" or indexes[i] == "mac" or indexes[i] == "linux":
+                    attributes[indexes[i]] = command_platform[value]
                 else:
-                    attributes[indexMap[indexes[i]]] = value
+                    attributes[indexes[i]] = value
         return GameMinimalDTO(app_id=attributes["app_id"], name=attributes["name"],
                               windows=attributes["windows"], mac=attributes["mac"], linux=attributes["linux"],
                               genres=attributes["genres"], release_date=attributes["release_date"],

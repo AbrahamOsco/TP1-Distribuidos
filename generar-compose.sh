@@ -49,6 +49,7 @@ else
 fi
 ESCALATE=$(solicitar_si_no "¿Desea seleccionar cantidad de nodos? (S/N): ")
 if [ "$ESCALATE" == "S" ]; then
+  NUM_FILTER_BASIC=$(solicitar_numero_entero "Ingrese la cantidad de FilterBasic: ")
   if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"1"* ]]; then
     NUM_SELECT_Q1=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ1: ")
     NUM_PLATFORM_COUNTER=$(solicitar_numero_entero "Ingrese la cantidad de PlatformCounter: ")
@@ -72,6 +73,7 @@ if [ "$ESCALATE" == "S" ]; then
     NUM_FILTER_REVIEW_ENGLISH=$(solicitar_numero_entero "Ingrese la cantidad de FilterReviewEnglish: ")
   fi
 else
+  NUM_FILTER_BASIC=1
   NUM_SELECT_Q1=1
   NUM_PLATFORM_COUNTER=1
   NUM_SELECT_Q2345=1
@@ -87,6 +89,7 @@ fi
 if [ "$QUERIES" == "A" ]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER \
       $NUM_SELECT_Q2345 \
@@ -100,17 +103,20 @@ if [ "$QUERIES" == "A" ]; then
 elif [[ "$QUERIES" == *"1"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER
 elif [[ "$QUERIES" == *"2"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_FILTER_DECADE
 elif [[ "$QUERIES" == *"3"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_INDIE \
@@ -118,6 +124,7 @@ elif [[ "$QUERIES" == *"3"* ]]; then
 elif [[ "$QUERIES" == *"4"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
@@ -126,6 +133,7 @@ elif [[ "$QUERIES" == *"4"* ]]; then
 elif [[ "$QUERIES" == *"5"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
+      $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \

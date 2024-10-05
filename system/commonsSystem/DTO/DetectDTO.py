@@ -3,12 +3,14 @@ from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.ReviewedGameDTO import ReviewedGameDTO
+from system.commonsSystem.DTO.RawDTO import RawDTO
 import logging
 
 class DetectDTO():
     def __init__(self, dto_in_bytes):
         self.dto_in_bytes = dto_in_bytes
         self.command_deserialize = {
+            OperationType.OPERATION_TYPE_RAW: RawDTO,
             OperationType.OPERATION_TYPE_GAMES_DTO: GamesDTO,
             OperationType.OPERATION_TYPE_REVIEWS_DTO: ReviewsDTO,
             OperationType.OPERATION_TYPE_GAMES_EOF_DTO: EOFDTO,

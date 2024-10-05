@@ -9,6 +9,7 @@ images = {
 }
 
 sources = {
+    "filterbasic": "DataRaw",
     "selectq1": "DataParsed",
     "selectq2345": "DataParsed",
     "platformcounter": "GamesPlatform",
@@ -55,6 +56,7 @@ source_types = {
 }
 
 sinks = {
+    "filterbasic": "DataParsed",
     "selectq1": "GamesPlatform",
     "selectq2345": "GamesQ2345",
     "platformcounter": "CountByPlatform",
@@ -75,12 +77,14 @@ sinks = {
 }
 
 sink_types = {
+    "filterbasic": "topic",
     "filtergender": "topic",
     "selectidnameaction": "fanout",
     "filterscorenegative": "fanout",
 }
 
 service_should_be_included = {
+    "filterbasic": lambda _: True,
     "selectq1": lambda queries: 1 in queries,
     "selectq2345": lambda queries: 2 in queries or 3 in queries or 4 in queries or 5 in queries,
     "platformcounter": lambda queries: 1 in queries,
@@ -101,6 +105,7 @@ service_should_be_included = {
 }
 
 entrypoints = {
+    "filterbasic": "/app/system/controllers/filters/filterBasic/main.py",
     "selectq1": "/app/system/controllers/select/selectQ1/main.py",
     "selectq2345": "/app/system/controllers/select/selectQ2345/main.py",
     "platformcounter": "/app/system/controllers/groupers/platformCounter/main.py",
@@ -123,6 +128,7 @@ entrypoints = {
 node_amounts = {}
 
 depends = {
+    "filterbasic": ["selectq1", "selectq2345", "filterscorepositive", "filterscorenegative"],
     "selectq1": ["platformcounter"],
     "selectq2345": ["filtergender"],
     "platformcounter": ["platformreducer"],
@@ -228,7 +234,7 @@ def generar_servicio_no_escalable(queries, service_name):
     return base
 
 
-def get_gateway(queries, select_q1:int=0, select_q2345:int=0, filter_score_positive:int=0, filter_score_negative:int=0):
+def get_gateway():
     base = """
 
   gateway:
@@ -244,36 +250,20 @@ def get_gateway(queries, select_q1:int=0, select_q2345:int=0, filter_score_posit
         - NODE_NAME=gateway
         - NODE_ID=1
         - SOURCE=Output
-        - SINK=DataParsed
-        - SINK_TYPE=topic
+        - SINK=DataRaw
     depends_on:
       rabbitmq:
         condition: service_healthy"""
-    if 1 in queries:
-        for i in range(select_q1):
-            base += f"""
-      selectQ1_{i}:
-        condition: service_started"""
-    if 2 in queries or 3 in queries or 4 in queries or 5 in queries:
-        for i in range(select_q2345):
-            base += f"""
-      selectQ2345{i}:
-        condition: service_started"""
-    if 3 in queries:
-        for i in range(filter_score_positive):
-            base += f"""
-      filterscorepositive_{i}:
-        condition: service_started"""
-    if 4 in queries or 5 in queries:
-        for i in range(filter_score_negative):
-            base += f"""
-      filterscorenegative_{i}:
+    for i in range(node_amounts["filterbasic"]):
+        base += f"""
+      filterbasic_{i}:
         condition: service_started"""
     return base
 
-def generar_docker_compose(output_file:str, queries=[], select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
+def generar_docker_compose(output_file:str, queries=[], filterbasic="0", select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
                            filter_decade="0", select_id_name_indie="0", select_id_name_action="0", filter_score_positive="0",
                            filter_review_english="0", filter_score_negative="0"):
+    node_amounts["filterbasic"] = int(filterbasic)
     node_amounts["selectq1"] = int(select_q1)
     node_amounts["platformcounter"] = int(platform_counter)
     node_amounts["selectq2345"] = int(select_q2345)
@@ -322,8 +312,9 @@ services:
       gateway:
         condition: service_started"""
 
-    compose += get_gateway(queries)
+    compose += get_gateway()
 
+    compose += generar_servicio_escalable(queries, "filterbasic")
     compose += generar_servicio_escalable(queries, "selectq1")
     compose += generar_servicio_escalable(queries, "platformcounter")
     compose += generar_servicio_no_escalable(queries, "platformreducer")
@@ -355,7 +346,7 @@ networks:
         f.write(compose)
 
     print(f"{output_file} generado con los siguientes parámetros:")
-    print(f"SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
+    print(f"FilterBasic: {filterbasic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
           f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade: {filter_decade}, "
           f"SelectIDNameIndie: {select_id_name_indie}, SelectIDNameAction: {select_id_name_action}, "
           f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
@@ -374,43 +365,43 @@ if __name__ == "__main__":
         print("Invalid Query")
         sys.exit(1)
     if query_input == "A":
-        if len(sys.argv) != 13:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ1] [PlatformCounter] [SelectQ2345] [FilterGender] [FilterDecade] [SelectIDNameIndie] [FilterScorePositive] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
+        if len(sys.argv) != 14:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter] [SelectQ2345] [FilterGender] [FilterDecade] [SelectIDNameIndie] [FilterScorePositive] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
             sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q1=sys.argv[3], platform_counter=sys.argv[4],
-                               select_q2345=sys.argv[5], filter_gender=sys.argv[6], filter_decade=sys.argv[7],
-                                 select_id_name_indie=sys.argv[8], filter_score_positive=sys.argv[9],
-                                    select_id_name_action=sys.argv[10], filter_score_negative=sys.argv[11],
-                                    filter_review_english=sys.argv[12])
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5],
+                               select_q2345=sys.argv[6], filter_gender=sys.argv[7], filter_decade=sys.argv[8],
+                                 select_id_name_indie=sys.argv[9], filter_score_positive=sys.argv[10],
+                                    select_id_name_action=sys.argv[11], filter_score_negative=sys.argv[12],
+                                    filter_review_english=sys.argv[13])
     elif query_input == "1":
-        if len(sys.argv) != 5:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ1] [PlatformCounter]")
-            sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q1=sys.argv[3], platform_counter=sys.argv[4])
-    elif query_input == "2":
         if len(sys.argv) != 6:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ2345] [FilterGender] [FilterDecade]")
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter]")
             sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q2345=sys.argv[3], filter_gender=sys.argv[4],
-                               filter_decade=sys.argv[5])
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5])
+    elif query_input == "2":
+        if len(sys.argv) != 7:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [FilterDecade]")
+            sys.exit(1)
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
+                               filter_decade=sys.argv[6])
     elif query_input == "3":
-        if len(sys.argv) != 7:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ2345] [FilterGender] [SelectIDNameIndie] [FilterScorePositive] ")
-            sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q2345=sys.argv[3], filter_gender=sys.argv[4],
-                               select_id_name_indie=sys.argv[5], filter_score_positive=sys.argv[6])
-    elif query_input == "4":
         if len(sys.argv) != 8:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameIndie] [FilterScorePositive] ")
             sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q2345=sys.argv[3], filter_gender=sys.argv[4],
-                               select_id_name_action=sys.argv[5], filter_score_negative=sys.argv[6], filter_review_english=sys.argv[7])
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
+                               select_id_name_indie=sys.argv[6], filter_score_positive=sys.argv[7])
+    elif query_input == "4":
+        if len(sys.argv) != 9:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
+            sys.exit(1)
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], filter_review_english=sys.argv[8])
     elif query_input == "5":
-        if len(sys.argv) != 7:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative]")
+        if len(sys.argv) != 8:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative]")
             sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, select_q2345=sys.argv[3], filter_gender=sys.argv[4],
-                               select_id_name_action=sys.argv[5], filter_score_negative=sys.argv[6])
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7])
     else:
         print("Invalid Query")
         sys.exit(1)
