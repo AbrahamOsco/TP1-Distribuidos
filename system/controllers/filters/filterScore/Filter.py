@@ -1,12 +1,14 @@
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_TEXT
+import os
 
 class Filter(Node):
     def __init__(self):
         super().__init__()
+        self.score_wanted = int(os.getenv("SCORE_WANTED", 1))
 
     def is_correct_score(self, score):
-        return score == 1
+        return score == self.score_wanted
     
     def send_review(self, data):
         data.set_state(STATE_TEXT)

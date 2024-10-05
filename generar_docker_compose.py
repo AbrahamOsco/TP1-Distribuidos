@@ -4,6 +4,8 @@ images = {
     "platformreducer": "platformcounter",
     "selectidnameindie": "selectidname",
     "selectidnameaction": "selectidname",
+    "filterscorepositive": "filterscore",
+    "filterscorenegative": "filterscore",
 }
 
 sources = {
@@ -108,8 +110,8 @@ entrypoints = {
     "groupertopaverageplaytime": "/app/system/controllers/groupers/grouperTopAveragePlaytime/main.py",
     "selectidnameindie": "/app/system/controllers/select/selectIDName/main.py",
     "selectidnameaction": "/app/system/controllers/select/selectIDName/main.py",
-    "filterscorepositive": "/app/system/controllers/filters/filterScorePositive/main.py",
-    "filterscorenegative": "/app/system/controllers/filters/filterScoreNegative/main.py",
+    "filterscorepositive": "/app/system/controllers/filters/filterScore/main.py",
+    "filterscorenegative": "/app/system/controllers/filters/filterScore/main.py",
     "monitorstorageq3": "/app/system/controllers/storages/monitorStorageQ3/main.py",
     "groupertopreviewspositiveindie": "/app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py",
     "monitorjoinerq4": "/app/system/controllers/joiners/monitorJoinerQ4/main.py",
@@ -154,6 +156,12 @@ def special_envs(service_name):
     if service_name == "monitorstorageq5":
         return """
         - PERCENTILE=0.9"""
+    if service_name == "filterscorepositive":
+        return """
+        - SCORE_WANTED=1"""
+    if service_name == "filterscorenegative":
+        return """
+        - SCORE_WANTED=-1"""
     return ""
 
 def get_depends_and_envs(queries, service_name:str, i:int=0):

@@ -244,8 +244,8 @@ services:
 
   filterscorepositive_0:
     container_name: filterscorepositive_0
-    image: filterscorepositive:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
     networks:
         - system_network
     restart: on-failure
@@ -264,6 +264,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
+        - SCORE_WANTED=1
 
   monitorstorageq3:
     container_name: monitorstorageq3
@@ -337,8 +338,8 @@ services:
 
   filterscorenegative_0:
     container_name: filterscorenegative_0
-    image: filterscorenegative:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
     networks:
         - system_network
     restart: on-failure
@@ -359,6 +360,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
+        - SCORE_WANTED=-1
 
   monitorjoinerq4:
     container_name: monitorjoinerq4
