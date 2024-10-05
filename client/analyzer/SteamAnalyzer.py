@@ -13,7 +13,6 @@ class SteamAnalyzer:
         self.initialize_config()
         self.game_reader = FileReader(file_name='games', batch_size=25)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000)
-        self.run()
 
     def initialize_config(self):
         self.config_params = {}
@@ -51,3 +50,8 @@ class SteamAnalyzer:
     def get_result_from_queries(self):
         resultQuerys = self.protocol.recv_string()
 
+    def stop(self):
+        self.socket.close()
+        self.game_reader.close()
+        self.review_reader.close()
+        logging.info("action: socket_closed 🏪 | result: success ✅")
