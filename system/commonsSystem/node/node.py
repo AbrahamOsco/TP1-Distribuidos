@@ -146,4 +146,3 @@ class Node:
     
     def process_data(self, data):
         pass
-        self.broker.close()

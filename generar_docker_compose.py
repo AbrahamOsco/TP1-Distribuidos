@@ -233,10 +233,11 @@ def get_gateway(queries, select_q1:int=0, select_q2345:int=0, filter_score_posit
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME:gateway
+        - NODE_NAME=gateway
         - NODE_ID=1
         - SOURCE=Output
         - SINK=DataParsed
+        - SINK_TYPE=topic
     depends_on:
       rabbitmq:
         condition: service_healthy"""

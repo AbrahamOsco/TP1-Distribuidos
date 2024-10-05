@@ -45,24 +45,9 @@ class Socket:
     
     def is_closed(self) -> bool:
         return self.was_closed
-    
-    # si handleo el error deben cerrar el socket desde afuera
-    def handler_error_send_all(self, total_bytes_sent, error=""):
-        logging.error(f"{error}")
-        return total_bytes_sent
 
-    def send_all(self, a_object_bytes):
-        total_bytes_sent = 0
-        bytes_to_send = len(a_object_bytes)
-        while total_bytes_sent < bytes_to_send:
-            try:
-                bytes_sent = self.socket.send(a_object_bytes[total_bytes_sent:]) # retorna la # de bytes enviados.
-                if bytes_sent == 0:
-                    return self.handler_error_send_all(total_bytes_sent, "action: send_all | result: fail | error: connection broken during send all, bytes sent = 0 ")
-            except OSError as e:
-                return self.handler_error_send_all(total_bytes_sent, f"action: send_all | result: fail | error: {e}")
-            total_bytes_sent += bytes_sent
-        return total_bytes_sent
+    def sendall(self, a_object_bytes):
+        self.socket.sendall(a_object_bytes)
 
     def handler_error_recv_all(self, bytes_received, error=""):
         logging.error(f"{error}")

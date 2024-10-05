@@ -1,20 +1,19 @@
 from common.DTO.GamesRawDTO import OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import OPERATION_TYPE_REVIEWS_RAW
 from common.DTO.EOFDTO import OPERATION_TYPE_EOF
-from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.enums.OperationType import OperationType
+from system.commonsSystem.node.node import Node
 import logging
-import os
+import multiprocessing
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
-class Gateway:
+class Gateway(Node):
     def __init__(self):
-        initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.game_indexes_inverted = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
                             "Genres": 0, "Release date": 0, "Average playtime forever": 0}
         self.game_indexes = {}
@@ -22,11 +21,10 @@ class Gateway:
         self.review_indexes = {}
         self.game_index_init= False
         self.review_index_init= False
-        self.sink = os.getenv("SINK")
-        self.broker = Broker()
-        self.broker.create_sink(type='topic', name=self.sink)
         self.socket_accepter = Socket(port=12345)
         self.current_client = 0
+        self.processes = []
+        super().__init__()
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -34,7 +32,8 @@ class Gateway:
         logging.info("action: Waiting a client to connect | result: success ✅")
         self.protocol = ServerProtocol(self.socket_peer)
     
-    def run(self):
+    def start(self):
+        self.proccesses.append(multiprocessing.Process(target=self.run))
         while True:
             self.accept_a_connection()
             logging.info(f"action: Gateway started | result: sucess ✅")
@@ -77,3 +76,12 @@ class Gateway:
             list_items.pop(0)
             self.review_index_init = True
             self.review_indexes = {v: k for k, v in self.review_indexes_inverted.items()}
+    
+    def process_data(self, data):
+        pass
+
+    def abort(self):
+        self.stop()
+        for process in self.processes:
+            process.terminate()
+            process.join()
