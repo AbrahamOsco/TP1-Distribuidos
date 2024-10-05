@@ -1,4 +1,4 @@
-from common.utils.utils import initialize_log
+from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
@@ -25,10 +25,14 @@ class SelectQ1:
     def handler_callback(self):
         def handler_message(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
+            logging.info(f" result: {result} {result.operation_type} 🏑 ")
             if result.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO:
-                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺🗡️ 🦺")
-                return
-            self.filter_platform(result)
+                if result.old_operation_type == ALL_GAMES_WAS_SENT:
+                    logging.info(f"Action: Recv EOF of games! 🕹️🕹️🕹️ | result: success ✅")
+                if result.old_operation_type == ALL_REVIEWS_WAS_SENT:
+                    logging.info(f"Action: Recv EOF of Reviews! 📰📰📰 | result: success ✅")
+            else: 
+                self.filter_platform(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     

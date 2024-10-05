@@ -5,11 +5,12 @@ STATUS_REQUEST = 1
 STATUS_RESPONSE = 2
 
 class CalculatorDTO(DTO):
-    def __init__(self, client_id: int = 0, status :int = STATUS_REQUEST, amount_data:int = 0 ):
+    def __init__(self, client_id: int = 0, status :int = STATUS_REQUEST, amount_data:int = 0, target_type :int = 0):
         self.operation_type = OperationType.OPERATION_TYPE_CALCULATOR_DTO
         self.client_id = client_id
         self.status = status
         self.amount_data = amount_data
+        self.target_type = target_type
     
     def serialize(self):
         calculator_bytes = bytearray()
@@ -17,6 +18,7 @@ class CalculatorDTO(DTO):
         calculator_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
         calculator_bytes.extend(self.status.to_bytes(1, byteorder='big'))
         calculator_bytes.extend(self.amount_data.to_bytes(8, byteorder='big'))
+        calculator_bytes.extend(self.target_type.to_bytes(1, byteorder='big'))
         return bytes(calculator_bytes)
 
     def deserialize(self, data, offset):
@@ -28,4 +30,6 @@ class CalculatorDTO(DTO):
         offset += 1
         amount_data = int.from_bytes(data[offset:offset+8], byteorder='big')
         offset += 8
-        return CalculatorDTO(client_id, status, amount_data)
+        target_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        return CalculatorDTO(client_id, status, amount_data, target_type)

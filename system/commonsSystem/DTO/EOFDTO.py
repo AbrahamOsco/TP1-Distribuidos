@@ -21,7 +21,7 @@ class EOFDTO(DTO):
         self.old_operation_type = a_eof_dto.old_operation_type
         return EOFDTO(self.operation_type, self.client_id, self.amount_data, self.old_operation_type)
     
-    #this method only can be used by gateway! no other controllers.
+    #this method only can be used by gateway! no other controllers. Old Operation tendra ALL_GAMES_SENT o ALL_REVIEWS_SENT y operation type el normal.
     def set_amount_data_and_type(self, a_amount):
         self.old_operation_type = self.operation_type
         self.operation_type = OperationType.OPERATION_TYPE_EOF_INITIAL_DTO

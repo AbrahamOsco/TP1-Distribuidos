@@ -59,7 +59,7 @@ class SteamAnalyzer:
 
     def send_games(self):
         i = 0
-        while  not self.game_reader.read_all_data() and i < 3:
+        while  not self.game_reader.read_all_data() and i < 6:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
@@ -71,7 +71,7 @@ class SteamAnalyzer:
 
     def send_reviews(self):
         i = 0
-        while not self.review_reader.read_all_data() and i < 3:
+        while not self.review_reader.read_all_data() and i < 6:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break

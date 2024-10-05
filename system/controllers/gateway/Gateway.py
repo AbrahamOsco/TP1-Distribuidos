@@ -16,7 +16,6 @@ import os
 
 QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
 QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
-ROUTING_KEY_RESULT_QUERY_2 = "result.query.2"
 
 class Gateway:
     def __init__(self):
@@ -78,15 +77,14 @@ class Gateway:
 
     def handler_messages(self, raw_dto):
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
-            logging.info(f"action: EOF of Games 🕹️ is Received | result: success ✅")
             raw_dto.set_amount_data_and_type(self.amount_games)
-            #Aca mandamos el EOF por ahora de solo los games!. 
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
+            logging.info(f"action: Sent EOF of Games 🕹️! | result: success ✅")
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
-            logging.info(f"action: EOF of Reviews 📰 Received | result: sucess ✅")
+            logging.info(f"action: Sent EOF of Reviews 📰!  | result: sucess ✅")
             self.all_client_data_was_recv = True
             raw_dto.set_amount_data_and_type(self.amount_reviews)
-            # todo create A ReviewEOF? o usar el mismo EOFDTO? tendra casi el mismo comportamiento verlo!. 
+            self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
         else:
             self.handler_games_and_reviews(raw_dto)
 
@@ -97,12 +95,11 @@ class Gateway:
             self.amount_games +=1
             a_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
                                             games_raw =raw_dto.data_raw, indexes = self.game_indexes)
-            self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
-        #elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-        #    self.amount_reviews +=1
-        #    a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
-        #                                    reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
-        #self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
+        elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
+            self.amount_reviews +=1
+            a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
+                                            reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
+        self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())
         
 
     def initialize_indexes(self, operation_type, list_items):
@@ -122,18 +119,3 @@ class Gateway:
                 if element in dic_index.keys():
                     dic_index[element] = i
         list_items.pop(0)
-
-
-
-"""    
-    def handler_callback_q2(self):
-        def handler_result_q2(ch, method, properties, body):
-            result = DetectDTO(body).get_dto()
-            logging.info(f"Action: Gateway Recv result Q2: 🕹️ {result.operation_type.value} success: ✅")
-            if result.operation_type != OperationType.OPERATION_TYPE_GROUPER_TOP_AVERAGE_PLAYTIME_DTO:
-                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
-            logging.info(f"Action: Gateway Recv result Q2: 🕹️ {result.operation_type.value} success: ✅")
-            self.protocol.send(result)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        return handler_result_q2
-"""
