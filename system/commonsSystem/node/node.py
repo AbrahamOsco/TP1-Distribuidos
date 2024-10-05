@@ -27,8 +27,10 @@ class Node:
         self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = 0
+        self.node_stats = {}
         self.broker = Broker()
         self.initialize_queues()
+
 
     def initialize_queues(self):
         ## Source and destination for all workers
@@ -55,6 +57,13 @@ class Node:
             level=self.config_params["log_level"],
             datefmt='%Y-%m-%d %H:%M:%S',
         )
+
+    def update_node_stats(self, client_id, games=0, reviews=0):
+        if client_id not in self.node_stats:
+            self.node_stats[client_id] = {'games': 0, 'reviews': 0}
+        
+        self.node_stats[client_id]['games'] += games
+        self.node_stats[client_id]['reviews'] += reviews
 
     def send_eof(self, client):
         self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key='default')
@@ -115,6 +124,10 @@ class Node:
             else:
                 self.check_new_client(data)
                 self.process_data(data)
+                if data.games_dto:
+                    self.update_node_stats(client_id=data.get_client(), games=data.get_amount_of_games(), reviews=0)
+                elif data.reviews_dto:
+                    self.update_node_stats(client_id=data.get_client(), games=0, reviews=data.get_amount_of_reviews())
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except UnfinishedGamesException as e:
             logging.info(f"action: error | Unfinished Games Exception")
