@@ -10,12 +10,17 @@ class EOFDTO(DTO):
         self.amount_data = amount_data
         self.old_operation_type = old_operation_type
 
+    @classmethod
+    def create(cls, eofDTO):
+        return EOFDTO(eofDTO.operation_type, eofDTO.client_id, eofDTO.amount_data, eofDTO.old_operation_type)
+
     def load(self, a_eof_dto):
         self.operation_type = a_eof_dto.operation_type
         self.amount_data = a_eof_dto.amount_data
         self.client_id = a_eof_dto.client_id
         self.old_operation_type = a_eof_dto.old_operation_type
         return EOFDTO(self.operation_type, self.client_id, self.amount_data, self.old_operation_type)
+    
     #this method only can be used by gateway! no other controllers.
     def set_amount_data_and_type(self, a_amount):
         self.old_operation_type = self.operation_type

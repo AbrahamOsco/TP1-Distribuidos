@@ -15,8 +15,8 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name='games', batch_size=5)
-        self.review_reader = FileReader(file_name='reviews', batch_size=5)
+        self.game_reader = FileReader(file_name ='games', batch_size =6)
+        self.review_reader = FileReader(file_name ='reviews', batch_size =6)
         self.result_writer = ResultWriter()
         self.there_was_sigterm = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)

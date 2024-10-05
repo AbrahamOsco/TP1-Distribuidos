@@ -3,7 +3,7 @@ from common.utils.utils import initialize_log
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.CalculatorDTO import CalculatorDTO, STATUS_REQUEST, STATUS_RESPONSE
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-
+from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
 from system.commonsSystem.broker.Broker import Broker
 import logging
@@ -25,7 +25,7 @@ class FilterBasic:
         self.recv_calculator = 0
         self.total_nodes = 3
         self.eof_dto = None
-        self.recv_eof_lider = False
+        self.i_am_lider = False
         self.game_indexes = {}
         self.review_indexes = {}
         self.game_index_init= False
@@ -38,48 +38,16 @@ class FilterBasic:
         self.broker.bind_queue(exchange_name =EXCHANGE_FILTER_BASIC, queue_name =anonymous_queue)
 
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True, callback =self.callback_filter_basic())
-        
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1, durable = True)
+        self.handler_eof_games = HandlerEOF(target="games", broker =self.broker,
+                                 node_id =self.id, exchange_name =EXCHANGE_FILTER_BASIC, name_next_queue =QUEUE_FILTER_SELECTQ1)
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345, durable = True)
         self.wait_for_select = False
 
     def callback_eof_calculator(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            logging.info(f"EOF Calculator: 🏑 🤩 🌟 {result_dto} OperType: {result_dto.operation_type} Status: {result_dto.status}")
-            logging.info(f" Individual: {self.amounts_indivdual} Current: {self.amount_total_current} Definitive: {self.amount_total_definitive} ")
-            if (result_dto.operation_type == OperationType.OPERATION_TYPE_CALCULATOR_DTO):
-                logging.info(f"Entro al primer if basico es un CalculadorDTO")
-                if (result_dto.status == STATUS_RESPONSE and self.recv_eof_lider):
-                    logging.info(f"Soy lider y entro a udptear! 🌵 🌵 🍰 ")
-                    logging.info(f"REcibi: 🗡️Cantidad: {result_dto.amount_data} status: {result_dto.status} client_id: {result_dto.client_id} 🧇 ")
-                    self.amount_total_current['games'] += result_dto.amount_data
-                    self.recv_calculator +=1
-                    logging.info(f" LIDER: 🏑 🔥 Individual: {self.amounts_indivdual} Current: {self.amount_total_current} Definitive: {self.amount_total_definitive} ")
-                    if (self.amount_total_current['games'] + self.amounts_indivdual['games']) == self.amount_total_definitive['games']:    
-                        logging.info(f"Soy lider y entre porque ya recibi todos lo calculator node que necesito ♦️ 🅰️ 🅱️!")
-                        logging.info("Sending EOF!! 🥇")
-                        self.broker.public_message(queue_name=QUEUE_FILTER_SELECTQ1,
-                                 message = (EOFDTO().load(self.eof_dto)).serialize() )
-                        #else:
-                        #    logging.info("Error in the amount of games")
-                elif (result_dto.status == STATUS_REQUEST and not self.recv_eof_lider):
-                    self.broker.public_message(exchange_name=EXCHANGE_FILTER_BASIC,
-                                 message = CalculatorDTO(status=STATUS_RESPONSE, amount_data=self.amounts_indivdual['games']).serialize())
-                    logging.info(f"action: sent my CalculatorDTO| ID: {self.id} Lider: {self.recv_eof_lider} 💯 🔥 | result: success ✅")
-            
-            
-            #                self.amount_total_current['games'] = 0
-            #                self.recv_calculator = 0
-            #                self.broker.public_message(exchange_name =EXCHANGE_FILTER_BASIC, message= CalculatorDTO().serialize() )
-            #    elif (result_dto.operation_type == STATUS_REQUEST and not self.recv_eof_lider):
-            #        logging.info(f"action: Sending mys Games Calculator  Filter with ID: {self.id} 🔥 🧇 🐄 ⛏️ | result: success ✅")
-            #        self.broker.public_message(exchange_name=EXCHANGE_FILTER_BASIC,
-            #                     message = CalculatorDTO(amount_data=self.amounts_indivdual['games']).serialize())
-            #        logging.info(f"action: Sending my games processing: 💯 | result : success ✅")
-            #    ch.basic_ack(delivery_tag =method.delivery_tag)
-            #else:
-            #    logging.info(f"Another Result DTO: 🤯 🔥 🗡️ : {result_dto}")
+            self.handler_eof_games.run(result_dto)
             ch.basic_ack(delivery_tag =method.delivery_tag)
         return handler_message
 
@@ -88,11 +56,8 @@ class FilterBasic:
             result_dto = DetectDTO(body).get_dto()
             logging.info(f"ResultDTO: {result_dto} {result_dto.operation_type} 🏑 🌵")
             if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO):
-                self.recv_eof_lider = True
-                self.eof_dto = result_dto
-                logging.info(f"action: Filter with ID: {self.id} Recv EOF! {self.recv_eof_lider} | result: success ✅")
-                self.amount_total_definitive['games'] = result_dto.amount_data
-                self.broker.public_message(exchange_name =EXCHANGE_FILTER_BASIC, message = CalculatorDTO().serialize())
+                self.handler_eof_games.initialize_lider(result_dto)
+                self.broker.public_message(exchange_name =EXCHANGE_FILTER_BASIC, message = CalculatorDTO(result_dto.client_id).serialize())
             else: 
                 batch_filtered = self.filter_fields_item(result_dto)
                 self.send_batch_data(batch_filtered, result_dto.operation_type, result_dto.client_id)
@@ -105,7 +70,7 @@ class FilterBasic:
             gamesDTO = GamesDTO(games_raw =data_filtered, client_id =client_id, state_games =STATE_GAMES_INITIAL)
             self.broker.public_message(queue_name= QUEUE_FILTER_SELECTQ1, message = gamesDTO.serialize())
             self.broker.public_message(queue_name= QUEUE_FILTER_SELECTQ2345, message = gamesDTO.serialize())
-            self.amounts_indivdual['games'] +=1
+            self.handler_eof_games.add_new_processing()
 
     def filter_fields_item(self, result_dto):
         batch_item = []
@@ -143,8 +108,6 @@ class FilterBasic:
         self.broker.start_consuming()
         logging.info(f"action: Filter basic started to consume | result: sucess ✅")
     
-    
-
 
 #    self.broker.public_message(exchange_name =FILTERBASIC_INPUT,
 #                                routing_key =RK_GATEWAY_SELECTQ2345, message = "Some data 🩹 🅰️ 🥑")
