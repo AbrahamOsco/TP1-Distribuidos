@@ -45,17 +45,6 @@ services:
     networks:
       - system_network
     restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      selectQ2345:
-        condition: service_started
-      filterscorenegative_1:
-        condition: service_started
-      # filterscorepositive_1:
-      #   condition: service_started
-      # selectQ1:
-      #   condition: service_started
 
   # selectQ1:
   #   container_name: selectQ1
@@ -100,26 +89,6 @@ services:
         condition: service_healthy
       filtergender_1:
         condition: service_started
-
-  # selectQ345:
-  #   container_name: selectQ345
-  #   image: selectq345:latest
-  #   entrypoint: python3 /app/system/controllers/select/selectQ345/main.py
-  #   environment:
-  #     - LOGGING_LEVEL=INFO
-  #     - PYTHONPATH=/app
-  #     - NODE_NAME=selectQ345
-  #     - NODE_ID=1
-  #     - SOURCE=DataParsed
-  #     - SOURCE_KEY=reviews
-  #     - SOURCE_TYPE=topic
-  #     - SINK=ReviewsQ345
-  #   networks:
-  #     - system_network
-  #   restart: on-failure
-  #   depends_on:
-  #     - rabbitmq
-  #     - filterscorepositive_1
 
   # platformcounter_1:
   #   container_name: platformcounter_1
