@@ -60,6 +60,9 @@ class ReviewsDTO(DTO):
     def is_games(self):
         return False
     
+    def get_amount_of_reviews(self):
+        return len(self.reviews_dto)
+    
     def get_client(self):
         return self.client_id
 

@@ -79,6 +79,9 @@ class GamesDTO(DTO):
             count["linux"] += platform["linux"]
         return count
 
+    def get_amount_of_games(self):
+        return len(self.games_dto)
+
     def is_reviews(self):
         return False
     
