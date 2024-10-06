@@ -10,13 +10,16 @@ import csv
 import os
 import signal
 import time
+import traceback
+
+AMOUNT_BATCH_TO_SEND = 100
 
 class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name ='games', batch_size =6)
-        self.review_reader = FileReader(file_name ='reviews', batch_size =6)
+        self.game_reader = FileReader(file_name ='games', batch_size =1000)
+        self.review_reader = FileReader(file_name ='reviews', batch_size =1000)
         self.result_writer = ResultWriter()
         self.there_was_sigterm = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
@@ -42,7 +45,7 @@ class SteamAnalyzer:
             self.get_result_from_queries()
         except Exception as e:
             if self.there_was_sigterm == False:
-                logging.error(f"action: Handling a error | error: ❌ {e} | result: sucess ✅")
+                logging.error(f"action: Handling a error | error: ❌ {e} TraceBack: {traceback.format_exc()} | result: sucess ✅")
         finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
@@ -59,7 +62,7 @@ class SteamAnalyzer:
 
     def send_games(self):
         i = 0
-        while  not self.game_reader.read_all_data() and i < 6:
+        while  not self.game_reader.read_all_data() and i < AMOUNT_BATCH_TO_SEND:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
@@ -71,7 +74,7 @@ class SteamAnalyzer:
 
     def send_reviews(self):
         i = 0
-        while not self.review_reader.read_all_data() and i < 6:
+        while not self.review_reader.read_all_data() and i < AMOUNT_BATCH_TO_SEND:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break

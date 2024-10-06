@@ -9,6 +9,7 @@ import logging
 import os
 import signal
 
+
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 QUEUE_FILTER_SELECTQ1 = "filterBasic_selectq1"
 QUEUE_FILTER_SELECTQ2345 = "filterBasic_selectq2345"
@@ -24,6 +25,8 @@ class FilterBasic:
         self.total_nodes = int(os.getenv("TOTAL_NODES"))
         self.game_indexes = {}
         self.review_indexes = {}
+        self.genres_position = -1
+        self.name_position = -1
         self.game_index_init= False
         self.review_index_init= False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
@@ -89,16 +92,28 @@ class FilterBasic:
 
     def filter_fields_by(self, batch_item, result_dto, indexes):
         for a_game in result_dto.data_raw:
-            basic_game = self.drop_basic_item(a_game, indexes)
-            batch_item.append(basic_game)
+            basic_item = self.drop_basic_item(a_game, indexes)
+            if (not self.some_features_is_empty(basic_item)):
+                batch_item.append(basic_item)
+            elif (len(basic_item) == len(self.review_indexes)):
+                batch_item.append(basic_item)
+
+    def some_features_is_empty(self, basic_item):
+        if  len(basic_item) == len(self.game_indexes) and (basic_item[self.genres_position] == "" or basic_item[self.name_position] == ""):
+            return True
 
     def drop_basic_item(self, a_item, dic_indexes):
         #logging.info(f"Dic Indexes 🦃 : {dic_indexes}")
         item_basic = []
+        position = 0
         for i in range(len(a_item)):
             if i in dic_indexes.values():
-                #logging.info(f"index: {i} value: {a_item[i]}")
+                if self.genres_position == -1 and len(dic_indexes) == len(self.game_indexes) and i == dic_indexes["Genres"] :
+                    self.genres_position = position
+                elif self.name_position == -1 and len(dic_indexes) == len(self.game_indexes) and i == dic_indexes["Name"]:
+                    self.name_position = position
                 item_basic.append(a_item[i])
+                position +=1
         return item_basic    
 
     def handler_sigterm(self, signum, frame):

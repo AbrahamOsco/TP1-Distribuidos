@@ -15,7 +15,7 @@ class ServerProtocol(Protocol):
         if operation_type == ALL_GAMES_WAS_SENT or operation_type == ALL_REVIEWS_WAS_SENT:
             return EOFDTO(operation_type =operation_type, client_id =client_id)
         list_items_raw = []
-        items_amount = self.recv_number_2_bytes()
+        items_amount = self.recv_number_4_bytes()
         for i in range(items_amount):
             element = []
             field_amount = self.recv_number_2_bytes()

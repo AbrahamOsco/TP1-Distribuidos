@@ -11,9 +11,9 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 import signal
 import logging
 import os
-
+import traceback
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
-QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
+QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
 
 class Gateway:
     def __init__(self):
@@ -21,8 +21,9 @@ class Gateway:
         self.game_indexes = DIC_GAME_FEATURES_TO_USE
         self.review_indexes = DIC_REVIEW_FEATURES_TO_USE
         self.game_index_init= False
-        self.amount_games = 0
-        self.amount_reviews = 0
+        self.total_games = 0
+        self.batchs_games = 0
+        self.batchs_reviews = 0
         self.review_index_init= False
         self.there_was_sigterm = False
         self.all_client_data_was_recv = False
@@ -55,6 +56,7 @@ class Gateway:
             self.broker.start_consuming()
         except Exception as e:
             if self.there_was_sigterm == False:
+                logging.error(f"traceback.format_exc(): ❌ {traceback.format_exc()}")
                 logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
         finally:
             self.free_all_resource()
@@ -71,12 +73,12 @@ class Gateway:
 
     def handler_messages(self, raw_dto):
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
-            raw_dto.set_amount_data_and_type(self.amount_games)
+            raw_dto.set_amount_data_and_type(self.batchs_games)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
-            logging.info(f"action: Sent EOF of Games 🕹️! | result: success ✅")
+            logging.info(f"action: Sent EOF of Games 🕹️! Total Games (units) : {self.total_games} ⭐ | result: success ✅")
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
             self.all_client_data_was_recv = True
-            raw_dto.set_amount_data_and_type(self.amount_reviews)
+            raw_dto.set_amount_data_and_type(self.batchs_reviews)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Reviews 📰!  | result: sucess ✅")
         else:
@@ -86,11 +88,12 @@ class Gateway:
         self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
         a_index_dto = None
         if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
-            self.amount_games +=1
+            self.total_games += len(raw_dto.data_raw)
+            self.batchs_games +=1
             a_index_dto = GamesIndexDTO(client_id =raw_dto.client_id,
                                             games_raw =raw_dto.data_raw, indexes = self.game_indexes)
         elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-            self.amount_reviews +=1
+            self.batchs_reviews +=1
             a_index_dto = ReviewsIndexDTO(client_id =raw_dto.client_id,
                                             reviews_raw =raw_dto.data_raw, indexes =self.review_indexes)
         self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_index_dto.serialize())

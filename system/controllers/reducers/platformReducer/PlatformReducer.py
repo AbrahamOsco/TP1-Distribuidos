@@ -8,7 +8,7 @@ import logging
 import signal
 
 QUEUE_PLATFORMCOUNTER_REDUCER = "platformCounter_platformReducer"
-QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
+QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
 
 class PlatformReducer:
     def __init__(self):
@@ -39,8 +39,8 @@ class PlatformReducer:
         self.total_platform.windows += platformDTO.windows
         self.total_platform.linux += platformDTO.linux
         self.total_platform.mac += platformDTO.mac
-        logging.info(f"action: Total reducer current 🤯 💯 Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
-                     f"Mac: {self.total_platform.mac} | success: ✅ ")
+        logging.info(f"action: Total reducer current 🪟 🍎 🐧 💯: Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
+                     f" Mac: {self.total_platform.mac} | success: ✅ ")
 
     def handler_sigterm(self, signum, frame):
         logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")

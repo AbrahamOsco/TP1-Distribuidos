@@ -70,14 +70,14 @@ class Protocol:
         string_in_bytes = a_string.encode(FORMAT_ENCODED)
         size_string_bytes = len(string_in_bytes)
         
-        self.send_number_2_bytes(size_string_bytes)
+        self.send_number_4_bytes(size_string_bytes)
         bytes_sent += self.socket.send_all(string_in_bytes) 
         if bytes_sent != size_string_bytes:
             self.socket.close()
             raise RuntimeError(f"action: send_string | result: fail | string: {a_string} ")
 
     def recv_string(self):
-        size_string_bytes = self.recv_number_2_bytes()
+        size_string_bytes = self.recv_number_4_bytes()
         str_in_bytes, bytes_recv = self.socket.recv_all(size_string_bytes) 
         if size_string_bytes != bytes_recv:
             self.socket.close()
