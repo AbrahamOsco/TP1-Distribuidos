@@ -11,14 +11,6 @@ from common.DTO.Query1ResultDTO import Query1ResultDTO
 class Gateway(Node):
     def __init__(self):
         self.socket_accepter = Socket(port=12345)
-        self.current_client = 0
-        self.client_stats = {}
-
-    def update_client_stats(self, client_id, total_sent=0):
-        if client_id not in self.client_stats:
-            self.client_stats[client_id] =  0
-        
-        self.client_stats[client_id] += total_sent
         self.result_eofs_by_client = {}
         self.processes = []
         self.amount_of_queries = int(os.getenv("AMOUNT_OF_QUERIES", 5))
