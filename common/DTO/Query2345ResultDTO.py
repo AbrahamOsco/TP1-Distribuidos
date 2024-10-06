@@ -1,5 +1,6 @@
 OPERATION_TYPE_QUERY2345 = 2
 
+import logging
 class Query2345ResultDTO:
     def __init__(self, query=0, games=[]):
         self.operation_type = OPERATION_TYPE_QUERY2345
@@ -7,7 +8,7 @@ class Query2345ResultDTO:
         self.games = games
     
     def print(self):
-        print(f"Result query {self.query}")
+        logging.info(f"Result query {self.query}")
         for game in self.games:
-            print(game)
-        print()
+            logging.info(game)
+        logging.info("")

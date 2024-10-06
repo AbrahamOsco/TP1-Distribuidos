@@ -1,5 +1,6 @@
 OPERATION_TYPE_QUERY1 = 1
 
+import logging
 class Query1ResultDTO:
     def __init__(self, windows, linux, mac):
         self.operation_type = OPERATION_TYPE_QUERY1
@@ -9,8 +10,8 @@ class Query1ResultDTO:
         self.mac = mac
     
     def print(self):
-        print("Result Query 1")
-        print("windows: ", self.windows)
-        print("linux: ", self.linux)
-        print("mac: ", self.mac)
-        print()
+        logging.info("Result Query 1")
+        logging.info(f"windows: {self.windows}")
+        logging.info(f"linux: {self.linux}")
+        logging.info(f"mac: {self.mac}")
+        logging.info("")

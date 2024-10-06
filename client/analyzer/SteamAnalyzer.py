@@ -1,6 +1,7 @@
 import logging
 from common.utils.utils import initialize_log 
 import os
+import threading
 from client.fileReader.FileReader import FileReader
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -14,6 +15,7 @@ class SteamAnalyzer:
         self.game_reader = FileReader(file_name='games', batch_size=25)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000)
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
+        self.threads = []
 
     def initialize_config(self):
         self.config_params = {}
@@ -54,8 +56,12 @@ class SteamAnalyzer:
 
     def run(self):
         self.connect_to_server()
-        self.send_data()
-        self.get_result_from_queries()
+        self.threads.append(threading.Thread(target=self.send_data))
+        self.threads.append(threading.Thread(target=self.get_result_from_queries))
+        for thread in self.threads:
+            thread.start()
+        for thread in self.threads:
+            thread.join()
 
     def get_result_from_queries(self):
         logging.info("action: Waiting for the results 📊 | result: pending ⌚")
@@ -63,6 +69,7 @@ class SteamAnalyzer:
             resultQuerys = self.protocol.recv_result()
             if resultQuerys == None:
                 break
+            logging.info(f"action: result_received 📊 | result: success ✅")
             resultQuerys.print()
         logging.info("action: All the results 📊 were received! | result: success ✅")
 
@@ -70,4 +77,6 @@ class SteamAnalyzer:
         self.socket.close()
         self.game_reader.close()
         self.review_reader.close()
+        for thread in self.threads:
+            thread.join()
         logging.info("action: socket_closed 🏪 | result: success ✅")

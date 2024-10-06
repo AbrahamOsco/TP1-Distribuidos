@@ -44,7 +44,6 @@ class Gateway(Node):
                     break
 
     def process_data(self, data: GamesDTO):
-        logging.info(f"action: process_data | data: {data} | result: success ✅")
         result = data.to_result()
         self.shared_namespace.protocol.send_result(result)
 
