@@ -52,6 +52,9 @@ class GameMinimalDTO(GameStateDTO):
                     attributes[indexes[i]] = command_platform.get(value, 0)
                 else:
                     attributes[indexes[i]] = value
+        for value in attributes.values():
+            if value == "":
+                return None
         return GameMinimalDTO(app_id=attributes["app_id"], name=attributes["name"],
                               windows=attributes["windows"], mac=attributes["mac"], linux=attributes["linux"],
                               genres=attributes["genres"], release_date=attributes["release_date"],

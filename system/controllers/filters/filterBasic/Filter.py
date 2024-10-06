@@ -14,10 +14,14 @@ class Filter(Node):
     
     def send_reviews(self, data):
         reviews = ReviewsDTO.from_raw(data, self.review_indexes)
+        if len(reviews.reviews_dto) == 0:
+            return
         self.broker.public_message(sink=self.sink, message=reviews.serialize(), routing_key="reviews")
 
     def send_games(self, data):
         games = GamesDTO.from_raw(data, self.game_indexes)
+        if len(games.games_dto) == 0:
+            return
         self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="games")
 
     def process_data(self, data: RawDTO):

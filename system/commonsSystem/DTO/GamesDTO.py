@@ -108,5 +108,8 @@ class GamesDTO(DTO):
     def from_raw(raw_dto: RawDTO, indexes):
         games_dto = []
         for game_raw in raw_dto.raw_data:
-            games_dto.append(GameMinimalDTO.from_raw(game_raw, indexes))
+            game = GameMinimalDTO.from_raw(game_raw, indexes)
+            if game is None:
+                continue
+            games_dto.append(game)
         return GamesDTO(client_id=raw_dto.client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto)

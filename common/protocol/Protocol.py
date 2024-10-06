@@ -6,6 +6,9 @@ class Protocol:
     
     def __init__(self, socket: Socket):
         self.socket = socket
+
+    def stop(self):
+        self.socket.close()
     
     def send_number_1_byte(self, a_number):
         number_in_bytes = (a_number).to_bytes(1, byteorder='big')

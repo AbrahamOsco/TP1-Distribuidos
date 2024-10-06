@@ -6,6 +6,7 @@ import os
 from multiprocessing import Manager
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from common.DTO.Query1ResultDTO import Query1ResultDTO
 
 class Gateway(Node):
     def __init__(self):
@@ -43,6 +44,7 @@ class Gateway(Node):
                     break
 
     def process_data(self, data: GamesDTO):
+        logging.info(f"action: process_data | data: {data} | result: success ✅")
         result = data.to_result()
         self.shared_namespace.protocol.send_result(result)
 

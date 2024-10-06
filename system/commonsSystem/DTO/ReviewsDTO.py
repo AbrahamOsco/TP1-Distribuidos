@@ -74,5 +74,8 @@ class ReviewsDTO(DTO):
     def from_raw(raw_dto: RawDTO, indexes):
         reviews_dto = []
         for review_raw in raw_dto.raw_data:
-            reviews_dto.append(ReviewMinimalDTO.from_raw(review_raw, indexes))
+            review = ReviewMinimalDTO.from_raw(review_raw, indexes)
+            if review is None:
+                continue
+            reviews_dto.append(review)
         return ReviewsDTO(client_id=raw_dto.client_id, state_reviews=STATE_REVIEW_MINIMAL, reviews_dto=reviews_dto)

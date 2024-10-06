@@ -6,6 +6,7 @@ from common.DTO.ResultEOFDTO import OPERATION_TYPE_RESULTSEOF
 from common.DTO.Query1ResultDTO import OPERATION_TYPE_QUERY1
 from common.DTO.Query2345ResultDTO import OPERATION_TYPE_QUERY2345
 
+import logging
 class ServerProtocol(Protocol):
     
     def __init__(self, socket):
@@ -41,5 +42,6 @@ class ServerProtocol(Protocol):
             self.send_number_2_bytes(len(result.games))
             for game in result.games:
                 self.send_string(game)
+            logging.info("action: send_result q2345 | result: success |")
         else:
             raise RuntimeError("action: send_result | result: fail |")

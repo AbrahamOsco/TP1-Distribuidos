@@ -1,8 +1,6 @@
 import logging
 from common.utils.utils import initialize_log 
 import os
-import multiprocessing
-from multiprocessing import Manager
 from client.fileReader.FileReader import FileReader
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
@@ -16,9 +14,6 @@ class SteamAnalyzer:
         self.game_reader = FileReader(file_name='games', batch_size=25)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000)
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
-        self.processes = []
-        manager = Manager()
-        self.shared_namespace = manager.Namespace()
 
     def initialize_config(self):
         self.config_params = {}
@@ -31,16 +26,16 @@ class SteamAnalyzer:
         self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
         result, msg =  self.socket.connect()
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
-        self.shared_namespace.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
+        self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
 
     def send_games(self):
         while True:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
-            self.shared_namespace.protocol.send_data_raw(GamesRawDTO(games_raw =some_games))
+            self.protocol.send_data_raw(GamesRawDTO(games_raw =some_games))
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-        self.shared_namespace.protocol.send_games_eof()
+        self.protocol.send_games_eof()
 
     def send_reviews(self):
         if not self.should_send_reviews:
@@ -49,9 +44,9 @@ class SteamAnalyzer:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
-            self.shared_namespace.protocol.send_data_raw(ReviewsRawDTO(reviews_raw =some_reviews))
+            self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw =some_reviews))
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        self.shared_namespace.protocol.send_reviews_eof()
+        self.protocol.send_reviews_eof()
 
     def send_data(self):
         self.send_games()
@@ -59,17 +54,13 @@ class SteamAnalyzer:
 
     def run(self):
         self.connect_to_server()
-        self.processes.append(multiprocessing.Process(target=self.send_data))
-        self.processes.append(multiprocessing.Process(target=self.get_result_from_queries))
-        for process in self.processes:
-            process.start()
-        for process in self.processes:
-            process.join()
+        self.send_data()
+        self.get_result_from_queries()
 
     def get_result_from_queries(self):
         logging.info("action: Waiting for the results 📊 | result: pending ⌚")
         while True:
-            resultQuerys = self.shared_namespace.protocol.recv_result()
+            resultQuerys = self.protocol.recv_result()
             if resultQuerys == None:
                 break
             resultQuerys.print()
