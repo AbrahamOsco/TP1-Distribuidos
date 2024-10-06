@@ -27,28 +27,37 @@ class SteamAnalyzer:
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
         self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
 
-    def run(self):
-        self.connect_to_server()
+    def send_games(self):
         while True:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
             self.protocol.send_data_raw(GamesRawDTO(games_raw =some_games))
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-
         self.protocol.send_games_eof()
 
+    def send_reviews(self):
         while True:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw =some_reviews))
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-
         self.protocol.send_reviews_eof()
 
+    def run(self):
+        self.connect_to_server()
+        self.send_games()
+        self.send_reviews()
+        self.get_result_from_queries()
+
     def get_result_from_queries(self):
-        resultQuerys = self.protocol.recv_string()
+        while True:
+            resultQuerys = self.protocol.recv_result()
+            if resultQuerys == None:
+                break
+            resultQuerys.print()
+        logging.info("action: All the results 📊 were received! | result: success ✅")
 
     def stop(self):
         self.socket.close()

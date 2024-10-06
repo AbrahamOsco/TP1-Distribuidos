@@ -6,13 +6,13 @@ from system.commonsSystem.DTO.RawDTO import RawDTO
 class ServerProtocol(Protocol):
     
     def __init__(self, socket):
-        super().__init__(socket)  #uso super para invocar al constructor del padre. 
+        super().__init__(socket)
 
     def recv_data_raw(self):
         operation_type = self.recv_number_1_byte()
         client_id = self.recv_number_1_byte()
         if operation_type == OPERATION_TYPE_GAMEEOF or operation_type == OPERATION_TYPE_REVIEWEOF:
-            return RawDTO(client_id =client_id, type =operation_type, raw_data =[])
+            return RawDTO(client_id=client_id, type=operation_type, raw_data=[])
         list_items_raw = []
         items_amount = self.recv_number_2_bytes()
         for _ in range(items_amount):

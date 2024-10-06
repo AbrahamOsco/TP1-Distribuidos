@@ -43,6 +43,18 @@ class Protocol:
         number_int = int.from_bytes(number_in_bytes, byteorder='big') 
         return number_int 
 
+    def send_number_4_bytes(self, a_number):
+        number_in_bytes = (a_number).to_bytes(3, byteorder='big')
+        self.socket.sendall(number_in_bytes)
+        
+    def recv_number_4_bytes(self):
+        number_in_bytes, bytes_recv = self.socket.recv_all(4)
+        if bytes_recv != 4:
+            self.socket.close()
+            raise RuntimeError("action: recv_number_4_byte | result: fail |")
+        number_int = int.from_bytes(number_in_bytes, byteorder='big') 
+        return number_int 
+    
     def send_string(self, a_string):
         string_in_bytes = a_string.encode(FORMAT_ENCODED)
         size_string_bytes = len(string_in_bytes)
