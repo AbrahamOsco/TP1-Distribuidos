@@ -1,7 +1,7 @@
 from system.commonsSystem.node.node import Node, UnfinishedReviewsException, UnfinishedGamesException
-from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_NAME
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
-from system.commonsSystem.DTO.ReviewNameDTO import ReviewNameDTO
+from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
+from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
 import os
 import logging
 
@@ -31,26 +31,29 @@ class Storage(Node):
             self.status = STATUS_REVIEWING
             logging.info("Status changed. Now is expecting reviews")
 
-    def send_reviews(self, reviews):
-        for review in reviews:
-            if review.name in ["Counter-Strike", "Counter-Strike: Source", "Half-Life: Source", "Half-Life 2: Lost Coast", "Team Fortress 2", "Left 4 Dead 2", "Dota 2", "Portal 2", "Killing Floor", "The Ship: Murder Party"]:
-                logging.info(f"Game fullfils criteria: {review.name}")
-        # reviewsDTO = ReviewsDTO(self.client_id, STATE_NAME, reviews)
-        # self.broker.public_message(sink=self.sink, message=reviewsDTO.serialize(), routing_key="default")
+    def send_games(self, games):
+        gamesDTO = GamesDTO(client_id=self.client_id, state_games=STATE_IDNAME, games_dto=games, query=5)
+        self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
     def send_result(self):
         values = sorted(self.list.values())
         index = int(self.percentile * len(values)) -1
+        amount_to_send = int(len(values) * (1- self.percentile))
         percentile_90_value = values[index]
-        reviews_to_send = []
+        logging.info(f"Percentile 90 value: {percentile_90_value}")
+        games_to_send = []
+        games_sent = 0
         for app_id, reviews in self.list.items():
             if reviews >= percentile_90_value:
-                reviews_to_send.append(ReviewNameDTO(name=self.games[app_id]))
-            if len(reviews_to_send) > 50:
-                self.send_reviews(reviews_to_send)
-                reviews_to_send = []
-        if len(reviews_to_send) > 0:
-            self.send_reviews(reviews_to_send)
+                games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.games[app_id]))
+            if len(games_to_send) > 50:
+                self.send_games(games_to_send)
+                games_to_send = []
+                games_sent += 50
+            if games_sent > amount_to_send:
+                break
+        if len(games_to_send) > 0 and games_sent <= amount_to_send:
+            self.send_games(games_to_send)
 
     def process_reviews(self, data: ReviewsDTO):
         if self.status == STATUS_STARTED:

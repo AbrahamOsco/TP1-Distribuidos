@@ -3,16 +3,17 @@ from system.commonsSystem.DTO.ReviewMinimalDTO import ReviewMinimalDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.ReviewStateDTO import ReviewStateDTO
 from system.commonsSystem.DTO.ReviewTextDTO import ReviewTextDTO
-from system.commonsSystem.DTO.ReviewNameDTO import ReviewNameDTO
+from system.commonsSystem.DTO.ReviewIDNameDTO import ReviewIDNameDTO
+from system.commonsSystem.DTO.RawDTO import RawDTO
 
 STATE_REVIEW_MINIMAL = 1
 STATE_TEXT = 2
-STATE_NAME = 3
+STATE_IDNAME = 3
 
 stateToClass = {
     STATE_REVIEW_MINIMAL: ReviewMinimalDTO,
     STATE_TEXT: ReviewTextDTO,
-    STATE_NAME: ReviewNameDTO,
+    STATE_IDNAME: ReviewIDNameDTO,
 }
 
 class ReviewsDTO(DTO):
@@ -73,8 +74,11 @@ class ReviewsDTO(DTO):
         for review in self.reviews_dto:
             func(review)
 
-    def from_raw(client_id: int, data_raw:str, indexes):
+    def from_raw(raw_dto: RawDTO, indexes):
         reviews_dto = []
-        for game_raw in data_raw:
-            reviews_dto.append(ReviewMinimalDTO.from_raw(game_raw, indexes))
-        return ReviewsDTO(client_id=client_id, state_reviews=STATE_REVIEW_MINIMAL, reviews_dto=reviews_dto)
+        for review_raw in raw_dto.raw_data:
+            review = ReviewMinimalDTO.from_raw(review_raw, indexes)
+            if review is None:
+                continue
+            reviews_dto.append(review)
+        return ReviewsDTO(client_id=raw_dto.client_id, state_reviews=STATE_REVIEW_MINIMAL, reviews_dto=reviews_dto)

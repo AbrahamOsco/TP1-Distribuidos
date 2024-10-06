@@ -1,7 +1,6 @@
-import logging
 import os
 from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLAYTIME, STATE_IDNAME
 
 class Grouper(Node):
     def __init__(self):
@@ -12,6 +11,7 @@ class Grouper(Node):
     def reset_list(self):
         self.list = []
         self.min_time = 0
+        self.current_client = 0
 
     def pre_eof_actions(self):
         self.send_result()
@@ -21,12 +21,13 @@ class Grouper(Node):
         return len(self.list) < self.top_size or game.avg_playtime_forever > self.min_time
     
     def send_result(self):
-        for game in self.list:
-            logging.info(f"game: {game.name} time: {game.avg_playtime_forever}")
-        # self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
+        games = GamesDTO(client_id=self.current_client, state_games=STATE_PLAYTIME, games_dto=self.list, query=2)
+        games.set_state(STATE_IDNAME)
+        self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="default")
 
     def process_data(self, data: GamesDTO):
         self.update_total_received(data.client_id, len(data.games_dto))
+        self.current_client = data.client_id
         for game in data.games_dto:
             if self.has_to_be_inserted(game):
                 inserted = False

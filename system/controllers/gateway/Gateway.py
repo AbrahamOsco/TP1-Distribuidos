@@ -1,30 +1,15 @@
-from common.DTO.GamesRawDTO import OPERATION_TYPE_GAMES_RAW
-from common.DTO.ReviewsRawDTO import OPERATION_TYPE_REVIEWS_RAW
-from common.DTO.EOFDTO import OPERATION_TYPE_EOF
-from common.utils.utils import initialize_log 
 from common.socket.Socket import Socket
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
-from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
-from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.DTO.enums.OperationType import OperationType
+from system.commonsSystem.node.node import Node
 import logging
+import multiprocessing
 import os
+from multiprocessing import Manager
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from common.DTO.Query1ResultDTO import Query1ResultDTO
 
-class Gateway:
+class Gateway(Node):
     def __init__(self):
-        initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
-        self.game_indexes_inverted = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
-                            "Genres": 0, "Release date": 0, "Average playtime forever": 0}
-        self.game_indexes = {}
-        self.review_indexes_inverted = { 'app_id':0, 'review_text':0, 'review_score':0 }
-        self.review_indexes = {}
-        self.game_index_init= False
-        self.review_index_init= False
-        self.sink = os.getenv("SINK")
-        self.broker = Broker()
-        self.broker.create_sink(type='topic', name=self.sink)
         self.socket_accepter = Socket(port=12345)
         self.current_client = 0
         self.client_stats = {}
@@ -34,57 +19,53 @@ class Gateway:
             self.client_stats[client_id] =  0
         
         self.client_stats[client_id] += total_sent
+        self.result_eofs_by_client = {}
+        self.processes = []
+        self.amount_of_queries = int(os.getenv("AMOUNT_OF_QUERIES", 5))
+        manager = Manager()
+        self.shared_namespace = manager.Namespace()
+        super().__init__()
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
         self.socket_peer, addr = self.socket_accepter.accept()
         logging.info("action: Waiting a client to connect | result: success ✅")
-        self.protocol = ServerProtocol(self.socket_peer)
+        self.shared_namespace.protocol = ServerProtocol(self.socket_peer)
     
-    def run(self):
+    def start(self):
+        self.processes.append(multiprocessing.Process(target=self.run))
+        self.processes.append(multiprocessing.Process(target=self.run_server))
+        for process in self.processes:
+            process.start()
+        for process in self.processes:
+            process.join()
+
+    def run_server(self):
         while True:
             self.accept_a_connection()
-            logging.info(f"action: Gateway started | result: sucess ✅")
             while True:
-                raw_dto = self.protocol.recv_data_raw()
-                if raw_dto.operation_type == OPERATION_TYPE_EOF and not self.review_index_init:
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]).serialize(), routing_key="games")
-                    self.update_client_stats(client_id=self.current_client, total_sent=0)
-                    continue
-                elif raw_dto.operation_type == OPERATION_TYPE_EOF:
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]).serialize(), routing_key="reviews")
-                    self.update_client_stats(client_id=self.current_client, total_sent=0)
+                try:
+                    raw_dto = self.shared_namespace.protocol.recv_data_raw()
+                    self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
+                except Exception as e:
+                    logging.error(f"action: run_server | result: fail | error: {e}")
                     break
-                self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
-                self.current_client = raw_dto.client_id
-                if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
-                    games_dto = GamesDTO.from_raw(client_id =self.current_client,
-                                                    data_raw =raw_dto.data_raw, indexes = self.game_indexes)
-                    self.broker.public_message(sink=self.sink, message = games_dto.serialize(), routing_key="games")
-                    self.update_client_stats(client_id=self.current_client, total_sent=games_dto.get_amount_of_games())              
-                elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-                    reviews_dto = ReviewsDTO.from_raw(client_id =self.current_client,
-                                                    data_raw =raw_dto.data_raw, indexes =self.review_indexes)
-                    self.broker.public_message(sink=self.sink, message = reviews_dto.serialize(), routing_key="reviews")   
-                    self.update_client_stats(client_id=self.current_client, total_sent=reviews_dto.get_amount_of_reviews())
-            
-    def initialize_indexes(self, operation_type, list_items):
-        if operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == True:
-            return
-        elif operation_type == OPERATION_TYPE_REVIEWS_RAW and self.review_index_init == True:
-            return
-        elif operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == False:
-            for i, element in enumerate(list_items[0]):
-                if element in self.game_indexes_inverted.keys():
-                    self.game_indexes_inverted[element] = i
-            list_items.pop(0)
-            self.game_index_init = True
-            self.game_indexes = {v: k for k, v in self.game_indexes_inverted.items()}
-        
-        elif operation_type == OPERATION_TYPE_REVIEWS_RAW and self.review_index_init == False:
-            for i, element in enumerate(list_items[0]):
-                if element in self.review_indexes_inverted.keys():
-                    self.review_indexes_inverted[element] = i
-            list_items.pop(0)
-            self.review_index_init = True
-            self.review_indexes = {v: k for k, v in self.review_indexes_inverted.items()}
+
+    def process_data(self, data: GamesDTO):
+        result = data.to_result()
+        self.shared_namespace.protocol.send_result(result)
+
+    def inform_eof_to_nodes(self, client_id):
+        if client_id not in self.result_eofs_by_client:
+            self.result_eofs_by_client[client_id] = 0
+        self.result_eofs_by_client[client_id] += 1
+        if self.result_eofs_by_client[client_id] == self.amount_of_queries:
+            self.shared_namespace.protocol.send_result(None)
+            self.result_eofs_by_client[client_id] = None
+            logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
+
+    def abort(self):
+        self.stop()
+        for process in self.processes:
+            process.terminate()
+            process.join()

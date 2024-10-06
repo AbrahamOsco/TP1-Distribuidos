@@ -1,7 +1,7 @@
 from system.commonsSystem.node.node import Node, UnfinishedReviewsException, UnfinishedGamesException
-from system.commonsSystem.DTO.ReviewedGameDTO import ReviewedGameDTO
+from system.commonsSystem.DTO.GameReviewedDTO import GameReviewedDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_REVIEWED
 import logging
 
 STATUS_STARTED = 0
@@ -28,16 +28,24 @@ class Storage(Node):
         else:
             self.status = STATUS_REVIEWING
             logging.info("Status changed. Now is expecting reviews")
+                
+    def send_games(self, games):
+        gamesDTO = GamesDTO(client_id=self.client_id, state_games=STATE_REVIEWED, games_dto=games)
+        self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
     def send_result(self):
+        games = []
         for app_id in self.list:
-            data = ReviewedGameDTO(self.client_id, self.games[app_id], self.list[app_id])
-            self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
+            games.append(GameReviewedDTO(app_id, self.games[app_id], self.list[app_id]))
+            if len(games) == 25:
+                self.send_games(games)
+                games = []
+        if len(games) > 0:
+            self.send_games(games)
 
     def process_reviews(self, data: ReviewsDTO):
         if self.status == STATUS_STARTED:
             raise UnfinishedGamesException()
-        # logging.info(f"Processing reviews {len(data.reviews_dto)}")
         for review in data.reviews_dto:
             if review.app_id in self.list:
                 self.list[review.app_id] += 1

@@ -2,6 +2,8 @@ import logging
 import os
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
+from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
 
 class Storage(Node):
     def __init__(self):
@@ -16,9 +18,9 @@ class Storage(Node):
     def pre_eof_actions(self):
         self.reset_list()
     
-    def send_result(self, name):
-        logging.info(f"Game fullfils criteria: {name}")
-        # self.broker.public_message(sink=self.sink, message=app_id, routing_key="default")
+    def send_result(self, review):
+        result = GamesDTO(client_id=self.current_client, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4)
+        self.broker.public_message(sink=self.sink, message=result.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):
         self.current_client = data.get_client()
@@ -28,4 +30,4 @@ class Storage(Node):
             else:
                 self.list[review.name] += 1
             if self.list[review.name] == self.amount_needed:
-                self.send_result(review.name)
+                self.send_result(review)
