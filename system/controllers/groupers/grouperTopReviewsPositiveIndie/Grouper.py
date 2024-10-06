@@ -26,6 +26,7 @@ class Grouper(Node):
         # self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
 
     def process_data(self, game: ReviewedGameDTO):
+        self.update_total_received(game.client, 1)
         if self.has_to_be_inserted(game):
             inserted = False
             for i in range(len(self.list)):
@@ -38,3 +39,5 @@ class Grouper(Node):
             if len(self.list) > self.top_size:
                 self.list.pop()
             self.min_time = self.list[-1].reviews
+        #REVISAR    
+        self.update_total_processed(game.client, 1)

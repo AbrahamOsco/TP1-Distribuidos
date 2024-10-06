@@ -29,8 +29,10 @@ class Counter(Node):
 
     def process_data(self, data: GamesDTO):
         client_id = data.get_client()
+        self.update_total_received(client_id, len(data.games_dto))
         self.result["client_id"] = client_id
         platform_count = data.get_platform_count()
         self.result["windows"] += platform_count["windows"]
         self.result["linux"] += platform_count["linux"]
         self.result["mac"] += platform_count["mac"]
+        self.update_total_processed(client_id, len(data.games_dto))

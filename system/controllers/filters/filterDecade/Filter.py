@@ -19,6 +19,8 @@ class Filter(Node):
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data:GamesDTO):
+        self.update_total_received(data.client_id, len(data.games_dto))
         data.filter_games(lambda x: self.is_correct_decade(x.release_date))
         if len(data.games_dto) > 0:
             self.send_game(data)
+            self.update_total_processed(data.client_id, len(data.games_dto))

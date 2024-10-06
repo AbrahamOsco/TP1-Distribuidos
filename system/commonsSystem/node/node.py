@@ -27,7 +27,10 @@ class Node:
         self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = 0
-        self.node_stats = {}
+        self.amount_received_in_EOF = {}
+        self.total_amount_received = {}
+        self.total_amount_processed = {}
+        self.acumulated = {}
         self.broker = Broker()
         self.initialize_queues()
 
@@ -58,32 +61,64 @@ class Node:
             datefmt='%Y-%m-%d %H:%M:%S',
         )
 
-    def update_node_stats(self, client_id, games=0, reviews=0):
-        if client_id not in self.node_stats:
-            self.node_stats[client_id] = {'games': 0, 'reviews': 0}
+    def update_amount_received_in_EOF(self,client_id, amount_received_in_EOF=0):
+        if client_id not in self.amount_received_in_EOF:
+            self.amount_received_in_EOF[client_id] = 0
         
-        self.node_stats[client_id]['games'] += games
-        self.node_stats[client_id]['reviews'] += reviews
+        self.amount_received_in_EOF[client_id] += amount_received_in_EOF
+
+    def update_total_received(self, client_id, total_amount_received=0):
+        if client_id not in self.total_amount_received:
+            self.total_amount_received[client_id] = 0
+        
+        self.total_amount_received[client_id] += total_amount_received
+
+    def update_total_processed(self, client_id, total_amount_processed=0):
+        if client_id not in self.total_amount_processed:
+            self.total_amount_processed[client_id] = 0
+        
+        self.total_amount_processed[client_id] += total_amount_processed
+
+    def update_acumulated(self, client_id, acumulated=0):
+        if client_id not in self.acumulated:
+            self.acumulated[client_id] = 0
+        
+        self.acumulated[client_id] += acumulated
+
+    def reset_acumulated(self, client_id):
+        self.acumulated[client_id] = 0
 
     def send_eof(self, client):
-        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, self.node_stats[client]['games'] ).serialize(), routing_key='default')
+        total_amount_received = self.total_amount_received[client]
+        total_amount_sent = self.total_amount_processed[client]
+        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, total_amount_sent=total_amount_sent ).serialize(), routing_key='default')
+        logging.info(f"action: send_eof | client: {client} | total_amount_received: {total_amount_received} | total_amount_sent: {total_amount_sent}")
 
     def send_eof_confirmation(self, client):
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True, self.node_stats[client]['games']).serialize())
+        total_amount_received = self.total_amount_received[client]
+        total_amount_sent = self.total_amount_processed[client]
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True, total_amount_received ,total_amount_sent ).serialize())
 
-    def check_confirmations(self, client):
+    def all_information_was_read(self,client):
+        self.amount_received_in_EOF[client] == self.acumulated[client]
+
+    def check_confirmations(self, client,total_send):
         self.confirmations += 1
+        self.update_acumulated(client, total_send)
         logging.info(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes:
             self.clients.remove(client)
             self.clients_pending_confirmations.remove(client)
-            self.send_eof(client)
             self.confirmations = 0
+            if self.all_information_was_read(client):
+                self.send_eof(client)
+            else:
+                self.inform_eof_to_nodes(client)
 
     def process_node_eof(self, data):
         if data.client in self.clients_pending_confirmations:
             if data.is_confirmation():
-                self.check_confirmations(data.client)
+                self.check_confirmations(data.client, data.get_total_amount_received())
             return
         if data.is_confirmation():
             return
@@ -95,11 +130,17 @@ class Node:
 
     def inform_eof_to_nodes(self, client):
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        logging.info(f"EOF con cantidad paquetes recibidos: {self.total_amount_received[client]}")
+        logging.info(f"EOF con cantidad paquetes procesados: {self.total_amount_processed[client]}")
         self.pre_eof_actions()
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
         self.confirmations = 1
+        self.reset_acumulated(client)
+        logging.info(f"reseteo el acumulador")
+        self.update_acumulated(client, self.total_amount_received[client])
+        logging.info(f"actualizo el acumulador con la cantidad de total amount received: {self.total_amount_received}")
         self.clients_pending_confirmations.append(client)
         logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
         self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
@@ -120,14 +161,11 @@ class Node:
         try:
             data = DetectDTO(body).get_dto()
             if data.is_EOF():
+                self.update_amount_received_in_EOF(data.get_client(), data.get_total_amount_sent())
                 self.inform_eof_to_nodes(data.get_client())
             else:
                 self.check_new_client(data)
                 self.process_data(data)
-                if data.games_dto:
-                    self.update_node_stats(client_id=data.get_client(), games=data.get_amount_of_games(), reviews=0)
-                elif data.reviews_dto:
-                    self.update_node_stats(client_id=data.get_client(), games=0, reviews=data.get_amount_of_reviews())
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except UnfinishedGamesException as e:
             logging.info(f"action: error | Unfinished Games Exception")

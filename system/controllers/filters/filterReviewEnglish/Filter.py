@@ -16,6 +16,8 @@ class Filter(Node):
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):
+        self.update_total_received(data.client, len(data.reviews_dto))
         data.filter_reviews(lambda review: self.is_in_english(review.review_text))
         if len(data.reviews_dto) > 0:
             self.send_reviews(data)
+            self.update_total_processed(data.client, len(data.reviews_dto))

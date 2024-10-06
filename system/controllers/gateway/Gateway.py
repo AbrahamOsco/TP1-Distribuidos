@@ -29,12 +29,11 @@ class Gateway:
         self.current_client = 0
         self.client_stats = {}
 
-    def update_client_stats(self, client_id, games=0, reviews=0):
+    def update_client_stats(self, client_id, total_sent=0):
         if client_id not in self.client_stats:
-            self.client_stats[client_id] = {'games': 0, 'reviews': 0}
+            self.client_stats[client_id] =  0
         
-        self.client_stats[client_id]['games'] += games
-        self.client_stats[client_id]['reviews'] += reviews
+        self.client_stats[client_id] += total_sent
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -49,14 +48,12 @@ class Gateway:
             while True:
                 raw_dto = self.protocol.recv_data_raw()
                 if raw_dto.operation_type == OPERATION_TYPE_EOF and not self.review_index_init:
-                    amount_of_games = int(self.client_stats[self.current_client]['games']) 
-                    logging.info(f"action: Sending EOF to client {self.current_client} con amount_of_games {amount_of_games} | result: success ✅")
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]['games'] ).serialize(), routing_key="games")
+                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]).serialize(), routing_key="games")
+                    self.update_client_stats(client_id=self.current_client, total_sent=0)
                     continue
                 elif raw_dto.operation_type == OPERATION_TYPE_EOF:
-                    amount_of_reviews = int(self.client_stats[self.current_client]['reviews'])
-                    logging.info(f"action: Sending EOF to client {self.current_client} con amount_of_reviews {amount_of_reviews} | result: success ✅")
-                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]['reviews']).serialize(), routing_key="reviews")
+                    self.broker.public_message(sink=self.sink, message = EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=self.current_client, confirmation=False, total_amount_sent = self.client_stats[self.current_client]).serialize(), routing_key="reviews")
+                    self.update_client_stats(client_id=self.current_client, total_sent=0)
                     break
                 self.initialize_indexes(raw_dto.operation_type, raw_dto.data_raw)
                 self.current_client = raw_dto.client_id
@@ -64,12 +61,12 @@ class Gateway:
                     games_dto = GamesDTO.from_raw(client_id =self.current_client,
                                                     data_raw =raw_dto.data_raw, indexes = self.game_indexes)
                     self.broker.public_message(sink=self.sink, message = games_dto.serialize(), routing_key="games")
-                    self.update_client_stats(client_id=self.current_client, games=games_dto.get_amount_of_games(), reviews=0)              
+                    self.update_client_stats(client_id=self.current_client, total_sent=games_dto.get_amount_of_games())              
                 elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
                     reviews_dto = ReviewsDTO.from_raw(client_id =self.current_client,
                                                     data_raw =raw_dto.data_raw, indexes =self.review_indexes)
                     self.broker.public_message(sink=self.sink, message = reviews_dto.serialize(), routing_key="reviews")   
-                    self.update_client_stats(client_id=self.current_client, games=0, reviews=reviews_dto.get_amount_of_reviews())
+                    self.update_client_stats(client_id=self.current_client, total_sent=reviews_dto.get_amount_of_reviews())
             
     def initialize_indexes(self, operation_type, list_items):
         if operation_type == OPERATION_TYPE_GAMES_RAW and self.game_index_init == True:

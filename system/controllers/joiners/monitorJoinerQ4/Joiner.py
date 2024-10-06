@@ -39,6 +39,7 @@ class Joiner(Node):
     def process_games(self, data: GamesDTO):
         if self.status == STATUS_REVIEWING:
             raise UnfinishedReviewsException()
+        self.update_total_received(data.get_client(), len(data.games_dto))
         for game in data.games_dto:
             self.list[game.app_id] = game.name
 
