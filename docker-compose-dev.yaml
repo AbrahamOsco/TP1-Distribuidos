@@ -27,6 +27,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
+      - SEND_REVIEWS=1
     networks:
       - system_network
     restart: on-failure
@@ -50,6 +51,7 @@ services:
         - NODE_ID=1
         - SOURCE=Output
         - SINK=DataRaw
+        - AMOUNT_OF_QUERIES=5
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -67,6 +69,12 @@ services:
         rabbitmq:
             condition: service_healthy
         selectq1_0:
+            condition: service_started
+        selectq2345_0:
+            condition: service_started
+        filterscorepositive_0:
+            condition: service_started
+        filterscorenegative_0:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
@@ -145,6 +153,336 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+
+  selectq2345_0:
+    container_name: selectq2345_0
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        filtergender_0:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectq2345
+        - NODE_ID=0
+        - SOURCE=DataParsed
+        - SOURCE_KEY=games
+        - SOURCE_TYPE=topic
+        - SINK=GamesQ2345
+        - SINK_TYPE=direct
+
+  filtergender_0:
+    container_name: filtergender_0
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        selectidnameaction_0:
+            condition: service_started
+        selectidnameindie_0:
+            condition: service_started
+        filterdecade_0:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filtergender
+        - NODE_ID=0
+        - SOURCE=GamesQ2345
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=GenderGames
+        - SINK_TYPE=topic
+        - GENDERS=Indie,Action
+
+  filterdecade_0:
+    container_name: filterdecade_0
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        groupertopaverageplaytime:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterdecade
+        - NODE_ID=0
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Indie
+        - SOURCE_TYPE=topic
+        - SINK=DecadeGames
+        - SINK_TYPE=direct
+        - DECADE=2010
+
+  groupertopaverageplaytime:
+    container_name: groupertopaverageplaytime
+    image: groupertopaverageplaytime:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=groupertopaverageplaytime
+        - NODE_ID=0
+        - SOURCE=DecadeGames
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=Output
+        - SINK_TYPE=direct
+        - TOP_SIZE=10
+
+  selectidnameindie_0:
+    container_name: selectidnameindie_0
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq3:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectidnameindie
+        - NODE_ID=0
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Indie
+        - SOURCE_TYPE=topic
+        - SINK=MonitorQ3
+        - SINK_TYPE=direct
+
+  filterscorepositive_0:
+    container_name: filterscorepositive_0
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq3:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorepositive
+        - NODE_ID=0
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsPositives
+        - SINK_TYPE=direct
+        - SCORE_WANTED=1
+
+  monitorstorageq3:
+    container_name: monitorstorageq3
+    image: monitorstorageq3:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        groupertopreviewspositiveindie:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=monitorstorageq3
+        - NODE_ID=0
+        - SOURCE=ReviewsPositives,MonitorQ3
+        - SOURCE_KEY=default,default
+        - SOURCE_TYPE=direct,direct
+        - SINK=IndieGamesReviewed
+        - SINK_TYPE=direct
+
+  groupertopreviewspositiveindie:
+    container_name: groupertopreviewspositiveindie
+    image: groupertopreviewspositiveindie:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=groupertopreviewspositiveindie
+        - NODE_ID=0
+        - SOURCE=IndieGamesReviewed
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=Output
+        - SINK_TYPE=direct
+        - TOP_SIZE=5
+
+  selectidnameaction_0:
+    container_name: selectidnameaction_0
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorjoinerq4:
+            condition: service_started
+        monitorstorageq5:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectidnameaction
+        - NODE_ID=0
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Action
+        - SOURCE_TYPE=topic
+        - SINK=MonitorQ45
+        - SINK_TYPE=fanout
+
+  filterscorenegative_0:
+    container_name: filterscorenegative_0
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorjoinerq4:
+            condition: service_started
+        monitorstorageq5:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorenegative
+        - NODE_ID=0
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsNegatives
+        - SINK_TYPE=fanout
+        - SCORE_WANTED=-1
+
+  monitorjoinerq4:
+    container_name: monitorjoinerq4
+    image: monitorjoinerq4:latest
+    entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        filterreviewenglish_0:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=monitorjoinerq4
+        - NODE_ID=0
+        - SOURCE=ReviewsNegatives,MonitorQ45
+        - SOURCE_KEY=default,default
+        - SOURCE_TYPE=fanout,fanout
+        - SINK=ActionGamesReviewed
+        - SINK_TYPE=direct
+
+  filterreviewenglish_0:
+    container_name: filterreviewenglish_0
+    image: filterreviewenglish:latest
+    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq4:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterreviewenglish
+        - NODE_ID=0
+        - SOURCE=ActionGamesReviewed
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=ActionGamesEnglishReviews
+        - SINK_TYPE=direct
+
+  monitorstorageq4:
+    container_name: monitorstorageq4
+    image: monitorstorageq4:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=monitorstorageq4
+        - NODE_ID=0
+        - SOURCE=ActionGamesEnglishReviews
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=Output
+        - SINK_TYPE=direct
+        - AMOUNT_NEEDED=5000
+
+  monitorstorageq5:
+    container_name: monitorstorageq5
+    image: monitorstorageq5:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=monitorstorageq5
+        - NODE_ID=0
+        - SOURCE=ReviewsNegatives,MonitorQ45
+        - SOURCE_KEY=default,default
+        - SOURCE_TYPE=fanout,fanout
+        - SINK=Output
+        - SINK_TYPE=direct
+        - PERCENTILE=0.9
 
 networks:
   system_network:

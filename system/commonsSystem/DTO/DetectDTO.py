@@ -2,7 +2,6 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
-from system.commonsSystem.DTO.ReviewedGameDTO import ReviewedGameDTO
 from system.commonsSystem.DTO.RawDTO import RawDTO
 import logging
 
@@ -15,7 +14,6 @@ class DetectDTO():
             OperationType.OPERATION_TYPE_REVIEWS_DTO: ReviewsDTO,
             OperationType.OPERATION_TYPE_GAMES_EOF_DTO: EOFDTO,
             OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO: EOFDTO,
-            OperationType.OPERATION_TYPE_REVIEWED_GAME_DTO: ReviewedGameDTO
         }
 
     def get_dto(self):

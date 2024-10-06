@@ -234,8 +234,8 @@ def generar_servicio_no_escalable(queries, service_name):
     return base
 
 
-def get_gateway():
-    base = """
+def get_gateway(queries):
+    base = f"""
 
   gateway:
     container_name: gateway
@@ -251,6 +251,7 @@ def get_gateway():
         - NODE_ID=1
         - SOURCE=Output
         - SINK=DataRaw
+        - AMOUNT_OF_QUERIES={len(queries)}
     depends_on:
       rabbitmq:
         condition: service_healthy"""
@@ -274,7 +275,7 @@ def generar_docker_compose(output_file:str, queries=[], filterbasic="0", select_
     node_amounts["filterscorepositive"] = int(filter_score_positive)
     node_amounts["filterreviewenglish"] = int(filter_review_english)
     node_amounts["filterscorenegative"] = int(filter_score_negative)
-    compose = """
+    compose = f"""
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -303,6 +304,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
+      - SEND_REVIEWS={1 if (3 in queries or 4 in queries or 5 in queries) else 0}
     networks:
       - system_network
     restart: on-failure
@@ -312,7 +314,7 @@ services:
       gateway:
         condition: service_started"""
 
-    compose += get_gateway()
+    compose += get_gateway(queries)
 
     compose += generar_servicio_escalable(queries, "filterbasic")
     compose += generar_servicio_escalable(queries, "selectq1")

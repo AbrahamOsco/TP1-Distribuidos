@@ -35,7 +35,7 @@ class GamesDTO(DTO):
         self.client_id = client_id
         self.state_games = state_games 
         self.games_dto = games_dto
-        self.query = 0
+        self.query = query
 
     def serialize(self):
         games_bytes = bytearray()
@@ -62,7 +62,7 @@ class GamesDTO(DTO):
         for _ in range(games_dto_length):
             game, offset = stateToClass[state_games].deserialize(data, offset)
             some_games_dto.append(game)
-        gamesDTO = GamesDTO(client_id=client_id, state_games=state_games, games_dto=some_games_dto)
+        gamesDTO = GamesDTO(client_id=client_id, state_games=state_games, query=query, games_dto=some_games_dto)
         return gamesDTO, offset
 
     def set_state(self, state_games):

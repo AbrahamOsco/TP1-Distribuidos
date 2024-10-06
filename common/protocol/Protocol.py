@@ -44,7 +44,7 @@ class Protocol:
         return number_int 
 
     def send_number_4_bytes(self, a_number):
-        number_in_bytes = (a_number).to_bytes(3, byteorder='big')
+        number_in_bytes = (a_number).to_bytes(4, byteorder='big')
         self.socket.sendall(number_in_bytes)
         
     def recv_number_4_bytes(self):

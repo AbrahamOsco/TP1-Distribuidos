@@ -3,7 +3,7 @@ import csv
 import sys
 import logging
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 0.1
+PERCENT_OF_FILE_FOR_USE = 1
 
 class FileReader:
     def __init__(self, file_name, batch_size):

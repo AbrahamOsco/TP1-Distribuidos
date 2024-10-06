@@ -4,6 +4,7 @@ from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
 from common.DTO.Query1ResultDTO import Query1ResultDTO, OPERATION_TYPE_QUERY1
 from common.DTO.Query2345ResultDTO import Query2345ResultDTO, OPERATION_TYPE_QUERY2345
 from common.DTO.ResultEOFDTO import OPERATION_TYPE_RESULTSEOF
+import logging
 
 class ClientProtocol(Protocol):
     
@@ -36,6 +37,10 @@ class ClientProtocol(Protocol):
     def recv_result(self):
         operation_type = self.recv_number_1_byte()
         if operation_type == OPERATION_TYPE_RESULTSEOF:
+            return None
+        if operation_type not in self.getResult:
+            logging.error(f"Unknown operation type: {operation_type}")
+            logging.info(f"Operation types: {self.getResult.keys()}")
             return None
         return self.getResult[operation_type]()
     

@@ -49,7 +49,7 @@ class GameMinimalDTO(GameStateDTO):
         for i, value in enumerate(data_raw):
             if i in indexes.keys():
                 if indexes[i] == "windows" or indexes[i] == "mac" or indexes[i] == "linux":
-                    attributes[indexes[i]] = command_platform[value]
+                    attributes[indexes[i]] = command_platform.get(value, 0)
                 else:
                     attributes[indexes[i]] = value
         return GameMinimalDTO(app_id=attributes["app_id"], name=attributes["name"],

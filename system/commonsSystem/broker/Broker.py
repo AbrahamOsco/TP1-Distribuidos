@@ -19,7 +19,11 @@ class Broker:
         delay = 2
         for attempt in range(retries):
             try:
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(
+                    'rabbitmq',
+                    heartbeat=600,
+                    tcp_options={"TCP_KEEPIDLE": 60, "TCP_KEEPINTVL": 10, "TCP_KEEPCNT": 5}
+                ))
                 return
             except socket.gaierror as e:
                 print(f"Attempt {attempt + 1} failed with error: {e}. Retrying in {delay} seconds...")
@@ -55,7 +59,20 @@ class Broker:
                                     properties=pika.BasicProperties(delivery_mode=2))
 
     def start_consuming(self):
-        self.channel.start_consuming()
+        while True:
+            try:
+                self.channel.start_consuming()
+            except pika.exceptions.ConnectionClosedByBroker:
+                print("Connection closed by broker, trying to reconnect...")
+                self.stablish_connection()  # Re-establish connection
+                self.channel = self.connection.channel()
+            except pika.exceptions.AMQPChannelError as e:
+                print(f"Caught channel error: {e}. Shutting down...")
+                break
+            except pika.exceptions.AMQPConnectionError as e:
+                print(f"Connection error: {e}. Retrying...")
+                self.stablish_connection()
+                self.channel = self.connection.channel()
 
     def close(self):
         self.connection.close()

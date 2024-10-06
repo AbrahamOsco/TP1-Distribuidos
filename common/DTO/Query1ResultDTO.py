@@ -3,6 +3,7 @@ OPERATION_TYPE_QUERY1 = 1
 class Query1ResultDTO:
     def __init__(self, windows, linux, mac):
         self.operation_type = OPERATION_TYPE_QUERY1
+        self.query = 1
         self.windows = windows
         self.linux = linux
         self.mac = mac
