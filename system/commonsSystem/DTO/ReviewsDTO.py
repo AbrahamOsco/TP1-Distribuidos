@@ -3,17 +3,17 @@ from system.commonsSystem.DTO.ReviewMinimalDTO import ReviewMinimalDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.ReviewStateDTO import ReviewStateDTO
 from system.commonsSystem.DTO.ReviewTextDTO import ReviewTextDTO
-from system.commonsSystem.DTO.ReviewNameDTO import ReviewNameDTO
+from system.commonsSystem.DTO.ReviewIDNameDTO import ReviewIDNameDTO
 from system.commonsSystem.DTO.RawDTO import RawDTO
 
 STATE_REVIEW_MINIMAL = 1
 STATE_TEXT = 2
-STATE_NAME = 3
+STATE_IDNAME = 3
 
 stateToClass = {
     STATE_REVIEW_MINIMAL: ReviewMinimalDTO,
     STATE_TEXT: ReviewTextDTO,
-    STATE_NAME: ReviewNameDTO,
+    STATE_IDNAME: ReviewIDNameDTO,
 }
 
 class ReviewsDTO(DTO):

@@ -1,4 +1,5 @@
 from system.commonsSystem.DTO.GameStateDTO import GameStateDTO
+from common.DTO.Query1ResultDTO import Query1ResultDTO
 
 class PlatformDTO(GameStateDTO):
     def __init__(self, windows: int =0, mac: int = 0, linux: int = 0):
@@ -31,3 +32,6 @@ class PlatformDTO(GameStateDTO):
     
     def from_state(game):
         return PlatformDTO(windows=game.windows, mac=game.mac, linux=game.linux)
+    
+    def to_result(self):
+        return Query1ResultDTO(self.windows, self.linux, self.mac)

@@ -24,7 +24,6 @@ class Counter(Node):
         return GamesDTO(client_id=data["client_id"], state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
 
     def send_result(self, data):
-        logging.info(f"action: send_result | data: {data}")
         self.broker.public_message(sink=self.sink, message=self.trim_data(data).serialize(), routing_key="default")
 
     def process_data(self, data: GamesDTO):

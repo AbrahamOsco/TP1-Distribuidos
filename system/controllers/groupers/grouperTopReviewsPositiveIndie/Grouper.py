@@ -1,7 +1,8 @@
 import logging
 import os
 from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.ReviewedGameDTO import ReviewedGameDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME, STATE_REVIEWED
+from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
 
 class Grouper(Node):
     def __init__(self):
@@ -12,6 +13,7 @@ class Grouper(Node):
     def reset_list(self):
         self.list = []
         self.min_time = 0
+        self.current_client = 0
 
     def pre_eof_actions(self):
         self.send_result()
@@ -19,22 +21,24 @@ class Grouper(Node):
 
     def has_to_be_inserted(self, game):
         return len(self.list) < self.top_size or game.reviews > self.min_time
-    
-    def send_result(self):
-        for game in self.list:
-            logging.info(f"game: {game.name} reviews: {game.reviews}")
-        # self.broker.public_message(sink=self.sink, message=self.list, routing_key="default")
 
-    def process_data(self, game: ReviewedGameDTO):
-        if self.has_to_be_inserted(game):
-            inserted = False
-            for i in range(len(self.list)):
-                if game.reviews > self.list[i].reviews:
-                    self.list.insert(i, game)
-                    inserted = True
-                    break
-            if not inserted:
-                self.list.append(game)
-            if len(self.list) > self.top_size:
-                self.list.pop()
-            self.min_time = self.list[-1].reviews
+    def send_result(self):
+        games = GamesDTO(client_id=self.current_client, state_games=STATE_REVIEWED, games_dto=self.list, query=3)
+        games.set_state(STATE_IDNAME)
+        self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="default")
+
+    def process_data(self, data: GamesDTO):
+        self.current_client = data.client_id
+        for game in data.games_dto:
+            if self.has_to_be_inserted(game):
+                inserted = False
+                for i in range(len(self.list)):
+                    if game.reviews > self.list[i].reviews:
+                        self.list.insert(i, game)
+                        inserted = True
+                        break
+                if not inserted:
+                    self.list.append(game)
+                if len(self.list) > self.top_size:
+                    self.list.pop()
+                self.min_time = self.list[-1].reviews

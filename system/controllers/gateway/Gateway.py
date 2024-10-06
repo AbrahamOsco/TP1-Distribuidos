@@ -3,6 +3,7 @@ from system.commonsSystem.node.node import Node
 import logging
 import multiprocessing
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 
 class Gateway(Node):
     def __init__(self):
@@ -25,8 +26,9 @@ class Gateway(Node):
                 raw_dto = self.protocol.recv_data_raw()
                 self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
 
-    def process_data(self, data):
-        pass
+    def process_data(self, data: GamesDTO):
+        result = data.to_result()
+        self.protocol.send_result(result)
 
     def abort(self):
         self.stop()

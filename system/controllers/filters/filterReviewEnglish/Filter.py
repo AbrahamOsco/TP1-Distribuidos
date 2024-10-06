@@ -1,5 +1,5 @@
 from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_NAME
+from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_IDNAME
 import langid
 
 class Filter(Node):
@@ -12,7 +12,7 @@ class Filter(Node):
         return lang == 'en'
 
     def send_reviews(self, data: ReviewsDTO):
-        data.set_state(STATE_NAME)
+        data.set_state(STATE_IDNAME)
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):
