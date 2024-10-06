@@ -17,17 +17,18 @@ class PlatformReducer:
         self.registered_client = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.total_platform = PlatformDTO()
-        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, durable =True, callback=self.handler_callback_exchange())
-        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, durable =True)
+        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, callback=self.handler_callback_exchange())
+        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY)
     
     def handler_callback_exchange(self):
         def handler_message(ch, method, properties, body):
-            result = DetectDTO(body).get_dto()
-            if result.operation_type != OperationType.OPERATION_TYPE_PLATFORM_DTO:
-                # Here! recien we send the PlatformDTO by exchange !! 
-                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
-            logging.info(f" Result: {result} {result.operation_type} {result.operation_type.value}")
-            self.count_all_platforms(result)
+            result_dto = DetectDTO(body).get_dto()
+            logging.info(f" Result: {result_dto} {result_dto.operation_type} {result_dto.operation_type.value}")
+            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO:
+                self.broker.public_message(queue_name =QUEUE_RESULTQ1_GATEWAY, message =self.total_platform.serialize())
+                logging.info(f"Action: Recv EOF 🌟 | Send Total Platform to Gateway 🚀 | result: success ✅ ")
+            else:
+                self.count_all_platforms(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
 
@@ -40,7 +41,6 @@ class PlatformReducer:
         self.total_platform.mac += platformDTO.mac
         logging.info(f"action: Total reducer current 🤯 💯 Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
                      f"Mac: {self.total_platform.mac} | success: ✅ ")
-        self.broker.public_message(queue_name =QUEUE_RESULTQ1_GATEWAY, message =self.total_platform.serialize())
 
     def handler_sigterm(self, signum, frame):
         logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")

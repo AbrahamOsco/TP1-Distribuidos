@@ -17,8 +17,8 @@ class Grouper():
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
         self.reset_list()
-        self.broker.create_queue(name =QUEUE_GAMESINDIEDECADEQ2, durable =True, callback = self.handler_callback())
-        self.broker.create_queue(name =QUEUE_RESULTQUERY2, durable =True)
+        self.broker.create_queue(name =QUEUE_GAMESINDIEDECADEQ2, callback = self.handler_callback())
+        self.broker.create_queue(name =QUEUE_RESULTQUERY2)
         self.top_size = int(os.getenv("TOP_SIZE"))
 
     def reset_list(self):

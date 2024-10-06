@@ -1,7 +1,6 @@
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
 from common.socket.Socket import Socket
-from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
@@ -9,12 +8,11 @@ from system.commonsSystem.broker.Broker import Broker
 from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT, DIC_GAME_FEATURES_TO_USE, DIC_REVIEW_FEATURES_TO_USE
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-import time
 import signal
 import logging
 import os
 
-QUEUE_GATEWAY_FILTER = "gateway_filterbasic"
+QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 QUEUE_RESULTQ1_GATEWAY = "platformResultq1_gateway"
 
 class Gateway:
@@ -30,18 +28,15 @@ class Gateway:
         self.all_client_data_was_recv = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker = Broker()
-        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, durable = True)
-        #Query2
-        #self.broker.create_queue(name =ROUTING_KEY_RESULT_QUERY_2, durable =True, callback = self.handler_callback_q2())
-        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, durable =True, callback= self.handler_callback_q1())
+        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
+        #self.broker.create_queue(name =ROUTING_KEY_RESULT_QUERY_2, durable =True, callback = self.handler_callback_q2()) #Query2 
+        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.handler_callback_q1())
         self.socket_accepter = Socket(port =12345)
     
     def handler_callback_q1(self):
         def handler_result_q1(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
-            if result.operation_type != OperationType.OPERATION_TYPE_PLATFORM_DTO:
-                logging.info(f"TODO: HANDLER: EOF 🔚 🏮 🗡️")
-            logging.info(f"Action: Gateway Recv result Q1: 🕹️ success: ✅")
+            logging.info(f"Action: Gateway Recv Result Q1: 🕹️ success: ✅")
             self.protocol.send_platform_q1(result)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_result_q1
@@ -57,7 +52,6 @@ class Gateway:
             self.accept_a_connection()
             while not self.all_client_data_was_recv:
                 self.handler_messages(self.protocol.recv_data_raw())
-            logging.info(f"action: Gateway start to consume 🔥 | result : sucess ✅")
             self.broker.start_consuming()
         except Exception as e:
             if self.there_was_sigterm == False:
@@ -81,10 +75,10 @@ class Gateway:
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Games 🕹️! | result: success ✅")
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
-            logging.info(f"action: Sent EOF of Reviews 📰!  | result: sucess ✅")
             self.all_client_data_was_recv = True
             raw_dto.set_amount_data_and_type(self.amount_reviews)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
+            logging.info(f"action: Sent EOF of Reviews 📰!  | result: sucess ✅")
         else:
             self.handler_games_and_reviews(raw_dto)
 

@@ -9,6 +9,7 @@ from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.CalculatorDTO import CalculatorDTO
+from system.commonsSystem.DTO.DataPartialDTO import DataPartialDTO
 
 
 class DetectDTO:
@@ -23,7 +24,8 @@ class DetectDTO:
             OperationType.OPERATION_TYPE_GAMES_INDEX_DTO: GamesIndexDTO(),
             OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO: ReviewsIndexDTO(),
             OperationType.OPERATION_TYPE_EOF_INITIAL_DTO: EOFDTO(),
-            OperationType.OPERATION_TYPE_CALCULATOR_DTO: CalculatorDTO()
+            OperationType.OPERATION_TYPE_CALCULATOR_DTO: CalculatorDTO(),
+            OperationType.OPERATION_TYPE_DATA_PARTIAL_DTO: DataPartialDTO(),
         }
 
     def get_dto(self):

@@ -15,8 +15,8 @@ class Filter():
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
-        self.broker.create_queue(name =QUEUE_GAMESINDIEQ2, durable =True, callback = self.handler_callback())
-        self.broker.create_queue(name =QUEUE_GAMESINDIEDECADEQ2, durable =True)
+        self.broker.create_queue(name =QUEUE_GAMESINDIEQ2, callback = self.handler_callback())
+        self.broker.create_queue(name =QUEUE_GAMESINDIEDECADEQ2)
         self.decade = int(os.getenv("DECADE"))
 
     def is_correct_decade(self, date):

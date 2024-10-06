@@ -10,15 +10,15 @@ import time as t
 import os
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 
-QUEUE_FILTER_SELECTQ2345 = "filterbasic_selectq2345"
+QUEUE_FILTER_SELECTQ2345 = "filterBasic_selectq2345"
 QUEUE_GAMESQ2345 = "GamesQ2345"
 
 class SelectQ2345:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
-        self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345, durable =True, callback = self.handler_callback())
-        self.broker.create_queue(name =QUEUE_GAMESQ2345, durable = True)
+        self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345, callback = self.handler_callback())
+        self.broker.create_queue(name =QUEUE_GAMESQ2345)
 
     def handler_callback(self):
         def handler_message(ch, method, properties, body):

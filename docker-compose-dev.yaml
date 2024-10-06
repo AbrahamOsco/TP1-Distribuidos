@@ -57,10 +57,8 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME="filterbasic_1"
       - NODE_ID=3
-      - SOURCE=DataRaw
-      - SINK=a
+      - TOTAL_NODES=3
     networks:
       - system_network
     restart: on-failure
@@ -75,10 +73,8 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME="filterbasic_2"
       - NODE_ID=4
-      - SOURCE=DataRaw
-      - SINK=a
+      - TOTAL_NODES=3
     networks:
       - system_network
     restart: on-failure
@@ -93,10 +89,8 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME="filterbasic_3"
       - NODE_ID=5
-      - SOURCE=DataRaw
-      - SINK=a
+      - TOTAL_NODES=3
     networks:
       - system_network
     restart: on-failure
@@ -104,23 +98,54 @@ services:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 
-
-
-  selectQ1:
-    container_name: selectQ1
+  selectQ1_1:
+    container_name: selectQ1_1
     image: selectq1:latest
     entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+      - NODE_ID=6
+      - TOTAL_NODES=3
     networks:
       - system_network
     restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      filterbasic_1:
-        condition: service_started 
+
+  selectQ1_2:
+    container_name: selectQ1_2
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=7
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable        
+
+  selectQ1_3:
+    container_name: selectQ1_3
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=8
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable        
+
 
  #Select Q1. No borrar 
   platformcounter_1:
@@ -131,17 +156,31 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_NAME=platformcounter_1
-      - NODE_ID=6
-      - SOURCE=GamesPlatform
-      - SINK=
+      - NODE_ID=9
+      - TOTAL_NODES=2
     networks:
       - system_network
     restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
-      selectQ1:
-        condition: service_started  
+
+  platformcounter_2:
+    container_name: platformcounter_2
+    image: platformcounter:latest
+    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=platformcounter_1
+      - NODE_ID=10
+      - TOTAL_NODES=2
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 
   output:
     container_name: output

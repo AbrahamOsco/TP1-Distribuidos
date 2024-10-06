@@ -1,6 +1,5 @@
 from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
-from system.commonsSystem.broker.BrokerSerializer import BrokerSerializer
 import logging
 import pika
 
@@ -14,7 +13,8 @@ class Broker:
         self.was_closed = False
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
 
-    def create_queue(self, name='', durable=False, callback=None):
+    # Toda queue que creemos por default sera durable. y anonima si no nos pasan nombre
+    def create_queue(self, name='', durable=True, callback=None):
         try:
             a_queue = Queue(name=name, durable=durable, callback=callback)
             result = self.channel.queue_declare(queue=name, durable=durable, exclusive=a_queue.get_exclusive())
@@ -46,7 +46,7 @@ class Broker:
     
     def create_fanout_and_bind(self, name_exchange ="", callback =None):
         self.create_exchange(name =name_exchange, exchange_type='fanout')
-        name_anonymous_queue = self.create_queue(durable =True, callback =callback)
+        name_anonymous_queue = self.create_queue(callback =callback)
         self.bind_queue(exchange_name =name_exchange, queue_name =name_anonymous_queue)    
 
     # Si no especificamos el queue_name es una queue anonyma mandamos por el exchange con su routing_key definido.
