@@ -31,10 +31,10 @@ class Gateway:
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
         #self.broker.create_queue(name =ROUTING_KEY_RESULT_QUERY_2, durable =True, callback = self.handler_callback_q2()) #Query2 
-        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.handler_callback_q1())
+        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_q1())
         self.socket_accepter = Socket(port =12345)
     
-    def handler_callback_q1(self):
+    def recv_result_q1(self):
         def handler_result_q1(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
             logging.info(f"Action: Gateway Recv Result Q1: 🕹️ success: ✅")

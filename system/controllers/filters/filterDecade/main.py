@@ -1,10 +1,7 @@
-from Filter import FilterGender
-import signal
+from system.controllers.filters.filterDecade.FilterDecade import FilterDecade
 
 def main():
-   filter = FilterGender()
-   signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
-   filter.run()
+   filterDecade = FilterDecade()
+   filterDecade.run()
 
-if __name__ == "__main__":
-   main()
+main()

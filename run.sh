@@ -9,6 +9,7 @@ docker build -f ./system/controllers/groupers/platformCounter/Dockerfile -t "pla
 docker build -f ./system/controllers/reducers/platformReducer/Dockerfile -t "platformreducer:latest" .
 docker build -f ./system/controllers/select/selectQ2345/Dockerfile -t "selectq2345:latest" .
 docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filtergender:latest" .
+docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
 
 
 #docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .

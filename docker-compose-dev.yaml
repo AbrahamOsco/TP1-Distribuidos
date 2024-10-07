@@ -300,7 +300,41 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  
+  filterDecade_1:
+    container_name: filterdecade_1
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterdecade_1
+      - NODE_ID=18
+      - TOTAL_NODES=1
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterDecade_2:
+    container_name: filterdecade_2
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterdecade_2
+      - NODE_ID=19
+      - TOTAL_NODES=1
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
   #   build:
