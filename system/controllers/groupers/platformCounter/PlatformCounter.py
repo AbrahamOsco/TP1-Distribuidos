@@ -11,7 +11,7 @@ import signal
 
 QUEUE_SELECTQ1_PLATFORMCOUNTER = "selectq1_platformCounter"
 QUEUE_PLATFORMCOUNTER_REDUCER = "platformCounter_platformReducer"
-EXCHANGE_PLATFORM_COUNTER = "Exchange_platformCounter"
+EXCHANGE_EOF_PLATFORM_COUNTER = "Exchange_platformCounter"
 
 class PlatformCounter:
     def __init__(self):
@@ -26,9 +26,9 @@ class PlatformCounter:
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, callback =self.handler_count_platforms())
         self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER)
 
-        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_PLATFORM_COUNTER, callback =self.callback_eof_calculator())
+        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_PLATFORM_COUNTER, callback =self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_PLATFORM_COUNTER, next_queues =[QUEUE_PLATFORMCOUNTER_REDUCER])
+                                exchange_name =EXCHANGE_EOF_PLATFORM_COUNTER, next_queues =[QUEUE_PLATFORMCOUNTER_REDUCER])
 
     def callback_eof_calculator(self):
         def handler_message(ch, method, properties, body):
@@ -57,8 +57,8 @@ class PlatformCounter:
             self.platform.windows += a_game.windows
             self.platform.linux += a_game.linux
             self.platform.mac += a_game.mac
-        logging.info(f"action: Amount of platforms 🕹️ 👉  Window:{self.platform.windows}"\
-                     f" Linux: {self.platform.linux} Mac: {self.platform.mac} | success: ✅")
+        #logging.info(f"action: Amount of platforms 🕹️ 👉  Window:{self.platform.windows}"\
+        #             f" Linux: {self.platform.linux} Mac: {self.platform.mac} | success: ✅")
         self.handler_eof_games.add_new_processing()
 
     def handler_sigterm(self, signum, frame):
@@ -67,6 +67,3 @@ class PlatformCounter:
 
     def run(self):
         self.broker.start_consuming()
-
-
-

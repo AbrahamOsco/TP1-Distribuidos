@@ -146,8 +146,6 @@ services:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable        
 
-
- #Select Q1. No borrar 
   platformcounter_1:
     container_name: platformcounter_1
     image: platformcounter:latest
@@ -182,41 +180,127 @@ services:
       rabbitmq:
         condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 
-  output:
-    container_name: output
-    build:
-      context: .
-      dockerfile: system/controllers/output/Dockerfile 
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="output"
-      - NODE_ID=3
-      - SOURCE="response_exchange"
-      - SINK=""
-      - LOGGING_LEVEL=INFO
-
+#Es una unica instancia el reducer
   platformreducer:
     container_name: platformreducer
     image: platformreducer:latest
     entrypoint: python3 /app/system/controllers/reducers/platformReducer/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME="platformreducer"
+      - NODE_ID=11
     networks:
       - system_network
     restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
-    environment:
-      - PYTHONPATH=/app
-      - NODE_NAME="platformreducer"
-      - NODE_ID=4
-      - SOURCE="CountByPlatform"
-      - SINK=""
-      - LOGGING_LEVEL=INFO
 
+
+  selectQ2345_1:
+    container_name: selectq2345_1
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectq2345_1
+      - NODE_ID=12
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  selectQ2345_2:
+    container_name: selectq2345_2
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectq2345_2
+      - NODE_ID=13
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  selectQ2345_3:
+    container_name: selectq2345_3
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectq2345_3
+      - NODE_ID=14
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy        
+
+  filterGender_1:
+    container_name: filtergender_1
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filtergender_1
+      - NODE_ID=15
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy        
+
+  filterGender_2:
+    container_name: filtergender_2
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filtergender_2
+      - NODE_ID=16
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy    
+  
+  filterGender_3:
+    container_name: filtergender_3
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filtergender_3
+      - NODE_ID=17
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime
   #   build:
@@ -226,26 +310,24 @@ services:
   #     - system_network
   #   depends_on:
   #     - rabbitmq
-
-  groupertopreviewspositiveindie:
-    container_name: groupertopreviewspositiveindie
-    build:
-      context: .
-      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="groupertopreviewspositiveindie"
-      - NODE_ID=5
-      - SOURCE=""
-      - SINK=""
-      - LOGGING_LEVEL=INFO
-      
-
-  # gamein90thpercentile:
+#
+#  groupertopreviewspositiveindie:
+#    container_name: groupertopreviewspositiveindie
+#    build:
+#      context: .
+#      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="groupertopreviewspositiveindie"
+#      - NODE_ID=5
+#      - SOURCE=""
+#      - SINK=""
+#      - LOGGING_LEVEL=INFO
+#  # gamein90thpercentile:
   #   container_name: gamein90thpercentile
   #   build:
   #     context: .
@@ -258,175 +340,142 @@ services:
 
 
 
-  selectq2345_1:
-    container_name: selectq2345_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectQ2345/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="selectq2345_1"
-      - NODE_ID=6
-      - SOURCE=DataParsed
-      - SINK=
-      - LOGGING_LEVEL=INFO
 
-  filtergender_1:
-    container_name: filtergender_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterGender/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filtergender_1"
-      - NODE_ID=6
-      - SOURCE=GamesQ2345
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  filterdecade_1:
-    container_name: filterdecade_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterDecade/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterdecade_1"
-      - NODE_ID=6
-      - SOURCE=GamesIndieQ2
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  selectidnameindie_1:
-    container_name: selectidnameindie_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="selectidnameindie_1"
-      - NODE_ID=6
-      - SOURCE=GamesIndieQ3
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  selectidnameaction_1:
-    container_name: selectidnameaction_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="selectidnameaction_1"
-      - NODE_ID=6
-      - SOURCE=GamesActionQ45
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  selectq345_1:
-    container_name: selectq345_1
-    build:
-      context: .
-      dockerfile: system/controllers/select/selectQ345/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="selectq345_1"
-      - NODE_ID=6
-      - SOURCE=DataParsed
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  filterscorepositive_1:
-    container_name: filterscorepositive_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterscorepositive_1"
-      - NODE_ID=6
-      - SOURCE=ERROR
-      - SINK=ERROR
-      - LOGGING_LEVEL=INFO
-
-  filterreviewenglish_1:
-    container_name: filterreviewenglish_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterreviewenglish_1"
-      - NODE_ID=6
-      - SOURCE=GamesActionPositives
-      - SINK=
-      - LOGGING_LEVEL=INFO
-
-  filterscorexpositives_1:
-    container_name: filterscorexpositives_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterscorexpositives_1"
-      - NODE_ID=6
-      - SOURCE=ERROR
-      - SINK=ERROR
-      - LOGGING_LEVEL=INFO
-
-  filterscorenegative_1:
-    container_name: filterscorenegative_1
-    build:
-      context: .
-      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="filterscorenegative_1"
-      - NODE_ID=6
-      - SOURCE=ReviewsRaw
-      - SINK=
-      - LOGGING_LEVEL=INFO
+#  filterdecade_1:
+#    container_name: filterdecade_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/filters/filterDecade/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="filterdecade_1"
+#      - NODE_ID=6
+#      - SOURCE=GamesIndieQ2
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
+#  selectidnameindie_1:
+#    container_name: selectidnameindie_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="selectidnameindie_1"
+#      - NODE_ID=6
+#      - SOURCE=GamesIndieQ3
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
+#  selectidnameaction_1:
+#    container_name: selectidnameaction_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="selectidnameaction_1"
+#      - NODE_ID=6
+#      - SOURCE=GamesActionQ45
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
+#  selectq345_1:
+#    container_name: selectq345_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/select/selectQ345/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="selectq345_1"
+#      - NODE_ID=6
+#      - SOURCE=DataParsed
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
+#  filterscorepositive_1:
+#    container_name: filterscorepositive_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="filterscorepositive_1"
+#      - NODE_ID=6
+#      - SOURCE=ERROR
+#      - SINK=ERROR
+#      - LOGGING_LEVEL=INFO
+#
+#  filterreviewenglish_1:
+#    container_name: filterreviewenglish_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="filterreviewenglish_1"
+#      - NODE_ID=6
+#      - SOURCE=GamesActionPositives
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
+#
+#  filterscorexpositives_1:
+#    container_name: filterscorexpositives_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="filterscorexpositives_1"
+#      - NODE_ID=6
+#      - SOURCE=ERROR
+#      - SINK=ERROR
+#      - LOGGING_LEVEL=INFO
+#
+#  filterscorenegative_1:
+#    container_name: filterscorenegative_1
+#    build:
+#      context: .
+#      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
+#    networks:
+#      - system_network
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      - NODE_NAME="filterscorenegative_1"
+#      - NODE_ID=6
+#      - SOURCE=ReviewsRaw
+#      - SINK=
+#      - LOGGING_LEVEL=INFO
 
 networks:
   system_network:

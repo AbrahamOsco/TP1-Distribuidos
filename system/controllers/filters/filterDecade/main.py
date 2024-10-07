@@ -1,8 +1,8 @@
-from Filter import Filter
+from Filter import FilterGender
 import signal
 
 def main():
-   filter = Filter()
+   filter = FilterGender()
    signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
    filter.run()
 

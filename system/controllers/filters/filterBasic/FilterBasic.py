@@ -16,7 +16,7 @@ QUEUE_FILTER_SELECTQ2345 = "filterBasic_selectq2345"
 QUEUE_FILTER_SCORE_POSITIVE = "filterBasic_scorePositive"
 QUEUE_FILTER_SCORE_NEGATIVE = "filterBasic_scoreNegative"
 
-EXCHANGE_FILTER_BASIC = "Exchange_filterBasic"
+EXCHANGE_EOF_FILTER_BASIC = "Exchange_filterBasic"
 
 class FilterBasic:
     def __init__(self):
@@ -34,11 +34,11 @@ class FilterBasic:
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, callback =self.callback_filter_basic())
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1)
         
-        self.broker.create_fanout_and_bind(name_exchange=EXCHANGE_FILTER_BASIC, callback=self.callback_eof_calculator())
+        self.broker.create_fanout_and_bind(name_exchange=EXCHANGE_EOF_FILTER_BASIC, callback=self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ1])
+                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ1, QUEUE_FILTER_SELECTQ2345])
         self.handler_eof_reviews = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Reviews", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ1])
+                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ1])
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345)
 
     def callback_eof_calculator(self):

@@ -1,10 +1,7 @@
-from Filter import Filter
-import signal
+from system.controllers.filters.filterGender.FilterGender import FilterGender
 
 def main():
-   filter = Filter()
-   signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
-   filter.run()
+   filterGender = FilterGender()
+   filterGender.run()
 
-if __name__ == "__main__":
-   main()
+main()
