@@ -34,9 +34,9 @@ class SelectQ1:
     def handler_filter_platforms(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO and result_dto.old_operation_type == ALL_REVIEWS_WAS_SENT:
+            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and result_dto.old_operation_type == ALL_REVIEWS_WAS_SENT:
                 logging.info(f"Action: Recv Reviews EOF ! 📄📄📄 | result: success ✅") # TODO: delete el if y esta linea
-            elif result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO and result_dto.old_operation_type == ALL_GAMES_WAS_SENT:
+            elif result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and result_dto.old_operation_type == ALL_GAMES_WAS_SENT:
                 self.handler_eof_games.init_lider_and_push_eof(result_dto)
             else: 
                 self.filter_platforms(result_dto)

@@ -55,10 +55,10 @@ class FilterBasic:
     def callback_filter_basic(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO and
+            if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and
                 result_dto.old_operation_type == ALL_GAMES_WAS_SENT):
                 self.handler_eof_games.init_lider_and_push_eof(result_dto)
-            elif (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO and
+            elif (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and
                 result_dto.old_operation_type == ALL_REVIEWS_WAS_SENT):
                 self.handler_eof_reviews.init_lider_and_push_eof(result_dto)
             else: 

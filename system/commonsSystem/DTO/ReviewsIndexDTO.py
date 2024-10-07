@@ -1,5 +1,4 @@
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-from system.commonsSystem.DTO.DTO import DTO
 from system.commonsSystem.DTO.IndexDTO import IndexDTO
 
 class ReviewsIndexDTO(IndexDTO):

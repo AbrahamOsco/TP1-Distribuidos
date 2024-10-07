@@ -37,10 +37,17 @@ class ClientProtocol(Protocol):
 
     def recv_result_query_2(self):
         client_id = self.recv_number_1_byte()
-        name = self.recv_string()
-        average_playtime = self.recv_number_4_bytes()
-        return {"ResultType":ResultType.RESULT_QUERY_2, "ClientID": client_id,
-                "Name": name, "Average playtime": average_playtime}
+        size_results = self.recv_number_1_byte()
+        top_games = {}
+        for i in range(size_results):
+            name_game = self.recv_string()
+            avg_playtime_forever = self.recv_number_4_bytes()
+            top_games[name_game] = avg_playtime_forever
+        result = {}
+        result["ResultType"] = ResultType.RESULT_QUERY_2
+        result["ClientID"] = client_id
+        result["TopGames"] = [top_games]
+        return result
 
     def recv_result_query_3(self):
         pass

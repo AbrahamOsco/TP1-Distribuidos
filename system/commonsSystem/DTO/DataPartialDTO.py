@@ -1,10 +1,9 @@
-from system.commonsSystem.DTO.DTO import DTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 REQUEST_DATA_PARTIAL = 1
 RESPONSE_DATA_PARTIAL = 2
 
-class DataPartialDTO(DTO):
+class DataPartialDTO:
     def __init__(self, status = REQUEST_DATA_PARTIAL,):
         self.operation_type = OperationType.OPERATION_TYPE_DATA_PARTIAL_DTO
         self.status = status

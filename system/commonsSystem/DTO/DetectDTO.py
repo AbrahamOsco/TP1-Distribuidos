@@ -1,8 +1,6 @@
 import logging
-from system.commonsSystem.DTO.DecadeDTO import DecadeDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
 from system.commonsSystem.DTO.GameDTO import GameDTO
-from system.commonsSystem.DTO.GenreDTO import GenreDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
@@ -10,7 +8,7 @@ from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.CalculatorDTO import CalculatorDTO
 from system.commonsSystem.DTO.DataPartialDTO import DataPartialDTO
-
+from system.commonsSystem.DTO.TopDTO import TopDTO
 
 class DetectDTO:
     def __init__(self, dto_in_bytes):
@@ -19,13 +17,12 @@ class DetectDTO:
             #OperationType.OPERATION_TYPE_GAME: GameDTO(),
             OperationType.OPERATION_TYPE_GAMES_DTO: GamesDTO(client_id =0, state_games =0),
             OperationType.OPERATION_TYPE_PLATFORM_DTO: PlatformDTO(),
-            OperationType.OPERATION_TYPE_GENRE_DTO: GenreDTO(),
-            OperationType.OPERATION_TYPE_DECADE_DTO: DecadeDTO(),
             OperationType.OPERATION_TYPE_GAMES_INDEX_DTO: GamesIndexDTO(),
             OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO: ReviewsIndexDTO(),
-            OperationType.OPERATION_TYPE_EOF_INITIAL_DTO: EOFDTO(),
+            OperationType.OPERATION_TYPE_EOF_DTO: EOFDTO(),
             OperationType.OPERATION_TYPE_CALCULATOR_DTO: CalculatorDTO(),
             OperationType.OPERATION_TYPE_DATA_PARTIAL_DTO: DataPartialDTO(),
+            OperationType.OPERATION_TYPE_TOP_DTO: TopDTO(),
         }
 
     def get_dto(self):

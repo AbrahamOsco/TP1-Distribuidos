@@ -309,7 +309,7 @@ services:
       - PYTHONPATH=/app
       - NODE_NAME=filterdecade_1
       - NODE_ID=18
-      - TOTAL_NODES=1
+      - TOTAL_NODES=2
     networks:
       - system_network
     restart: on-failure
@@ -326,7 +326,25 @@ services:
       - PYTHONPATH=/app
       - NODE_NAME=filterdecade_2
       - NODE_ID=19
+      - TOTAL_NODES=2
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  grouperTopAvgPlaytime:
+    container_name: groupertopavgplaytime
+    image: groupertopavgplaytime:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopAvgPlaytime/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=groupertopavgplaytime
+      - NODE_ID=20
       - TOTAL_NODES=1
+      - TOP_SIZE=10
     networks:
       - system_network
     restart: on-failure

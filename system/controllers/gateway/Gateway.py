@@ -12,14 +12,17 @@ import signal
 import logging
 import os
 import traceback
+
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
+QUEUE_RESULTQ2_GATEWAY = "resultq2_gateway"
 
 class Gateway:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.game_indexes = DIC_GAME_FEATURES_TO_USE
         self.review_indexes = DIC_REVIEW_FEATURES_TO_USE
+        self.socket_accepter = Socket(port =12345)
         self.game_index_init= False
         self.total_games = 0
         self.batchs_games = 0
@@ -28,11 +31,12 @@ class Gateway:
         self.there_was_sigterm = False
         self.all_client_data_was_recv = False
         signal.signal(signal.SIGTERM, self.handler_sigterm)
+
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
-        #self.broker.create_queue(name =ROUTING_KEY_RESULT_QUERY_2, durable =True, callback = self.handler_callback_q2()) #Query2 
         self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_q1())
-        self.socket_accepter = Socket(port =12345)
+        self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY, callback= self.recv_result_q2())
+
     
     def recv_result_q1(self):
         def handler_result_q1(ch, method, properties, body):
@@ -42,6 +46,15 @@ class Gateway:
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_result_q1
     
+    def recv_result_q2(self):
+        def handler_result_q2(ch, method, properties, body):
+            result = DetectDTO(body).get_dto()
+            logging.info(f"Action: Gateway Recv Result Q2: 🕹️ success: ✅")
+            self.protocol.send_top_average_playtime_q2(result)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        return handler_result_q2
+    
+
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
         self.socket_peer, addr = self.socket_accepter.accept()

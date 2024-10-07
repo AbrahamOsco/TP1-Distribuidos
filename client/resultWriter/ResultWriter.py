@@ -23,7 +23,10 @@ class ResultWriter:
         logging.info(f"action: Result Query1: 🕹️ {result_query}| success: ✅")
         
     def write_query2(self, result_query):
-         logging.info(f"action: Result Query2: 🕹️")
+        logging.info(f"action: Result Query2: 🕹️💯")
+        with open("/results/query2.json", "w") as json_file:
+            json.dump(result_query, json_file, indent=4)
+        logging.info(f"action: Result Query2: 🕹️💯 {result_query}| success: ✅")
 
     def write_query3(self, result_query):
         pass

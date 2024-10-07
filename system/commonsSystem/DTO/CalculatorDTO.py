@@ -1,10 +1,9 @@
-from system.commonsSystem.DTO.DTO import DTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 STATUS_REQUEST = 1
 STATUS_RESPONSE = 2
 
-class CalculatorDTO(DTO):
+class CalculatorDTO:
     def __init__(self, client_id: int = 0, status :int = STATUS_REQUEST, amount_data:int = 0, target_type :int = 0):
         self.operation_type = OperationType.OPERATION_TYPE_CALCULATOR_DTO
         self.client_id = client_id

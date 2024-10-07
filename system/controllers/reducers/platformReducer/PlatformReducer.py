@@ -26,7 +26,7 @@ class PlatformReducer:
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             logging.info(f" Result: {result_dto} {result_dto.operation_type} {result_dto.operation_type.value}")
-            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO:
+            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
                 self.broker.public_message(queue_name =QUEUE_RESULTQ1_GATEWAY, message =self.total_platform.serialize())
                 logging.info(f"Action: Recv EOF 🌟 | Send Total Platform to Gateway 🚀 | result: success ✅ ")
             else:

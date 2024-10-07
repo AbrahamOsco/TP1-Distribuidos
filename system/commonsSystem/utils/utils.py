@@ -1,5 +1,6 @@
 import logging
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
+from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 def eof_calculator(handler_eof):
     def handler_message(ch, method, properties, body):

@@ -1,9 +1,8 @@
 import logging
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-from system.commonsSystem.DTO.DTO import DTO
 
-class EOFDTO(DTO):
-
+class EOFDTO:
+    # TODO: fixear esto
     def __init__(self, operation_type = 0, client_id = 0, amount_data = 0, old_operation_type = 0):
         self.operation_type = operation_type #OperationType.OPERATION_TYPE_EOF_INITIAL
         self.client_id = client_id
@@ -24,7 +23,7 @@ class EOFDTO(DTO):
     #this method only can be used by gateway! no other controllers. Old Operation tendra ALL_GAMES_SENT o ALL_REVIEWS_SENT y operation type el normal.
     def set_amount_data_and_type(self, a_amount):
         self.old_operation_type = self.operation_type
-        self.operation_type = OperationType.OPERATION_TYPE_EOF_INITIAL_DTO
+        self.operation_type = OperationType.OPERATION_TYPE_EOF_DTO
         self.amount_data = a_amount
 
     def serialize(self):
@@ -44,5 +43,5 @@ class EOFDTO(DTO):
         offset += 1
         amount_data = int.from_bytes(data[offset:offset+8], byteorder='big')
         offset += 8
-        return EOFDTO(OperationType.OPERATION_TYPE_EOF_INITIAL_DTO, client_id, amount_data, old_operation_type)
+        return EOFDTO(OperationType.OPERATION_TYPE_EOF_DTO, client_id, amount_data, old_operation_type)
 

@@ -1,6 +1,7 @@
-from system.commonsSystem.DTO.DTO import DTO
 import logging
-class IndexDTO(DTO):
+from system.commonsSystem.utils.serialize import serialize_str, deserialize_str
+
+class IndexDTO:
     def __init__(self, client_id =0, data_raw = [], indexes = {} ):
         self.client_id = client_id
         self.indexes = indexes
@@ -14,11 +15,11 @@ class IndexDTO(DTO):
         for element in self.data_raw:
             index_bytes.extend(len(element).to_bytes(2, byteorder='big'))
             for field in element:
-                index_bytes.extend(self.serialize_str(field))
+                index_bytes.extend(serialize_str(field))
 
         index_bytes.extend(len(self.indexes).to_bytes(1, byteorder='big'))
         for name, index in self.indexes.items():
-            index_bytes.extend(self.serialize_str(name))
+            index_bytes.extend(serialize_str(name))
             index_bytes.extend(index.to_bytes(1, byteorder='big'))
         return bytes(index_bytes)
 
@@ -36,7 +37,7 @@ class IndexDTO(DTO):
             offset += 2
             a_item = []
             for j in range(a_item_length):
-                field, offset = self.deserialize_str(data, offset)
+                field, offset = deserialize_str(data, offset)
                 a_item.append(field)
             items_raw.append(a_item)
 
@@ -44,7 +45,7 @@ class IndexDTO(DTO):
         offset += 1
         indexes = {}
         for i in range(indexes_length):
-            name, offset = self.deserialize_str(data, offset)
+            name, offset = deserialize_str(data, offset)
             index = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
             indexes[name] = index

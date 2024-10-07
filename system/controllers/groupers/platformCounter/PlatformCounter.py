@@ -42,7 +42,7 @@ class PlatformCounter:
     def handler_count_platforms(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_INITIAL_DTO:
+            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
                 self.handler_eof_games.init_lider_and_push_eof(result_dto)  
             else:
                 self.count_platforms(result_dto)
