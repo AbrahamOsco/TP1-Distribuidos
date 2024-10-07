@@ -4,9 +4,10 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
+from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
+from system.commonsSystem.utils.utils import handler_sigterm_default
 import os
 import logging
-from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 import signal 
 
 QUEUE_SELECTQ1_PLATFORMCOUNTER = "selectq1_platformCounter"
@@ -21,8 +22,8 @@ class PlatformCounter:
 
         self.platform = PlatformDTO()
         self.registered_client = False
-        signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker = Broker()
+        signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, callback =self.handler_count_platforms())
         self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER)
 
@@ -37,7 +38,6 @@ class PlatformCounter:
             self.handler_eof_games.try_send_partial_data()
             ch.basic_ack(delivery_tag =method.delivery_tag)
         return handler_message
-
 
     def handler_count_platforms(self):
         def handler_message(ch, method, properties, body):
@@ -57,13 +57,7 @@ class PlatformCounter:
             self.platform.windows += a_game.windows
             self.platform.linux += a_game.linux
             self.platform.mac += a_game.mac
-        #logging.info(f"action: Amount of platforms 🕹️ 👉  Window:{self.platform.windows}"\
-        #             f" Linux: {self.platform.linux} Mac: {self.platform.mac} | success: ✅")
         self.handler_eof_games.add_new_processing()
-
-    def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
-        self.broker.close()
 
     def run(self):
         self.broker.start_consuming()

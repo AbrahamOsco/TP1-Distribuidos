@@ -6,6 +6,8 @@ from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
+from system.commonsSystem.utils.utils import eof_calculator, handler_sigterm_default
+
 import logging
 import os
 import signal
@@ -21,22 +23,15 @@ class FilterGender():
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.id = os.getenv("NODE_ID")
         self.total_nodes = int(os.getenv("TOTAL_NODES"))
-        signal.signal(signal.SIGTERM, self.handler_sigterm)
 
         self.broker = Broker()
+        signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.broker.create_queue(name =QUEUE_SELECTQ2345_FILTERGENDER, callback = self.filter_by_a_gender())
         self.broker.create_queue(name =QUEUE_FILTERGENDER_FILTERDECADE)
 
-        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTERGENDER, callback =self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
                             exchange_name =EXCHANGE_EOF_FILTERGENDER, next_queues =[QUEUE_FILTERGENDER_FILTERDECADE]) # tambien agregar selectIDNAME
-
-    def callback_eof_calculator(self):
-        def handler_message(ch, method, properties, body):
-            result_dto = DetectDTO(body).get_dto()
-            self.handler_eof_games.run(calculatorDTO=result_dto)
-            ch.basic_ack(delivery_tag =method.delivery_tag)
-        return handler_message
+        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTERGENDER, callback =eof_calculator(self.handler_eof_games))
 
     def filter_by_a_gender(self):
         def handler_message(ch, method, properties, body):
@@ -71,7 +66,3 @@ class FilterGender():
 
     def run(self):
         self.broker.start_consuming()
-
-    def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
-        self.broker.close()

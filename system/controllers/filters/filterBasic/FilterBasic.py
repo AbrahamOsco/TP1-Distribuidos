@@ -5,6 +5,7 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
 from system.commonsSystem.broker.Broker import Broker
+from system.commonsSystem.utils.utils import handler_sigterm_default
 import logging
 import os
 import signal
@@ -29,8 +30,8 @@ class FilterBasic:
         self.name_position = -1
         self.game_index_init= False
         self.review_index_init= False
-        signal.signal(signal.SIGTERM, self.handler_sigterm)
         self.broker = Broker()
+        signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, callback =self.callback_filter_basic())
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1)
         
@@ -115,10 +116,6 @@ class FilterBasic:
                 item_basic.append(a_item[i])
                 position +=1
         return item_basic    
-
-    def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
-        self.broker.close()
 
     def run(self):
         self.broker.start_consuming()

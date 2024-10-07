@@ -3,6 +3,7 @@ from common.utils.utils import initialize_log
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
+from system.commonsSystem.utils.utils import handler_sigterm_default
 import os
 import logging
 import signal
@@ -15,7 +16,8 @@ class PlatformReducer:
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.broker = Broker()
         self.registered_client = False
-        signal.signal(signal.SIGTERM, self.handler_sigterm)
+        signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
+        
         self.total_platform = PlatformDTO()
         self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, callback=self.handler_callback_exchange())
         self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY)
@@ -41,10 +43,6 @@ class PlatformReducer:
         self.total_platform.mac += platformDTO.mac
         logging.info(f"action: Total reducer current 🪟 🍎 🐧 💯: Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
                      f" Mac: {self.total_platform.mac} | success: ✅ ")
-
-    def handler_sigterm(self, signum, frame):
-        logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
-        self.broker.close()
 
     def run(self):
         self.broker.start_consuming()
