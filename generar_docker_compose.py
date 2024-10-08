@@ -194,6 +194,7 @@ def get_depends_and_envs(queries, service_name:str, i:int=0):
         - PYTHONPATH=/app
         - NODE_NAME={service_name}
         - NODE_ID={i}
+        - AMOUNT_OF_NODES={node_amounts.get(service_name, 1)}
         - SOURCE={sources[service_name]}
         - SOURCE_KEY={source_keys.get(service_name, "default")}
         - SOURCE_TYPE={source_types.get(service_name, "direct")}
