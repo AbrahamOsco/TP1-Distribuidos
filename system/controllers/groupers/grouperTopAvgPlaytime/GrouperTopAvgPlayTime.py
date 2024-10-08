@@ -25,10 +25,10 @@ class GrouperTopAvgPlaytime:
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.top_games = TopN(field_batch= lambda game: game.games_dto,
                             field_to_compare = lambda game: game.avg_playtime_forever, a_size = int(os.getenv("TOP_SIZE")))
-        self.broker.create_queue(name =QUEUE_FILTERDECADE_GROUPERTOPAVGTIME, callback = self.calculate_top_avg_playtime())
+        self.broker.create_queue(name =QUEUE_FILTERDECADE_GROUPERTOPAVGTIME, callback = self.handler_calculate_top_avg_playtime())
         self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY)
         
-    def calculate_top_avg_playtime(self):
+    def handler_calculate_top_avg_playtime(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:

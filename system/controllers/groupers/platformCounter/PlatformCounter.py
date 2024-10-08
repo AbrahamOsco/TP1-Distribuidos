@@ -1,6 +1,6 @@
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF

@@ -7,3 +7,4 @@ class StateGame(Enum):
     STATE_GENDER = 4
     STATE_DECADE = 5
     STATE_TOP_AVERAGE_PLAYTIME = 6
+    STATE_ID_NAME = 7

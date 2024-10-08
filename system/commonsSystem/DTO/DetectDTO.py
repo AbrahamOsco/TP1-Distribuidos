@@ -1,5 +1,5 @@
 import logging
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL, STATE_PLATFORM
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType

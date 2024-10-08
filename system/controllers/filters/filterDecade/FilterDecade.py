@@ -26,7 +26,7 @@ class FilterDecade:
         self.decade = DECADE
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_FILTERGENDER_FILTERDECADE, callback = self.filter_by_decade())
+        self.broker.create_queue(name =QUEUE_FILTERGENDER_FILTERDECADE, callback = self.handler_filter_by_decade())
         self.broker.create_queue(name =QUEUE_FILTERDECADE_GROUPERTOPAVGTIME)
 
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
@@ -42,7 +42,7 @@ class FilterDecade:
             year = int(parts[1])
         return year >= self.decade and year < (self.decade + 10)
 
-    def filter_by_decade(self):
+    def handler_filter_by_decade(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:

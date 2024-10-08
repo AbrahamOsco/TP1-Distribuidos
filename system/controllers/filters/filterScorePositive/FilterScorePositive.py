@@ -25,7 +25,7 @@ class FilterScorePositive:
 
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_FILTERBASIC_SCOREPOSITIVE, callback = self.filter_by_score_positive())
+        self.broker.create_queue(name =QUEUE_FILTERBASIC_SCOREPOSITIVE, callback = self.handler_filter_by_score_positive())
         self.broker.create_queue(name =QUEUE_SCOREPOSITIVE_MONITORSTORAGEQ3)
 
         self.handler_eof_reviews = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Reviews", total_nodes= self.total_nodes,
@@ -33,7 +33,7 @@ class FilterScorePositive:
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_SCOREPOSITIVE, callback =eof_calculator(self.handler_eof_reviews))
 
 
-    def filter_by_score_positive(self):
+    def handler_filter_by_score_positive(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:

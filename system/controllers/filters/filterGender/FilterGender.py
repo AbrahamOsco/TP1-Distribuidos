@@ -26,14 +26,14 @@ class FilterGender():
 
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_SELECTQ2345_FILTERGENDER, callback = self.filter_by_a_gender())
+        self.broker.create_queue(name =QUEUE_SELECTQ2345_FILTERGENDER, callback = self.handler_filter_by_a_gender())
         self.broker.create_queue(name =QUEUE_FILTERGENDER_FILTERDECADE)
 
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
                             exchange_name =EXCHANGE_EOF_FILTERGENDER, next_queues =[QUEUE_FILTERGENDER_FILTERDECADE]) # tambien agregar selectIDNAME
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTERGENDER, callback =eof_calculator(self.handler_eof_games))
 
-    def filter_by_a_gender(self):
+    def handler_filter_by_a_gender(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:

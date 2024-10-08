@@ -1,11 +1,12 @@
 from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.GameDTO import GameDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
 from system.commonsSystem.utils.utils import eof_calculator, handler_sigterm_default
+from system.commonsSystem.DTO.enums.StateGame import StateGame
 
 import signal
 import logging
@@ -41,14 +42,10 @@ class SelectQ1:
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     
-    def filter_platforms(self, batch_game: GamesDTO):
-        games_dto = []
-        for game in batch_game.games_dto:
-            games_dto.append(GameDTO(windows=game.windows, mac=game.mac, linux=game.linux))
-        new_gamesDTO = GamesDTO(client_id =batch_game.client_id, state_games = STATE_PLATFORM, games_dto = games_dto)
+    def filter_platforms(self, batch_game):
+        new_gamesDTO = GamesDTO(client_id =batch_game.client_id, state_games = StateGame.STATE_PLATFORM.value, games_dto = batch_game.games_dto)
         self.broker.public_message(queue_name =QUEUE_SELECTQ1_PLATFORMCOUNTER,  message = new_gamesDTO.serialize())
         self.handler_eof_games.add_new_processing()
-        #logging.info(f"action: Send GamesDTO 🏑 to platform_counter | count: {len(new_gamesDTO.games_dto)} | result: success ✅")
 
     def run(self):
         self.broker.start_consuming()

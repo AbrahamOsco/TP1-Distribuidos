@@ -3,7 +3,8 @@ from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_W
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO 
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_GAMES_INITIAL
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_REVIEW_INITIAL
 
 from system.commonsSystem.broker.Broker import Broker
@@ -75,7 +76,7 @@ class FilterBasic:
     def send_batch_data(self, result_dto):
         data_filtered = self.filter_fields_item(result_dto)
         if result_dto.operation_type == OperationType.OPERATION_TYPE_GAMES_INDEX_DTO:
-            gamesDTO = GamesDTO(games_raw =data_filtered, client_id =result_dto.client_id, state_games =STATE_GAMES_INITIAL)
+            gamesDTO = GamesDTO(games_raw =data_filtered, client_id =result_dto.client_id, state_games =StateGame.STATE_GAMES_INITIAL.value)
             self.broker.public_message(queue_name =QUEUE_FILTER_SELECTQ1, message = gamesDTO.serialize())
             self.broker.public_message(queue_name =QUEUE_FILTER_SELECTQ2345, message = gamesDTO.serialize())
             self.handler_eof_games.add_new_processing()
