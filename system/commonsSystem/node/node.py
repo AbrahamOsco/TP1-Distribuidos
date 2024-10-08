@@ -27,6 +27,10 @@ class Node:
         self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = 0
+        self.amount_received_by_node = {}
+        self.amount_sent_by_node = {}
+        self.total_amount_received = {}
+        self.total_amount_sent = {}
         self.broker = Broker()
         self.initialize_queues()
 
@@ -55,6 +59,30 @@ class Node:
             level=self.config_params["log_level"],
             datefmt='%Y-%m-%d %H:%M:%S',
         )
+
+    def update_amount_received_by_node(self,client_id, amount=0):
+        if client_id not in self.amount_received_by_node:
+            self.amount_received_by_node[client_id] = 0
+        
+        self.amount_received_by_node[client_id] += amount
+
+    def update_amount_sent_by_node(self,client_id, amount=0):
+        if client_id not in self.amount_sent_by_node:
+            self.amount_sent_by_node[client_id] = 0
+        
+        self.amount_sent_by_node[client_id] += amount
+
+    def update_total_amount_received(self,client, amount=0):
+        if client not in self.total_amount_received:
+            self.total_amount_received[client] = 0
+        
+        self.total_amount_received[client] += amount
+        
+    def update_total_amount_sent(self,client, amount=0):
+        if client not in self.total_amount_sent:
+            self.total_amount_sent[client] = 0
+        
+        self.total_amount_sent[client] += amount
 
     def send_eof(self, client):
         self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key='default')
