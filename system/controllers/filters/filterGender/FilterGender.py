@@ -37,8 +37,7 @@ class FilterGender():
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
-                self.handler_eof_games.init_lider_and_push_eof(result_dto)
-                logging.info(f"Action: Recv Game EOF ! 🪀🕹️🕹️: 🔥🔥🔥🔥🔥 | result: success ✅")
+                self.handler_eof_games.init_leader_and_push_eof(result_dto)
             else:
                 self.filter_for_gender(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)

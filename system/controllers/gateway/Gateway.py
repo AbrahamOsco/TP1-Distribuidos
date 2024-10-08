@@ -5,7 +5,8 @@ from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 from system.commonsSystem.broker.Broker import Broker
-from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT, DIC_GAME_FEATURES_TO_USE, DIC_REVIEW_FEATURES_TO_USE
+from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
+from system.commonsSystem.utils.utils import DIC_GAME_FEATURES_TO_USE, DIC_REVIEW_FEATURES_TO_USE
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 import signal
@@ -36,7 +37,15 @@ class Gateway:
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
         self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_q1())
         self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY, callback= self.recv_result_q2())
-
+    
+    #TODO ver refactor aca
+    def recv_result_query(self, name, function_send):
+        def handler_query_result(ch, method, properties, body):
+            result = DetectDTO(body).get_dto()
+            logging.info(f"Action: Gateway Recv Result {name}: 🕹️ success: ✅")
+            self.protocol.send_platform_q1(result)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        return handler_query_result
     
     def recv_result_q1(self):
         def handler_result_q1(ch, method, properties, body):
@@ -86,12 +95,12 @@ class Gateway:
 
     def handler_messages(self, raw_dto):
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
-            raw_dto.set_amount_data_and_type(self.batchs_games)
+            raw_dto.initialize_amount_and_type(self.batchs_games)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Games 🕹️! Total Games (units) : {self.total_games} ⭐ | result: success ✅")
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
             self.all_client_data_was_recv = True
-            raw_dto.set_amount_data_and_type(self.batchs_reviews)
+            raw_dto.initialize_amount_and_type(self.batchs_reviews)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Reviews 📰!  | result: sucess ✅")
         else:

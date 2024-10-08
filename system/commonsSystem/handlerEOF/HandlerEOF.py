@@ -40,7 +40,7 @@ class HandlerEOF:
         logging.info(f"action: Node ID: {self.node_id} Recv EOF! {self.i_am_lider} | result: success ✅")
         self.data_definitive = eof_dto.amount_data
 
-    def init_lider_and_push_eof(self, eof_dto):
+    def init_leader_and_push_eof(self, eof_dto):
         self.initialize_lider(eof_dto)
         self.broker.public_message(exchange_name =self.exchange_name, message = CalculatorDTO(client_id =eof_dto.client_id,
                                     target_type =eof_dto.old_operation_type).serialize())

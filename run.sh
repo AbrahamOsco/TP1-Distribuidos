@@ -11,11 +11,10 @@ docker build -f ./system/controllers/select/selectQ2345/Dockerfile -t "selectq23
 docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filtergender:latest" .
 docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
 docker build -f ./system/controllers/groupers/grouperTopAvgPlaytime/Dockerfile -t "groupertopavgplaytime:latest" .
+docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
 
 
 #docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
-#docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
-#docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filtergender:latest" .
 #docker build -f ./system/controllers/filters/filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
 #docker build -f ./system/controllers/filters/filterScoreXPositives/Dockerfile -t "filterscorexpositives:latest" .
 #docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .

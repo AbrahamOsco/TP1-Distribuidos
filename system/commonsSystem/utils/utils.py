@@ -2,6 +2,11 @@ import logging
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
+DIC_GAME_FEATURES_TO_USE = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
+                            "Genres": 0, "Release date": 0, "Average playtime forever": 0}
+DIC_REVIEW_FEATURES_TO_USE = { 'app_id':0, 'review_text':0, 'review_score':0 }                              
+
+
 def eof_calculator(handler_eof):
     def handler_message(ch, method, properties, body):
         result_dto = DetectDTO(body).get_dto()

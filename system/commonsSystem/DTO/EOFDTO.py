@@ -2,9 +2,9 @@ import logging
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
 class EOFDTO:
-    # TODO: fixear esto
+
     def __init__(self, operation_type = 0, client_id = 0, amount_data = 0, old_operation_type = 0):
-        self.operation_type = operation_type #OperationType.OPERATION_TYPE_EOF_INITIAL
+        self.operation_type = operation_type # El valor lo decide el protocolo (para games y reviews)
         self.client_id = client_id
         self.amount_data = amount_data
         self.old_operation_type = old_operation_type
@@ -14,16 +14,16 @@ class EOFDTO:
         return EOFDTO(eofDTO.operation_type, eofDTO.client_id, eofDTO.amount_data, eofDTO.old_operation_type)
 
     def load(self, a_eof_dto):
-        self.operation_type = a_eof_dto.operation_type
-        self.amount_data = a_eof_dto.amount_data
+        self.operation_type = a_eof_dto.operation_type 
+        self.amount_data = a_eof_dto.amount_data        
         self.client_id = a_eof_dto.client_id
         self.old_operation_type = a_eof_dto.old_operation_type
         return EOFDTO(self.operation_type, self.client_id, self.amount_data, self.old_operation_type)
     
     #this method only can be used by gateway! no other controllers. Old Operation tendra ALL_GAMES_SENT o ALL_REVIEWS_SENT y operation type el normal.
-    def set_amount_data_and_type(self, a_amount):
-        self.old_operation_type = self.operation_type
-        self.operation_type = OperationType.OPERATION_TYPE_EOF_DTO
+    def initialize_amount_and_type(self, a_amount):
+        self.old_operation_type = self.operation_type              # guardamos el valor obtenido del protocolo. 
+        self.operation_type = OperationType.OPERATION_TYPE_EOF_DTO # udpate el OperationtType
         self.amount_data = a_amount
 
     def serialize(self):

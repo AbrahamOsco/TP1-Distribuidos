@@ -352,6 +352,57 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  filterScorePositive_1:
+    container_name: filterscorepositive_1
+    image: filterscorepositive:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterscorepositive_1
+      - NODE_ID=21
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterScorePositive_2:
+    container_name: filterscorepositive_2
+    image: filterscorepositive:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterscorepositive_2
+      - NODE_ID=22
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterScorePositive_3:
+    container_name: filterscorepositive_3
+    image: filterscorepositive:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterscorepositive_3
+      - NODE_ID=23
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
 
   # sortertop10averageplaytime:
   #   container_name: sortertop10averageplaytime

@@ -1,31 +1,29 @@
 from system.commonsSystem.DTO.enums.OperationType import OperationType
-INITIAL_GAME = 1
+from system.commonsSystem.utils.serialize import serialize_str, deserialize_str
+
 
 class ReviewDTO:
-    def __init__(self, status = INITIAL_GAME, app_id ="", client ="", review_text ="", review_score =""):
+    def __init__(self, app_id =0, review_text ="", score =0):
         self.operation_type = OperationType.OPERATION_TYPE_REVIEW
-        self.status = status
-        self.client = client
-        self.app_id = int(app_id)
+        self.app_id = app_id
         self.review_text = review_text
-        self.review_score = int(review_score)
+        self.score = score
 
-    def to_string(self):
-        return f"REVIEW|{self.app_id}|{self.client}|{self.review_text}|{self.review_score}"
-    
-    def from_string(data):
-        data = data.split("|")
-        return ReviewDTO(data[1], data[2], data[3], data[4])
+    def serialize(self, state_games:int = 0):
+        # Por ahora ignoraremos state_games we sent all fields. 
+        review_bytes = bytearray()
+        review_bytes.extend(self.operation_type.value.to_bytes(1, byteorder ='big'))
+        review_bytes.extend(self.app_id.to_bytes(8, byteorder ='big'))
+        review_bytes.extend(serialize_str(self.review_text))
+        review_bytes.extend(self.score.to_bytes(1, byteorder ='big', signed =True))
+        return review_bytes
 
-    def is_EOF(self):
-        return False
-    
-    def get_client(self):
-        return self.client
-    
-    def retain(self, fields_to_keep):
-        attributes = vars(self)
-        for attr in list(attributes.keys()):
-            if attr not in fields_to_keep:
-                setattr(self, attr, None)
-        return self
+    def deserialize(self, data, offset, state_games:int = 0):
+        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        app_id = int.from_bytes(data[offset:offset+8], byteorder='big')
+        offset += 8
+        review_text, offset = deserialize_str(data, offset)
+        score = int.from_bytes(data[offset:offset+1], byteorder='big', signed =True)
+        offset +=1
+        return ReviewDTO(app_id, review_text, score), offset

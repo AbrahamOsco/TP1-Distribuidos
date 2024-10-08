@@ -9,13 +9,13 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.CalculatorDTO import CalculatorDTO
 from system.commonsSystem.DTO.DataPartialDTO import DataPartialDTO
 from system.commonsSystem.DTO.TopDTO import TopDTO
+from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 
 class DetectDTO:
     def __init__(self, dto_in_bytes):
         self.dto_in_bytes = dto_in_bytes
         self.command_deserialize = {
-            #OperationType.OPERATION_TYPE_GAME: GameDTO(),
-            OperationType.OPERATION_TYPE_GAMES_DTO: GamesDTO(client_id =0, state_games =0),
+            OperationType.OPERATION_TYPE_GAMES_DTO: GamesDTO(),
             OperationType.OPERATION_TYPE_PLATFORM_DTO: PlatformDTO(),
             OperationType.OPERATION_TYPE_GAMES_INDEX_DTO: GamesIndexDTO(),
             OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO: ReviewsIndexDTO(),
@@ -23,6 +23,7 @@ class DetectDTO:
             OperationType.OPERATION_TYPE_CALCULATOR_DTO: CalculatorDTO(),
             OperationType.OPERATION_TYPE_DATA_PARTIAL_DTO: DataPartialDTO(),
             OperationType.OPERATION_TYPE_TOP_DTO: TopDTO(),
+            OperationType.OPERATION_TYPE_REVIEWS_DTO: ReviewsDTO(), 
         }
 
     def get_dto(self):

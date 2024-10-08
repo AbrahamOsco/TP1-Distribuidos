@@ -1,10 +1,7 @@
-"""from Filter import Filter
-import signal
+from system.controllers.filters.filterScorePositive.FilterScorePositive import FilterScorePositive
 
 def main():
-   filter = Filter()
-   signal.signal(signal.SIGTERM, lambda _n,_f: filter.stop())
-   filter.run()
+   filterScorePositive = FilterScorePositive()
+   filterScorePositive.run()
 
-if __name__ == "__main__":
-   main()"""
+main()

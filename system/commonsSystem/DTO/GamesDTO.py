@@ -9,7 +9,7 @@ STATE_DECADE = 5
 STATE_TOP_AVERAGE_PLAYTIME = 6
 
 class GamesDTO:
-    def __init__(self, client_id:int, state_games:int,  games_raw =[], games_dto =[]):
+    def __init__(self, client_id:int = 0, state_games:int = STATE_GAMES_INITIAL,  games_raw =[], games_dto =[]):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
         self.state_games = state_games 
