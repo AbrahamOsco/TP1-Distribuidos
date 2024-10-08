@@ -46,17 +46,21 @@ class Storage(Node):
     def process_reviews(self, data: ReviewsDTO):
         if self.status == STATUS_STARTED:
             raise UnfinishedGamesException()
+        self.update_total_received(data.client_id, len(data.reviews_dto))
         for review in data.reviews_dto:
             if review.app_id in self.list:
                 self.list[review.app_id] += 1
+                self.update_total_processed(data.client_id, 1)
 
     def process_games(self, data: GamesDTO):
         if self.status == STATUS_REVIEWING:
             raise UnfinishedReviewsException()
+        self.update_total_received(data.client_id, len(data.games_dto))
         self.client_id = data.client_id
         for game in data.games_dto:
             self.list[game.app_id] = 0
             self.games[game.app_id] = game.name
+            self.update_total_processed(data.client_id, 1)
 
     def process_data(self, data):
         if data.is_reviews():

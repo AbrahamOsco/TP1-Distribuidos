@@ -89,10 +89,9 @@ class Node:
         self.acumulated[client_id] = 0
 
     def send_eof(self, client):
-        total_amount_received = self.total_amount_received[client]
         total_amount_sent = self.total_amount_processed[client]
         self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, total_amount_sent=total_amount_sent ).serialize(), routing_key='default')
-        logging.info(f"action: send_eof | client: {client} | total_amount_received: {total_amount_received} | total_amount_sent: {total_amount_sent}")
+        logging.info(f"action: send_eof | client: {client} | total_amount_sent: {total_amount_sent}")
 
     def send_eof_confirmation(self, client):
         total_amount_received = self.total_amount_received[client]
@@ -130,8 +129,6 @@ class Node:
 
     def inform_eof_to_nodes(self, client):
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
-        logging.info(f"EOF con cantidad paquetes recibidos: {self.total_amount_received[client]}")
-        logging.info(f"EOF con cantidad paquetes procesados: {self.total_amount_processed[client]}")
         self.pre_eof_actions()
         if self.amount_of_nodes < 2:
             self.send_eof(client)

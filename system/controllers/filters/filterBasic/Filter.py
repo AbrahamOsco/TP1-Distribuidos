@@ -16,12 +16,16 @@ class Filter(Node):
         reviews = ReviewsDTO.from_raw(data, self.review_indexes)
         if len(reviews.reviews_dto) == 0:
             return
+        self.update_total_received(data.client_id, len(reviews.reviews_dto))
+        self.update_total_processed(data.client_id, len(reviews.reviews_dto))
         self.broker.public_message(sink=self.sink, message=reviews.serialize(), routing_key="reviews")
 
     def send_games(self, data):
         games = GamesDTO.from_raw(data, self.game_indexes)
         if len(games.games_dto) == 0:
             return
+        self.update_total_received(data.client_id, len(games.games_dto))
+        self.update_total_processed(data.client_id, len(games.games_dto))
         self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="games")
 
     def process_data(self, data: RawDTO):
@@ -30,7 +34,11 @@ class Filter(Node):
         elif data.is_reviews():
             self.send_reviews(data)
         elif data.is_games_EOF():
-            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="games")
+            total_amount_received = self.total_amount_received[data.get_client()]
+            total_amount_sent = self.total_amount_processed[data.get_client()]
+            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=data.client_id, confirmation=False, total_amount_received= total_amount_received, total_amount_sent= total_amount_sent).serialize(), routing_key="games")
         elif data.is_reviews_EOF():
-            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="reviews")
+            total_amount_received = self.total_amount_received[data.get_client()]
+            total_amount_sent = self.total_amount_processed[data.get_client()]
+            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=data.client_id, confirmation=False, total_amount_received= total_amount_received, total_amount_sent= total_amount_sent).serialize(), routing_key="reviews")
         

@@ -10,4 +10,6 @@ class Select(Node):
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data):
+        self.update_total_received(data.client_id, len(data.games_dto))
         self.send_games(data)
+        self.update_total_processed(data.client_id, len(data.games_dto))

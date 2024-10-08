@@ -54,6 +54,7 @@ class Gateway(Node):
         if self.result_eofs_by_client[client_id] == self.amount_of_queries:
             self.shared_namespace.protocol.send_result(None)
             self.result_eofs_by_client[client_id] = None
+
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
 
     def abort(self):
