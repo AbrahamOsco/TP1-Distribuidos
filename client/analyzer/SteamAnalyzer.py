@@ -12,8 +12,8 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name='games', batch_size=1)
-        self.review_reader = FileReader(file_name='reviews', batch_size=1)
+        self.game_reader = FileReader(file_name='games', batch_size=25)
+        self.review_reader = FileReader(file_name='reviews', batch_size=2000)
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
         self.threads = []
 

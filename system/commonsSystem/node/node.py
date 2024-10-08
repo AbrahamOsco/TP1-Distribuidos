@@ -146,11 +146,11 @@ class Node:
         logging.info(f"actualizo el acumulador con la cantidad de total amount received: {self.total_amount_received}")
         self.clients_pending_confirmations.append(client)
         logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,client, False).serialize())
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
-            data = self.broker.get_message(body)
+            data = DetectDTO(body).get_dto()
             self.process_node_eof(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
@@ -171,10 +171,10 @@ class Node:
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except UnfinishedGamesException as e:
-            logging.info(f"action: error | Unfinished Games Exception")
+            logging.debug(f"action: error | Unfinished Games Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except UnfinishedReviewsException as e:
-            logging.info(f"action: error | Unfinished Reviews Exception")
+            logging.debug(f"action: error | Unfinished Reviews Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
