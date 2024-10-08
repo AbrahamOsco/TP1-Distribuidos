@@ -31,10 +31,12 @@ class Joiner(Node):
     def process_reviews(self, data: ReviewsDTO):
         if self.status == STATUS_STARTED:
             raise UnfinishedGamesException()
+        self.update_total_received(data.get_client(), len(data.reviews_dto))
         data.filter_reviews(lambda review: review.app_id in self.list)
         if len(data.reviews_dto) > 0:
             data.apply_on_reviews(lambda review: review.set_name(self.list[review.app_id]))
             self.send_review(data)
+            self.update_total_processed(data.get_client(), len(data.reviews_dto))
 
     def process_games(self, data: GamesDTO):
         if self.status == STATUS_REVIEWING:
@@ -42,6 +44,7 @@ class Joiner(Node):
         self.update_total_received(data.get_client(), len(data.games_dto))
         for game in data.games_dto:
             self.list[game.app_id] = game.name
+            self.update_total_processed(data.get_client(), 1)
 
     def process_data(self, data):
         if data.is_reviews():

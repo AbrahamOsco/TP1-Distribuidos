@@ -88,6 +88,12 @@ class Node:
     def reset_acumulated(self, client_id):
         self.acumulated[client_id] = 0
 
+    def reset_total_amount_received(self, client_id):
+        self.total_amount_received[client_id] = 0
+
+    def reset_total_amount_sent(self, client_id):
+        self.total_amount_processed[client_id] = 0
+
     def send_eof(self, client):
         total_amount_sent = self.total_amount_processed[client]
         self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False, total_amount_sent=total_amount_sent ).serialize(), routing_key='default')

@@ -19,16 +19,26 @@ class Storage(Node):
         self.status = STATUS_STARTED
 
     def inform_eof_to_nodes(self, client):
+        estado = ""
+        if self.status == STATUS_REVIEWING:
+            estado = "Envio EOF de reviews"
+        else:
+            estado = "Envio EOF de juegos"
         if self.status == STATUS_REVIEWING:
             self.send_result()
             self.send_eof(client)
             self.reset_list()
             self.status = STATUS_STARTED
-            logging.info("Status changed. Now is expecting games")
+            logging.info("Informo EOF de {estado} al GrouperTopReviewsPosIndie")
+            logging.info("Status changed. Now is expecting games")            
         else:
             self.status = STATUS_REVIEWING
+            logging.info("Informo EOF de {estado} al GrouperTopReviewsPosIndie")
             logging.info("Status changed. Now is expecting reviews")
-                
+
+        self.reset_total_amount_received(client)
+        self.reset_total_amount_sent(client)
+
     def send_games(self, games):
         gamesDTO = GamesDTO(client_id=self.client_id, state_games=STATE_REVIEWED, games_dto=games)
         self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
@@ -47,20 +57,24 @@ class Storage(Node):
         if self.status == STATUS_STARTED:
             raise UnfinishedGamesException()
         self.update_total_received(data.client_id, len(data.reviews_dto))
+        logging.info(f"Reviews received: {self.total_amount_received[data.client_id]}")
         for review in data.reviews_dto:
             if review.app_id in self.list:
                 self.list[review.app_id] += 1
                 self.update_total_processed(data.client_id, 1)
+                logging.info(f"Review processed: {self.total_amount_processed[data.client_id]}")
 
     def process_games(self, data: GamesDTO):
         if self.status == STATUS_REVIEWING:
             raise UnfinishedReviewsException()
         self.update_total_received(data.client_id, len(data.games_dto))
+        logging.info(f"Games received: {self.total_amount_received[data.client_id]}")
         self.client_id = data.client_id
         for game in data.games_dto:
             self.list[game.app_id] = 0
             self.games[game.app_id] = game.name
             self.update_total_processed(data.client_id, 1)
+            logging.info(f"Game processed: {self.total_amount_processed[data.client_id]}")
 
     def process_data(self, data):
         if data.is_reviews():

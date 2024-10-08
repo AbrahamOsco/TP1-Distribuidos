@@ -43,3 +43,4 @@ class Grouper(Node):
                 if len(self.list) > self.top_size:
                     self.list.pop()
                 self.min_time = self.list[-1].reviews
+                self.update_total_processed(data.client_id, 1)
