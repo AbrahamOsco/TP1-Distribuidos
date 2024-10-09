@@ -48,6 +48,9 @@ class ReviewsDTO(DTO):
         reviewsDTO = ReviewsDTO(client_id=client_id, state_reviews=state_reviews, reviews_dto=some_reviews_dto)
         return reviewsDTO, offset
 
+    def get_amount(self):
+        return len(self.reviews_dto)
+
     def set_state(self, state_reviews):
         self.state_reviews = state_reviews
         self.reviews_dto = list(map(lambda game: stateToClass[state_reviews].from_state(game), self.reviews_dto))

@@ -139,7 +139,7 @@ class Node:
         self.confirmations = 1
         self.clients_pending_confirmations.append(client)
         logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(client, False).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,client, False).serialize())
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
