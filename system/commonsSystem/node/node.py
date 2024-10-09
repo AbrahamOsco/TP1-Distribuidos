@@ -1,7 +1,7 @@
 import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_COMMIT
+from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_OK, STATE_COMMIT, STATE_FINISH
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
@@ -9,6 +9,9 @@ class UnfinishedGamesException(Exception):
     pass
 
 class UnfinishedReviewsException(Exception):
+    pass
+
+class PrematureEOFException(Exception):
     pass
 
 class Node:
@@ -89,44 +92,57 @@ class Node:
         logging.info(f"action: send_eof | client: {client} | total_amount_sent: {self.total_amount_sent[client]}")
         self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False,0,self.total_amount_sent[client]).serialize(), routing_key='default')
 
-    def send_eof_confirmation(self, client):
+    def send_eof_confirmation(self, data: EOFDTO):
+        client = data.get_client()
         amount_received_by_node = self.amount_received_by_node[client]
         amount_sent_by_node = self.amount_sent_by_node[client]
         logging.info(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node: {amount_sent_by_node}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client,True,amount_received_by_node,amount_sent_by_node).serialize())
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, STATE_OK, client,amount_received_by_node,amount_sent_by_node).serialize())
 
-    def check_confirmations(self, client):
+    def send_eof_finish(self, data: EOFDTO):
+        client = data.get_client()
+        logging.info(f"action: send_eof_finish | client: {client}")
+        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, STATE_FINISH, client).serialize())
+
+    def check_confirmations(self, data: EOFDTO):
         self.confirmations += 1
-        logging.info(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
+        logging.info(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes:
-            self.check_amounts(client)
+            self.check_amounts(data)
 
-    def check_amounts(self, client):
+    def check_amounts(self, data: EOFDTO):
+        client = data.get_client()
         if self.total_amount_received[client] == self.expected_total_amount_received[client]:
+            self.pre_eof_actions()
+            self.send_eof(client)
             self.clients.remove(client)
             self.clients_pending_confirmations.remove(client)
-            self.send_eof(client)
             self.confirmations = 0
-            self.reset_amounts(client)
-        else:
-            self.reset_totals()
-            self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
-        
-    def process_node_eof(self, data):
+            self.reset_amounts(data)
+            if self.amount_of_nodes > 1:
+                self.send_eof_finish(data)
+            return
+        if self.amount_of_nodes < 2:
+            raise PrematureEOFException()
+        self.reset_totals()
+        self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
+        self.ask_confirmations(data)
+
+    def process_node_eof(self, data: EOFDTO):
         logging.info(f"action: process_node_eof | client: {data.client} | is_confirmation: {data.is_confirmation()}")
         if data.client in self.clients_pending_confirmations:
             if data.is_ok():
                 self.update_totals(data.client, data.get_amount_received(), data.get_amount_sent())
-                self.check_confirmations(data.client)
+                self.check_confirmations(data)
             return
         if data.is_ok():
             return
         if data.is_finish():
-            self.reset_amounts(data.get_client())
+            self.reset_amounts(data)
             return
         if data.is_commit():
             self.pre_eof_actions()
-            self.send_eof_confirmation(data.get_client())
+            self.send_eof_confirmation(data)
 
     def update_totals(self, client, amount_received, amount_sent):
         self.update_total_amount_received(client, amount_received)
@@ -136,7 +152,8 @@ class Node:
         del self.total_amount_received[client]
         del self.total_amount_sent[client]
 
-    def reset_amounts(self,client):
+    def reset_amounts(self,data: EOFDTO):
+        client = data.get_client()
         del self.total_amount_received[client]
         del self.total_amount_sent[client]
         del self.amount_received_by_node[client]
@@ -149,17 +166,17 @@ class Node:
         self.reset_totals()
         self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
         self.expected_total_amount_received[client] = data.get_amount_sent()
-        if self.amount_of_nodes < 2:
-            self.pre_eof_actions()
-            self.send_eof(client)
-            return
-        self.ask_confirmations()
-
-    def ask_confirmations(self, client):
-        self.confirmations = 1
         self.clients_pending_confirmations.append(client)
-        logging.info(f"action: ask_confirmations | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, STATE_COMMIT).serialize())
+        if self.amount_of_nodes < 2:
+            self.check_amounts(data)
+            return
+        self.ask_confirmations(data)
+
+    def ask_confirmations(self, data: EOFDTO):
+        self.confirmations = 1
+        logging.info(f"action: ask_confirmations | client: {data.get_client()} | pending_confirmations: {self.clients_pending_confirmations}")
+        data.set_state(STATE_COMMIT)
+        self.broker.public_message(sink=self.node_name + "_eofs", message=data.serialize())
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
@@ -187,6 +204,9 @@ class Node:
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except UnfinishedReviewsException as e:
             logging.info(f"action: error | Unfinished Reviews Exception")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        except PrematureEOFException as e:
+            logging.info(f"action: error | Premature EOF Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
