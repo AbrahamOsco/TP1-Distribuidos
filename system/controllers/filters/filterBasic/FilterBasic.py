@@ -6,7 +6,6 @@ from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_REVIEW_INITIAL
-
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.utils.utils import handler_sigterm_default
 import logging
@@ -16,9 +15,7 @@ import signal
 
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 QUEUE_FILTER_SELECTQ1 = "filterBasic_selectq1"
-
 QUEUE_FILTER_SELECTQ2345 = "filterBasic_selectq2345"
-
 QUEUE_FILTERBASIC_SCOREPOSITIVE = "filterBasic_filterScorePositive"
 QUEUE_FILTERBASIC_SCORENEGATIVE = "filterBasic_scoreNegative"
 EXCHANGE_EOF_FILTER_BASIC = "Exchange_filterBasic"
@@ -42,7 +39,6 @@ class FilterBasic:
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345)
         self.broker.create_queue(name =QUEUE_FILTERBASIC_SCOREPOSITIVE)
         self.broker.create_queue(name =QUEUE_FILTERBASIC_SCORENEGATIVE)
-
 
         self.broker.create_fanout_and_bind(name_exchange=EXCHANGE_EOF_FILTER_BASIC, callback=self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
@@ -122,7 +118,6 @@ class FilterBasic:
                 elif self.name_position == -1 and len(dic_indexes) == len(self.game_indexes) and i == dic_indexes["Name"]:
                     self.name_position = position
                 elif self.review_text_position == -1 and len(dic_indexes) == len(self.review_indexes) and i == dic_indexes["review_text"]:
-                    logging.info(f"Seteo el index: {position} 🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉")
                     self.review_text_position = position
                 item_basic.append(a_item[i])
                 position +=1

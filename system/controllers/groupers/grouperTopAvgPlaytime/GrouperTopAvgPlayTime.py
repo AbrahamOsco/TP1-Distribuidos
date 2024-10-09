@@ -37,9 +37,9 @@ class GrouperTopAvgPlaytime:
                 games_order_top = self.top_games.sort()
                 result_queryDTO = ResultQueryDTO(client_id =result_dto.client_id, data =games_order_top, status =RESULT_TOP)
                 self.broker.public_message(queue_name =QUEUE_RESULTQ2_GATEWAY, message =result_queryDTO.serialize() )
+                logging.info(f"Respeustas QUERY 2 IN GROUPER {games_order_top} Ⓜ️Ⓜ️Ⓜ️Ⓜ️Ⓜ️Ⓜ️Ⓜ️Ⓜ️")
             else:
                 self.top_games.try_to_insert_top(result_dto)
-
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     

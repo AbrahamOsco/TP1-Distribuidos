@@ -59,6 +59,7 @@ class MonitorStorageQ3:
                 self.eof_reviews = result_dto
                 self.send_batches_results()
                 self.broker.public_message(queue_name =QUEUE_MONITORSTORAGEQ3_GROUPER_TOPPOSIREVIEW, message =self.eof_reviews.serialize())
+                logging.info(f"ENviando todo a grouper 🔥🔥🔥🔥🔥🔥🔥🔥 ⚡⚡⚡⚡")
             else:
                 self.udpate_storage_with_dto(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -67,14 +68,11 @@ class MonitorStorageQ3:
     def udpate_storage_with_dto(self, batch_data):
         if batch_data.operation_type == OperationType.OPERATION_TYPE_GAMES_DTO:
             for a_game in batch_data.games_dto:
-                self.games[a_game.app_id] = [a_game.name, 0]  # app_id is pk.
-        elif batch_data.operation_type == OperationType.OPERATION_TYPE_REVIEWS_DTO:
-            if(not self.eof_games):
-                logging.info("Entre sin recibir todo el EOF  🤯🤯🤯🤯🤯🤯🤯🤯")
-            else:
-                for a_review in batch_data.reviews_dto:
-                    if a_review.app_id in self.games.keys():
-                        self.games[a_review.app_id][1] += 1
+                self.games[a_game.app_id] = [a_game.name, 0] 
+        elif batch_data.operation_type == OperationType.OPERATION_TYPE_REVIEWS_DTO and self.eof_games:
+            for a_review in batch_data.reviews_dto:
+                if a_review.app_id in self.games.keys():
+                    self.games[a_review.app_id][1] += 1
         
     def run(self):
         self.broker.start_consuming()
