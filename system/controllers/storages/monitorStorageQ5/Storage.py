@@ -23,12 +23,16 @@ class Storage(Node):
     def inform_eof_to_nodes(self, client):
         if self.status == STATUS_REVIEWING:
             self.send_result()
+            self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
             self.send_eof(client)
             self.reset_list()
             self.status = STATUS_STARTED
+            self.reset_amounts(client)
             logging.info("Status changed. Now is expecting games")
         else:
             self.status = STATUS_REVIEWING
+            self.amount_received_by_node[client] = 0
+            self.amount_sent_by_node[client] = 0
             logging.info("Status changed. Now is expecting reviews")
 
     def send_games(self, games):
@@ -58,6 +62,8 @@ class Storage(Node):
     def process_reviews(self, data: ReviewsDTO):
         if self.status == STATUS_STARTED:
             raise UnfinishedGamesException()
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
         for review in data.reviews_dto:
             if review.app_id in self.list:
                 self.list[review.app_id] += 1
@@ -65,6 +71,8 @@ class Storage(Node):
     def process_games(self, data: GamesDTO):
         if self.status == STATUS_REVIEWING:
             raise UnfinishedReviewsException()
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
         self.client_id = data.client_id
         for game in data.games_dto:
             self.list[game.app_id] = 0
