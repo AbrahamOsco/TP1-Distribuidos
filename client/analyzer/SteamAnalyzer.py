@@ -3,6 +3,7 @@ from common.utils.utils import initialize_log
 import os
 import threading
 from client.fileReader.FileReader import FileReader
+from client.fileReader.QueriesResponses import QueriesResponses
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 from common.socket.Socket import Socket
@@ -15,6 +16,8 @@ class SteamAnalyzer:
         self.game_reader = FileReader(file_name='games', batch_size=25)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000)
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
+        self.expected_responses = QueriesResponses()
+        self.actual_responses = {}
         self.threads = []
 
     def initialize_config(self):
@@ -70,8 +73,11 @@ class SteamAnalyzer:
             if resultQuerys == None:
                 break
             logging.info(f"action: result_received 📊 | result: success ✅")
-            resultQuerys.print()
-        logging.info("action: All the results 📊 were received! | result: success ✅")
+            self.actual_responses = resultQuerys.append_data(self.actual_responses)
+        logging.info("action: All the results 📊 were received! ✅")
+        diff = self.expected_responses.diff(self.actual_responses)
+        for query in diff:
+            logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
 
     def stop(self):
         self.socket.close()

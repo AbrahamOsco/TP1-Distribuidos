@@ -36,23 +36,15 @@ class Storage(Node):
         self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
     def send_result(self):
-        values = sorted(self.list.values())
+        values = sorted(self.list.items(), key=lambda item: (item[1], item[0]))
         index = int(self.percentile * len(values)) -1
-        amount_to_send = int(len(values) * (1- self.percentile))
-        percentile_90_value = values[index]
-        logging.info(f"Percentile 90 value: {percentile_90_value}")
         games_to_send = []
-        games_sent = 0
-        for app_id, reviews in self.list.items():
-            if reviews >= percentile_90_value:
-                games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.games[app_id]))
+        for app_id, _ in values[index:]:
+            games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.games[app_id]))
             if len(games_to_send) > 50:
                 self.send_games(games_to_send)
                 games_to_send = []
-                games_sent += 50
-            if games_sent > amount_to_send:
-                break
-        if len(games_to_send) > 0 and games_sent <= amount_to_send:
+        if len(games_to_send) > 0:
             self.send_games(games_to_send)
 
     def process_reviews(self, data: ReviewsDTO):

@@ -15,3 +15,7 @@ class Query1ResultDTO:
         logging.info(f"linux: {self.linux}")
         logging.info(f"mac: {self.mac}")
         logging.info("")
+
+    def append_data(self, responses):
+        responses["Query1"] = {"windows": self.windows, "linux": self.linux, "mac": self.mac}
+        return responses

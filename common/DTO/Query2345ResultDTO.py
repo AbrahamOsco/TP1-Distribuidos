@@ -12,3 +12,11 @@ class Query2345ResultDTO:
         for game in self.games:
             logging.info(game)
         logging.info("")
+
+    def append_data(self, responses):
+        query = f"Query{self.query}"
+        if query in responses:
+            responses[query] += self.games
+        else:
+            responses[query] = self.games
+        return responses

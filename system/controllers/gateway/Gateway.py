@@ -40,7 +40,7 @@ class Gateway(Node):
                     raw_dto = self.shared_namespace.protocol.recv_data_raw()
                     self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
                 except Exception as e:
-                    logging.error(f"action: run_server | result: fail | error: {e}")
+                    logging.info(f"action: client disconnected")
                     break
 
     def process_data(self, data: GamesDTO):

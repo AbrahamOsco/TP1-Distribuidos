@@ -22,6 +22,7 @@ services:
     volumes:
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
+      - ./data/responses:/data/responses
     environment:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
@@ -81,6 +82,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -104,6 +106,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
@@ -127,6 +130,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=GamesPlatform
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -148,6 +152,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformreducer
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=CountByPlatform
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -171,6 +176,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
@@ -198,6 +204,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -222,6 +229,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
@@ -244,6 +252,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopaverageplaytime
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DecadeGames
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -268,6 +277,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
@@ -291,6 +301,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
@@ -315,6 +326,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq3
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsPositives,MonitorQ3
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=direct,direct
@@ -336,6 +348,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopreviewspositiveindie
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=IndieGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -362,6 +375,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
         - SOURCE_TYPE=topic
@@ -387,6 +401,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
@@ -411,6 +426,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorjoinerq4
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=fanout,fanout
@@ -434,6 +450,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -455,6 +472,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq4
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesEnglishReviews
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -477,6 +495,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq5
         - NODE_ID=0
+        - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=fanout,fanout

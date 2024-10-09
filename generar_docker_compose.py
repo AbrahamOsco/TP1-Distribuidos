@@ -300,6 +300,7 @@ services:
     volumes:
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
+      - ./data/responses:/data/responses
     environment:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO

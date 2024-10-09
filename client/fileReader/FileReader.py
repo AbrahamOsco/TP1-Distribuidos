@@ -2,22 +2,36 @@ import os
 import csv
 import sys
 import logging
-INDEX_TO_FIX_HEADER = 7
 PERCENT_OF_FILE_FOR_USE = 0.1
 
+FilesPrefixes = {
+    0.1: "1",
+    0.4: "2",
+    1: "3"
+}
+
 class FileReader:
-    def __init__(self, file_name, batch_size):
+    def __init__(self, file_name, batch_size=25):
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         csv.field_size_limit(sys.maxsize)
         self.file_name = file_name
         self.batch_size = batch_size
-        self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8")
+        if file_name not in FILE_PATHS:
+            self.file_path = "./data/responses/"
+            self.file_path += FilesPrefixes[PERCENT_OF_FILE_FOR_USE]
+            self.file_path += file_name
+            self.file_path += ".csv"
+            self.usage_limit = os.path.getsize(self.file_path)
+        else:
+            self.file_path = FILE_PATHS[file_name]
+            self.usage_limit = PERCENT_OF_FILE_FOR_USE * os.path.getsize(self.file_path)
+        self.file =  open(self.file_path, mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)
-        self.usage_limit = PERCENT_OF_FILE_FOR_USE * os.path.getsize(FILE_PATHS[file_name])
         self.bytes_read = 0
         self.is_closed = False
         self.last_read = None
-        next(self.reader) # skip header
+        if file_name in FILE_PATHS:
+            next(self.reader) # skip header
 
     def get_next_batch(self):
         games = []
@@ -48,6 +62,15 @@ class FileReader:
             self.close()
         return games
 
+    def get_next_line(self):
+        if(self.is_closed):
+            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
+            return None
+        try:
+            return next(self.reader)
+        except StopIteration:
+            self.close()
+    
     def close(self):
          if not self.is_closed:
             self.file.close()

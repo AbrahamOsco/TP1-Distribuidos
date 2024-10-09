@@ -60,7 +60,7 @@ class Socket:
             try:
                 chunk = self.socket.recv(total_bytes_to_receive - bytes_received) # retorna un objeto en bytes.
                 if chunk == b'':
-                    return self.handler_error_recv_all(bytes_received, "action: recv_all | result: fail | error: connection broken during recv all, bytes recv = 0 ")
+                    return self.handler_error_recv_all(bytes_received, "action: recv_all | result: None | client disconnected ")
             except OSError as e:
                     return self.handler_error_recv_all(bytes_received, f"action: send_all | result: fail | error: {e}")
             chunks.append(chunk)
