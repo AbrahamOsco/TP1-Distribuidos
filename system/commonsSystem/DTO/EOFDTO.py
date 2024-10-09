@@ -12,6 +12,18 @@ class EOFDTO:
         self.amount_sent = amount_sent
         self.amount_received = amount_received
     
+    def is_ok(self):
+        return self.state == STATE_OK
+
+    def is_commit(self):
+        return self.state == STATE_COMMIT
+    
+    def is_finish(self):
+        return self.state == STATE_FINISH
+
+    def set_state(self, state):
+        self.state = state
+
     def get_client(self):
         return self.client
     
