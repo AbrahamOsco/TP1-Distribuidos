@@ -26,13 +26,15 @@ class ClientProtocol(Protocol):
             for field in item:
                 self.send_string(field)
 
-    def send_games_eof(self):
+    def send_games_eof(self, amount):
         self.send_number_1_byte(OPERATION_TYPE_GAMEEOF)
         self.send_number_1_byte(self.id)
+        self.send_number_4_bytes(amount)
 
-    def send_reviews_eof(self):
+    def send_reviews_eof(self, amount):
         self.send_number_1_byte(OPERATION_TYPE_REVIEWEOF)
         self.send_number_1_byte(self.id)
+        self.send_number_4_bytes(amount)
 
     def recv_result(self):
         operation_type = self.recv_number_1_byte()

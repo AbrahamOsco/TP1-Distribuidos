@@ -37,7 +37,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(GamesRawDTO(games_raw =some_games))
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-        self.protocol.send_games_eof()
+        self.protocol.send_games_eof(self.game_reader.get_lines_read())
 
     def send_reviews(self):
         if not self.should_send_reviews:
@@ -48,7 +48,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw =some_reviews))
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        self.protocol.send_reviews_eof()
+        self.protocol.send_reviews_eof(self.review_reader.get_lines_read())
 
     def send_data(self):
         self.send_games()
