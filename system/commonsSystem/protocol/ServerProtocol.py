@@ -3,6 +3,8 @@ from common.protocol.Protocol import Protocol
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
+from system.commonsSystem.DTO.enums.OperationType import OperationType
+
 
 class ServerProtocol(Protocol):
     
@@ -27,19 +29,17 @@ class ServerProtocol(Protocol):
             return GamesRawDTO(client_id =client_id, games_raw =list_items_raw)
         return ReviewsRawDTO(client_id =client_id, reviews_raw =list_items_raw)
     
-    def send_platform_q1(self, platformDTO):
-        self.send_number_1_byte(ResultType.RESULT_QUERY_1.value)
-        self.send_number_1_byte(platformDTO.client_id)
-        self.send_number_4_bytes(platformDTO.windows)
-        self.send_number_4_bytes(platformDTO.linux)
-        self.send_number_4_bytes(platformDTO.mac)
-    
-    def send_top_average_playtime_q2(self, top_dto):
-        self.send_number_1_byte(ResultType.RESULT_QUERY_2.value)
-        self.send_number_1_byte(top_dto.client_id)
-        self.send_number_1_byte(len(top_dto.results))
-        
-        for name, value in top_dto.results.items():
-            self.send_string(name)
-            self.send_number_4_bytes(value)
+    def send_result_query(self, resultDTO, result_type):
+        self.send_number_1_byte(result_type.value)
+        if (result_type == ResultType.RESULT_QUERY_1):
+            self.send_number_1_byte(resultDTO.client_id)
+            self.send_number_4_bytes(resultDTO.windows)
+            self.send_number_4_bytes(resultDTO.linux)
+            self.send_number_4_bytes(resultDTO.mac)
+        else:
+            self.send_number_1_byte(resultDTO.client_id)
+            self.send_number_2_bytes(len(resultDTO.data))
+            for key, value in resultDTO.data.items():
+                self.send_string(key)
+                self.send_number_4_bytes(value)
         

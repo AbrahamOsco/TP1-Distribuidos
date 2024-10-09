@@ -25,10 +25,8 @@ class PlatformReducer:
     def handler_callback_exchange(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
-            logging.info(f" Result: {result_dto} {result_dto.operation_type} {result_dto.operation_type.value}")
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
                 self.broker.public_message(queue_name =QUEUE_RESULTQ1_GATEWAY, message =self.total_platform.serialize())
-                logging.info(f"Action: Recv EOF 🌟 | Send Total Platform to Gateway 🚀 | result: success ✅ ")
             else:
                 self.count_all_platforms(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -41,10 +39,7 @@ class PlatformReducer:
         self.total_platform.windows += platformDTO.windows
         self.total_platform.linux += platformDTO.linux
         self.total_platform.mac += platformDTO.mac
-        logging.info(f"action: Total reducer current 🪟 🍎 🐧 💯: Windows: {self.total_platform.windows} Linux: {self.total_platform.linux}"\
-                     f" Mac: {self.total_platform.mac} | success: ✅ ")
 
     def run(self):
         self.broker.start_consuming()
-        logging.info("action: Initialize PlatformReducer 🦅 | success: ✅")
 

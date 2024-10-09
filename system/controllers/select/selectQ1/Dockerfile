@@ -1,8 +1,4 @@
-FROM python:3.9.20-alpine3.19
-RUN apk update && apk add --no-cache python3-dev py3-pip
-RUN pip install pika
-COPY common /app/common
-COPY system/commonsSystem /app/system/commonsSystem
+FROM system:latest
 COPY system/controllers/select/selectQ1 /app/system/controllers/select/selectQ1
 ENTRYPOINT ["/bin/sh"]
 

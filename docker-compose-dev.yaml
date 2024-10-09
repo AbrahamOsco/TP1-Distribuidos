@@ -403,182 +403,91 @@ services:
       rabbitmq:
         condition: service_healthy
 
-
-  # sortertop10averageplaytime:
-  #   container_name: sortertop10averageplaytime
-  #   build:
-  #     context: .
-  #     dockerfile: sortertop10averageplaytime/Dockerfile
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     - rabbitmq
-#
-#  groupertopreviewspositiveindie:
-#    container_name: groupertopreviewspositiveindie
-#    build:
-#      context: .
-#      dockerfile: system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="groupertopreviewspositiveindie"
-#      - NODE_ID=5
-#      - SOURCE=""
-#      - SINK=""
-#      - LOGGING_LEVEL=INFO
-#  # gamein90thpercentile:
-  #   container_name: gamein90thpercentile
-  #   build:
-  #     context: .
-  #     dockerfile: system/controllers/gamein90thpercentile/Dockerfile
-  #   networks:
-  #     - system_network
-  #   depends_on:
-  #     - rabbitmq
+  selectIDName_1:
+    container_name: selectidname_1
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectidname_1
+      - NODE_ID=25
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 
+  selectIDName_2:
+    container_name: selectidname_2
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectidname_2
+      - NODE_ID=26
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  selectIDName_3:
+    container_name: selectidname_3
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=selectidname_3
+      - NODE_ID=27
+      - TOTAL_NODES=3
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  monitorStorageQ3_1:
+    container_name: monitorstorageq3_1
+    image: monitorstorageq3:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=monitorstorageq3_1
+      - NODE_ID=28
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 
+  grouperTopPositiveReview:
+    container_name: groupertoppositivereviews
+    image: groupertoppositivereviews:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=groupertoppositivereviews
+      - NODE_ID=29
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
-#  filterdecade_1:
-#    container_name: filterdecade_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/filters/filterDecade/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="filterdecade_1"
-#      - NODE_ID=6
-#      - SOURCE=GamesIndieQ2
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
-#
-#  selectidnameindie_1:
-#    container_name: selectidnameindie_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/select/selectIDNameIndie/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="selectidnameindie_1"
-#      - NODE_ID=6
-#      - SOURCE=GamesIndieQ3
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
-#
-#  selectidnameaction_1:
-#    container_name: selectidnameaction_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/select/selectIDNameAction/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="selectidnameaction_1"
-#      - NODE_ID=6
-#      - SOURCE=GamesActionQ45
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
-#
-#  selectq345_1:
-#    container_name: selectq345_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/select/selectQ345/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="selectq345_1"
-#      - NODE_ID=6
-#      - SOURCE=DataParsed
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
-#
-#  filterscorepositive_1:
-#    container_name: filterscorepositive_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/filters/filterScorePositive/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="filterscorepositive_1"
-#      - NODE_ID=6
-#      - SOURCE=ERROR
-#      - SINK=ERROR
-#      - LOGGING_LEVEL=INFO
-#
-#  filterreviewenglish_1:
-#    container_name: filterreviewenglish_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/filters/filterReviewEnglish/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="filterreviewenglish_1"
-#      - NODE_ID=6
-#      - SOURCE=GamesActionPositives
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
-#
-#  filterscorexpositives_1:
-#    container_name: filterscorexpositives_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/filters/filterScoreXPositives/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="filterscorexpositives_1"
-#      - NODE_ID=6
-#      - SOURCE=ERROR
-#      - SINK=ERROR
-#      - LOGGING_LEVEL=INFO
-#
-#  filterscorenegative_1:
-#    container_name: filterscorenegative_1
-#    build:
-#      context: .
-#      dockerfile: system/controllers/filters/filterScoreNegative/Dockerfile
-#    networks:
-#      - system_network
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - NODE_NAME="filterscorenegative_1"
-#      - NODE_ID=6
-#      - SOURCE=ReviewsRaw
-#      - SINK=
-#      - LOGGING_LEVEL=INFO
 
 networks:
   system_network:

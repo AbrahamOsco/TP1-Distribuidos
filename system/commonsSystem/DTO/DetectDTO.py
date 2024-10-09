@@ -10,6 +10,7 @@ from system.commonsSystem.DTO.CalculatorDTO import CalculatorDTO
 from system.commonsSystem.DTO.DataPartialDTO import DataPartialDTO
 from system.commonsSystem.DTO.TopDTO import TopDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
+from system.commonsSystem.DTO.ResultQueryDTO import ResultQueryDTO
 
 class DetectDTO:
     def __init__(self, dto_in_bytes):
@@ -23,7 +24,8 @@ class DetectDTO:
             OperationType.OPERATION_TYPE_CALCULATOR_DTO: CalculatorDTO(),
             OperationType.OPERATION_TYPE_DATA_PARTIAL_DTO: DataPartialDTO(),
             OperationType.OPERATION_TYPE_TOP_DTO: TopDTO(),
-            OperationType.OPERATION_TYPE_REVIEWS_DTO: ReviewsDTO(), 
+            OperationType.OPERATION_TYPE_REVIEWS_DTO: ReviewsDTO(),
+            OperationType.OPERATION_TYPE_RESULT_QUERY_DTO: ResultQueryDTO(),
         }
 
     def get_dto(self):

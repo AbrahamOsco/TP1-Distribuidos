@@ -12,7 +12,7 @@ import signal
 import time
 import traceback
 
-AMOUNT_BATCH_TO_SEND = 100
+AMOUNT_BATCH_TO_SEND = 100000000
 
 class SteamAnalyzer:
 
@@ -80,6 +80,7 @@ class SteamAnalyzer:
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
             i += 1
+            #logging.info(f"action: Enviando un batch de Reviews Bytes Leidos:{self.review_reader.bytes_read}/{self.review_reader.usage_limit} 👁️‍🗨️👁️‍🗨️")
         self.protocol.send_eof(ALL_REVIEWS_WAS_SENT, self.config_params['id'])
         if self.review_reader.read_all_data():
             logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")

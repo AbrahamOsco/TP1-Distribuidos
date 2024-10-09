@@ -5,7 +5,7 @@ from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
 from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
 from system.commonsSystem.broker.Broker import Broker
-from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
+from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT, ResultType
 from system.commonsSystem.utils.utils import DIC_GAME_FEATURES_TO_USE, DIC_REVIEW_FEATURES_TO_USE
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
@@ -17,6 +17,7 @@ import traceback
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
 QUEUE_RESULTQ2_GATEWAY = "resultq2_gateway"
+QUEUE_RESULTQ3_GATEWAY = "resultq3_gateway"
 
 class Gateway:
     def __init__(self):
@@ -35,33 +36,17 @@ class Gateway:
 
         self.broker = Broker()
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
-        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_q1())
-        self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY, callback= self.recv_result_q2())
+        self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_1))
+        self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_2))
+        self.broker.create_queue(name =QUEUE_RESULTQ3_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_3))
     
-    #TODO ver refactor aca
-    def recv_result_query(self, name, function_send):
+    def recv_result_query(self, result_type):
         def handler_query_result(ch, method, properties, body):
             result = DetectDTO(body).get_dto()
-            logging.info(f"Action: Gateway Recv Result {name}: 🕹️ success: ✅")
-            self.protocol.send_platform_q1(result)
+            logging.info(f"Action: Gateway Recv Result: {result_type} 🕹️ success: ✅")
+            self.protocol.send_result_query(result, result_type)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_query_result
-    
-    def recv_result_q1(self):
-        def handler_result_q1(ch, method, properties, body):
-            result = DetectDTO(body).get_dto()
-            logging.info(f"Action: Gateway Recv Result Q1: 🕹️ success: ✅")
-            self.protocol.send_platform_q1(result)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        return handler_result_q1
-    
-    def recv_result_q2(self):
-        def handler_result_q2(ch, method, properties, body):
-            result = DetectDTO(body).get_dto()
-            logging.info(f"Action: Gateway Recv Result Q2: 🕹️ success: ✅")
-            self.protocol.send_top_average_playtime_q2(result)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        return handler_result_q2
     
 
     def accept_a_connection(self):

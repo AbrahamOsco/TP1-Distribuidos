@@ -1,10 +1,6 @@
-"""from Grouper import Grouper
-import signal
-
+from system.controllers.groupers.grouperTopReviewsPositiveIndie.GrouperTopPosiRev import GrouperTopPosiRev
 def main():
-    grouper = Grouper()
-    signal.signal(signal.SIGTERM, lambda _n,_f: grouper.stop())
-    grouper.run()
+    grouperTopPosiRevw = GrouperTopPosiRev()
+    grouperTopPosiRevw.run()
 
-if __name__ == "__main__":
-    main()"""
+main()

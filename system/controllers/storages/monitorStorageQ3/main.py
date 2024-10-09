@@ -1,10 +1,7 @@
-"""from Storage import Storage
-import signal
+from system.controllers.storages.monitorStorageQ3.MonitorStorageQ3 import MonitorStorageQ3
 
 def main():
-    storage = Storage()
-    signal.signal(signal.SIGTERM, lambda _n,_f: storage.stop())
-    storage.run()
+    monitorStorageQ3 = MonitorStorageQ3()
+    monitorStorageQ3.run()
 
-if __name__ == "__main__":
-    main()"""
+main()

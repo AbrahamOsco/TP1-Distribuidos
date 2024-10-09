@@ -26,6 +26,7 @@ class GameDTO:
             StateGame.STATE_GENDER.value: SerializerGender(),
             StateGame.STATE_Q2345.value: SerializerQ2345(),
             StateGame.STATE_DECADE.value: SerializerDecade(),
+            StateGame.STATE_ID_NAME.value: SerializerIDName(),
         }
 
     def serialize(self, state_games:int):

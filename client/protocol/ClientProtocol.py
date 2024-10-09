@@ -8,10 +8,10 @@ class ClientProtocol(Protocol):
         super().__init__(socket)  #uso super para invocar al constructor del padre.
         self.command_result_query = {
             ResultType.RESULT_QUERY_1.value: self.recv_result_query_1,
-            ResultType.RESULT_QUERY_2.value: self.recv_result_query_2,
-            ResultType.RESULT_QUERY_3.value: self.recv_result_query_3,
-            ResultType.RESULT_QUERY_4.value: self.recv_result_query_4,
-            ResultType.RESULT_QUERY_5.value: self.recv_result_query_5,
+            ResultType.RESULT_QUERY_2.value: self.recv_result_top,
+            ResultType.RESULT_QUERY_3.value: self.recv_result_top,
+            ResultType.RESULT_QUERY_4.value: self.recv_result_top,
+            ResultType.RESULT_QUERY_5.value: self.recv_result_top,
         }
 
     def send_data_raw(self, data_raw_dto):
@@ -25,38 +25,31 @@ class ClientProtocol(Protocol):
     
     def recv_result_query(self):
         result_type = self.recv_number_1_byte()
-        return self.command_result_query[result_type]()
+        result_dic = {}
+        result_dic["result_type"] = result_type
+        return self.command_result_query[result_type](result_type, result_dic)
 
-    def recv_result_query_1(self):
+    def recv_result_query_1(self, result_type, result_dic):
         client_id = self.recv_number_1_byte()
         windows = self.recv_number_4_bytes()
         linux = self.recv_number_4_bytes()
         mac = self.recv_number_4_bytes()
-        return {"ResultType":ResultType.RESULT_QUERY_1, "ClientID": client_id,
-                "Windows": windows, "Linux": linux, "Mac": mac}
+        result_dic["Windows"] = windows
+        result_dic["Linux"] = linux
+        result_dic["Mac"] = mac
+        return result_dic
 
-    def recv_result_query_2(self):
+    def recv_result_top(self, result_type, result_dic):
         client_id = self.recv_number_1_byte()
-        size_results = self.recv_number_1_byte()
+        size_results = self.recv_number_2_bytes()
         top_games = {}
         for i in range(size_results):
             name_game = self.recv_string()
-            avg_playtime_forever = self.recv_number_4_bytes()
-            top_games[name_game] = avg_playtime_forever
-        result = {}
-        result["ResultType"] = ResultType.RESULT_QUERY_2
-        result["ClientID"] = client_id
-        result["TopGames"] = [top_games]
-        return result
-
-    def recv_result_query_3(self):
-        pass
-
-    def recv_result_query_4(self):
-        pass
-    
-    def recv_result_query_5(self):
-        pass
+            score = self.recv_number_4_bytes()
+            top_games[name_game] = score
+        result_dic["client_id"] = client_id
+        result_dic["games"] = [top_games]
+        return result_dic
 
     def send_eof(self, type_file_finish, client_id):
         self.send_number_1_byte(type_file_finish)

@@ -36,7 +36,6 @@ class SelectQ2345:
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
                 self.handler_eof_games.init_leader_and_push_eof(result_dto)
-                logging.info(f"Action: Recv Game EOF ! 🪀🕹️🕹️ | result: success ✅")
             else:
                 self.filter_for_q2345(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -46,7 +45,6 @@ class SelectQ2345:
         new_gamesDTO = GamesDTO(client_id =batch_game.client_id, state_games =StateGame.STATE_Q2345.value, games_dto =batch_game.games_dto)
         self.broker.public_message(queue_name =QUEUE_SELECTQ2345_FILTERGENDER, message =new_gamesDTO.serialize())
         self.handler_eof_games.add_new_processing()
-        logging.info(f"action: Q2:Send GamesDTO  to Filter Gender 🔥👌 | count: {len(new_gamesDTO.games_dto)} | result: success ✅")
 
     def run(self):
         self.broker.start_consuming()

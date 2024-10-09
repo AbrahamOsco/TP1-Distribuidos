@@ -37,7 +37,6 @@ class FilterScorePositive:
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
-                logging.info(f"Handling EOF 🗡️🗡️🗡️🗡️🗡️ 🔥 ⚡ 🗡️ ⚡ 🔥")
                 self.handler_eof_reviews.init_leader_and_push_eof(result_dto)
             else:
                 self.filter_using_score_positive(result_dto)
@@ -49,11 +48,10 @@ class FilterScorePositive:
         for review in batch_reviews.reviews_dto:
             if review.score == SCORE_POSITIVE:
                 some_reviews.append(ReviewDTO(app_id=review.app_id))
-        reviews_dto = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto=some_reviews)
+        reviews_dto = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto =some_reviews)
         return reviews_dto
 
     def filter_using_score_positive(self, batch_review):
-        #logging.info(f"reviews_dto: Ex: 🔥 🌩️ ⚡ {batch_review.reviews_dto[0].app_id}")
         reviews_dto = self.get_reviewsDTO_with_score_positive(batch_review)
         self.broker.public_message(queue_name =QUEUE_SCOREPOSITIVE_MONITORSTORAGEQ3, message =reviews_dto.serialize())
         self.handler_eof_reviews.add_new_processing()

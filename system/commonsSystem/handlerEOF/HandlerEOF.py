@@ -6,7 +6,7 @@ from system.commonsSystem.DTO.DataPartialDTO import DataPartialDTO, REQUEST_DATA
 
 class HandlerEOF:
 
-    def __init__(self, target_name ="", broker = None, node_id =0, exchange_name = "", next_queues =[], total_nodes = 0):
+    def __init__(self, target_name ="", broker = None, node_id =0, exchange_name = "", next_queues =[], total_nodes = 1):
         self.target_name = target_name
         self.target_id = None
         self.broker = broker
@@ -37,7 +37,7 @@ class HandlerEOF:
         self.i_am_lider = True
         self.eof_dto = eof_dto
         self.client_id = eof_dto.client_id
-        logging.info(f"action: Node ID: {self.node_id} Recv EOF! {self.i_am_lider} | result: success ✅")
+        logging.info(f"action: Create Lider |Node ID: {self.node_id} Recv EOF!  result: success ✅")
         self.data_definitive = eof_dto.amount_data
 
     def init_leader_and_push_eof(self, eof_dto):
@@ -47,15 +47,13 @@ class HandlerEOF:
 
     def handler_data_partialDTO(self, dataPartialDTO, dto_to_send):
         if not self.i_am_lider and dto_to_send and dataPartialDTO.status == REQUEST_DATA_PARTIAL:
-            self.broker.public_message(queue_name =self.next_queues[0], message =dto_to_send.serialize())
-            logging.info(f"action: Send Partial Data 📦 to {self.next_queues[0]} | result: success ✅")
-            self.broker.public_message(exchange_name=self.exchange_name, message =DataPartialDTO(status =RESPONSE_DATA_PARTIAL).serialize())
-            logging.info(f"action: Send DataPartial (Response) to the Leader 🔥 ⚔️ | result: success ✅")
+            self.broker.public_message(queue_name =self.next_queues[0], message =dto_to_send.serialize()) #Envia la data parcial del cliente
+            self.broker.public_message(exchange_name=self.exchange_name,
+                                        message =DataPartialDTO(status =RESPONSE_DATA_PARTIAL).serialize()) #Le comunica al lider q envio su data
         elif self.i_am_lider and dataPartialDTO.status == RESPONSE_DATA_PARTIAL:
             self.data_partial_sent +=1
             if self.data_partial_sent == (self.total_nodes -1): 
                 self.broker.public_message(queue_name =self.next_queues[0], message =dto_to_send.serialize())
-                logging.info(f"action: I am the leader 🔥 sent my DataPartial | result: success ✅")
                 self.send_eof_next_queues()
     
     def accumulate_calculate(self, calculatorDTO):

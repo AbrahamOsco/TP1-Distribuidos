@@ -1,0 +1,17 @@
+{
+    "client_id": 1,
+    "games": [
+        {
+            "Terraria": 82227,
+            "Rust": 61032,
+            "Rocket League\u00ae": 51084,
+            "Undertale": 49812,
+            "Starbound": 36134,
+            "Space Engineers": 33365,
+            "Robocraft": 29040,
+            "The Forest": 27516,
+            "Kerbal Space Program": 25873,
+            "FTL: Faster Than Light": 25103
+        }
+    ]
+}

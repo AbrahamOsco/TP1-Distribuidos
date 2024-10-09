@@ -32,6 +32,7 @@ class FilterBasic:
         self.review_indexes = {}
         self.genres_position = -1
         self.name_position = -1
+        self.review_text_position = -1
         self.game_index_init= False
         self.review_index_init= False
         self.broker = Broker()
@@ -103,17 +104,15 @@ class FilterBasic:
     def filter_fields_by(self, batch_item, result_dto, indexes):
         for a_game in result_dto.data_raw:
             basic_item = self.drop_basic_item(a_game, indexes)
-            if (not self.some_features_is_empty(basic_item)):
+            if (self.some_features_game_is_not_empty(basic_item)):
                 batch_item.append(basic_item)
-            elif (len(basic_item) == len(self.review_indexes)):
+            elif (len(basic_item) == len(self.review_indexes) and basic_item[self.review_text_position] != ""):
                 batch_item.append(basic_item)
 
-    def some_features_is_empty(self, basic_item):
-        if  len(basic_item) == len(self.game_indexes) and (basic_item[self.genres_position] == "" or basic_item[self.name_position] == ""):
-            return True
+    def some_features_game_is_not_empty(self, basic_item):
+        return len(basic_item) == len(self.game_indexes) and (basic_item[self.genres_position] != "" or basic_item[self.name_position] != "")
 
     def drop_basic_item(self, a_item, dic_indexes):
-        #logging.info(f"Dic Indexes 🦃 : {dic_indexes}")
         item_basic = []
         position = 0
         for i in range(len(a_item)):
@@ -122,6 +121,9 @@ class FilterBasic:
                     self.genres_position = position
                 elif self.name_position == -1 and len(dic_indexes) == len(self.game_indexes) and i == dic_indexes["Name"]:
                     self.name_position = position
+                elif self.review_text_position == -1 and len(dic_indexes) == len(self.review_indexes) and i == dic_indexes["review_text"]:
+                    logging.info(f"Seteo el index: {position} 🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉🙉")
+                    self.review_text_position = position
                 item_basic.append(a_item[i])
                 position +=1
         return item_basic    

@@ -1,5 +1,8 @@
 chmod +x run.sh stop.sh
 ./stop.sh
+docker build -f ./base_images/common/Dockerfile -t "common:latest" .
+docker build -f ./base_images/system/Dockerfile -t "system:latest" .
+
 docker build -f ./client/Dockerfile -t "client:latest" .
 docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
@@ -12,6 +15,9 @@ docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filterg
 docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
 docker build -f ./system/controllers/groupers/grouperTopAvgPlaytime/Dockerfile -t "groupertopavgplaytime:latest" .
 docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
+docker build -f ./system/controllers/storages/monitorStorageQ3/Dockerfile -t "monitorstorageq3:latest" .
+docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
+docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertoppositivereviews:latest" .
 
 
 #docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .

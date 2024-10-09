@@ -7,6 +7,8 @@ docker rm -f filtergender_1 filtergender_2 filtergender_3
 docker rm -f filterdecade_1 filterdecade_2
 docker rm -f groupertopavgplaytime    
 docker rm -f filterscorepositive_1 filterscorepositive_2 filterscorepositive_3
+docker rm -f selectidname_1 selectidname_2 selectidname_3    
+docker rm -f monitorstorageq3_1 groupertoppositivereviews
 
 
 docker network rm -f tp2_system_network
