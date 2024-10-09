@@ -131,8 +131,8 @@ class Node:
 
     def inform_eof_to_nodes(self, client):
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
-        self.pre_eof_actions()
         self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
+        self.pre_eof_actions()
         if self.amount_of_nodes < 2:
             self.send_eof(client)
             return
