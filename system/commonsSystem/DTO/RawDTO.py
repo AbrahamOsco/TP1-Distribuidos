@@ -44,7 +44,7 @@ class RawDTO(DTO):
         return RawDTO(client_id=client_id, type=type, raw_data=raw_data), offset
 
     def is_EOF(self):
-        return False
+        return self.type == OPERATION_TYPE_GAMEEOF or self.type == OPERATION_TYPE_REVIEWEOF
     
     def is_games_EOF(self):
         return self.type == OPERATION_TYPE_GAMEEOF

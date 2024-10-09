@@ -16,9 +16,11 @@ class Filter(Node):
 
     def send_game(self, data:GamesDTO):
         data.set_state(STATE_PLAYTIME)
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data:GamesDTO):
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
         data.filter_games(lambda x: self.is_correct_decade(x.release_date))
         if len(data.games_dto) > 0:
             self.send_game(data)

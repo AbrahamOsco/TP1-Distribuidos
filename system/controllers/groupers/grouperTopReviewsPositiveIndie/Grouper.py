@@ -29,6 +29,7 @@ class Grouper(Node):
 
     def process_data(self, data: GamesDTO):
         self.current_client = data.client_id
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
         for game in data.games_dto:
             if self.has_to_be_inserted(game):
                 inserted = False
@@ -42,3 +43,6 @@ class Grouper(Node):
                 if len(self.list) > self.top_size:
                     self.list.pop()
                 self.min_time = self.list[-1].reviews
+
+                if inserted and len(self.list) <= self.top_size:
+                    self.update_amount_sent_by_node(data.get_client(), 1)

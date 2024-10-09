@@ -33,3 +33,5 @@ class Counter(Node):
         self.result["windows"] += platform_count["windows"]
         self.result["linux"] += platform_count["linux"]
         self.result["mac"] += platform_count["mac"]
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())

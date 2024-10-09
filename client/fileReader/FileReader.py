@@ -32,6 +32,7 @@ class FileReader:
         self.last_read = None
         if file_name in FILE_PATHS:
             next(self.reader) # skip header
+        self.lines_read = 0
 
     def get_next_batch(self):
         games = []
@@ -51,6 +52,7 @@ class FileReader:
                     self.close()
                     break
                 data_raw = next(self.reader)
+                self.lines_read += 1
                 total_size_raw = sum(len(element) for element in data_raw)
                 if current_size + total_size_raw > 2**24:
                     self.last_read = data_raw
@@ -61,6 +63,9 @@ class FileReader:
         except StopIteration:
             self.close()
         return games
+    
+    def get_lines_read(self):
+        return self.lines_read
 
     def get_next_line(self):
         if(self.is_closed):

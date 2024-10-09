@@ -37,6 +37,9 @@ class GamesDTO(DTO):
         self.games_dto = games_dto
         self.query = query
 
+    def get_amount(self):
+        return len(self.games_dto)
+
     def serialize(self):
         games_bytes = bytearray()
         games_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))

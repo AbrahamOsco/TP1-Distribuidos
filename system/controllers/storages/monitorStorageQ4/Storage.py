@@ -24,7 +24,9 @@ class Storage(Node):
 
     def process_data(self, data: ReviewsDTO):
         self.current_client = data.get_client()
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
         for review in data.reviews_dto:
+            self.update_amount_sent_by_node(data.get_client(), 1)
             if review.name not in self.list:
                 self.list[review.name] = 1
             else:

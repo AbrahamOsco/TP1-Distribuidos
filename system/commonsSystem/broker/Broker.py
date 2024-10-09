@@ -69,3 +69,6 @@ class Broker:
 
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
+
+    def get_message(self, body):
+        return body.decode()
