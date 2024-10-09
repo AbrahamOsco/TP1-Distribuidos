@@ -129,7 +129,8 @@ class Node:
         self.amount_received_by_node[client] = 0
         self.amount_sent_by_node[client] = 0
 
-    def inform_eof_to_nodes(self, client):
+    def inform_eof_to_nodes(self, data):
+        client = data.get_client()
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
         self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
         self.pre_eof_actions()
@@ -143,7 +144,7 @@ class Node:
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:
-            data = self.broker.get_message(body)
+            data = DetectDTO(body).get_dto()
             self.process_node_eof(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
@@ -157,7 +158,7 @@ class Node:
         try:
             data = DetectDTO(body).get_dto()
             if data.is_EOF():
-                self.inform_eof_to_nodes(data.get_client())
+                self.inform_eof_to_nodes(data)
             else:
                 self.check_new_client(data)
                 self.process_data(data)
