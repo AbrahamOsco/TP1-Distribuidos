@@ -50,20 +50,19 @@ class Filter(Node):
         elif data.is_reviews():
             self.send_reviews(data)
     
-    def inform_eof_to_nodes(self, data):
-        if data.is_games_EOF():
-            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="games")
-        elif data.is_reviews_EOF():
-            self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="reviews")
+    # def inform_eof_to_nodes(self, data):
+    #     if data.is_games_EOF():
+    #         self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="games")
+    #     elif data.is_reviews_EOF():
+    #         self.broker.public_message(sink=self.sink, message=EOFDTO(type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO, client=data.client_id, confirmation=False).serialize(), routing_key="reviews")
         
-        client = data.get_client()
-        logging.info(f"action: inform_eof_to_nodes | client: {client}")
-        self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
-        self.pre_eof_actions()
-        if self.amount_of_nodes < 2:
-            self.send_eof(client)
-            return
-        self.confirmations = 1
-        self.clients_pending_confirmations.append(client)
-        logging.info(f"action: inform_eof_to_nodes | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,client, False).serialize())
+    #     client = data.get_client()
+    #     logging.info(f"action: inform_eof_to_nodes | client: {client}")
+    #     self.reset_totals()
+    #     self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
+    #     self.expected_total_amount_received[client] = data.get_amount_sent()
+    #     self.clients_pending_confirmations.append(client)
+    #     if self.amount_of_nodes < 2:
+    #         self.check_amounts(data)
+    #         return
+    #     self.ask_confirmations(data)

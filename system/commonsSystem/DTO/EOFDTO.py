@@ -1,7 +1,7 @@
 STATE_DEFAULT = 1
-STATE_COMMIT = 2
-STATE_OK = 3
-STATE_FINISH = 4
+STATE_COMMIT = 2 ## Informa a los hermanos que llegó un eof y le pide sus cantidades
+STATE_OK = 3 ## Informa sus cantidades
+STATE_FINISH = 4 ## Informa que terminó y que el cliente debe ser eliminado de memoria
 
 class EOFDTO:
     def __init__(self, type, client:int, state:int, attribute="", amount_received = 0, amount_sent = 0):
