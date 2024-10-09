@@ -90,7 +90,7 @@ class Node:
 
     def send_eof(self, client):
         logging.info(f"action: send_eof | client: {client} | total_amount_sent: {self.total_amount_sent[client]}")
-        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False,0,self.total_amount_sent[client]).serialize(), routing_key='default')
+        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,STATE_FINISH, client, False,0,self.total_amount_sent[client]).serialize(), routing_key='default')
 
     def send_eof_confirmation(self, data: EOFDTO):
         client = data.get_client()
@@ -124,7 +124,7 @@ class Node:
             return
         if self.amount_of_nodes < 2:
             raise PrematureEOFException()
-        self.reset_totals()
+        self.reset_totals(client)
         self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
         self.ask_confirmations(data)
 
@@ -163,7 +163,7 @@ class Node:
     def inform_eof_to_nodes(self, data: EOFDTO):
         client = data.get_client()
         logging.info(f"action: inform_eof_to_nodes | client: {client}")
-        self.reset_totals()
+        self.reset_totals(client)
         self.update_totals(client, self.amount_received_by_node[client], self.amount_sent_by_node[client])
         self.expected_total_amount_received[client] = data.get_amount_sent()
         self.clients_pending_confirmations.append(client)

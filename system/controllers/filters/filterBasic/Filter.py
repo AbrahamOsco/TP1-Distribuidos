@@ -18,7 +18,7 @@ class Filter(Node):
         if len(reviews.reviews_dto) == 0:
             return
         self.broker.public_message(sink=self.sink, message=reviews.serialize(), routing_key="reviews")
-        self.update_amount_sent_by_node(data.get_client(), "reviews", len(data.reviews_dto()))
+        self.update_amount_sent_by_node(data.get_client(), "reviews", len(reviews.reviews_dto()))
 
     def send_games(self, data: RawDTO):
         self.update_amount_received_by_node(data.get_client(), "games", len(data.raw_data))
@@ -26,7 +26,7 @@ class Filter(Node):
         if len(games.games_dto) == 0:
             return
         self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="games")
-        self.update_amount_sent_by_node(data.get_client(), "games", len(data.games_dto()))
+        self.update_amount_sent_by_node(data.get_client(), "games", len(games.games_dto))
 
     def update_amount_sent_by_node(self,client_id, type:str, amount=0):
         if client_id not in self.amount_sent_by_node:
