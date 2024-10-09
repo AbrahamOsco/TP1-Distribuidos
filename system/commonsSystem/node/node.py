@@ -1,7 +1,7 @@
 import logging
 import os
 from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_OK, STATE_COMMIT, STATE_FINISH
+from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_OK, STATE_COMMIT, STATE_FINISH, STATE_DEFAULT
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
@@ -90,7 +90,7 @@ class Node:
 
     def send_eof(self, client):
         logging.info(f"action: send_eof | client: {client} | total_amount_sent: {self.total_amount_sent[client]}")
-        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,STATE_FINISH, client, False,0,self.total_amount_sent[client]).serialize(), routing_key='default')
+        self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO,STATE_DEFAULT, client, False,0,self.total_amount_sent[client]).serialize(), routing_key='default')
 
     def send_eof_confirmation(self, data: EOFDTO):
         client = data.get_client()
