@@ -65,28 +65,24 @@ class Node:
             self.amount_received_by_node[client_id] = 0
         
         self.amount_received_by_node[client_id] += amount
-        logging.info(f"action: update_amount_received_by_node | client: {client_id} | amount_received_by_node: {self.amount_received_by_node[client_id]}")
-        
+       
     def update_amount_sent_by_node(self,client_id, amount=0):
         if client_id not in self.amount_sent_by_node:
             self.amount_sent_by_node[client_id] = 0
         
         self.amount_sent_by_node[client_id] += amount
-        logging.info(f"action: update_amount_sent_by_node | client: {client_id} | amount_sent_by_node: {self.amount_sent_by_node[client_id]}")
-
+   
     def update_total_amount_received(self,client, amount=0):
         if client not in self.total_amount_received:
             self.total_amount_received[client] = 0
         
         self.total_amount_received[client] += amount
-        logging.info(f"action: update_total_amount_received | client: {client} | total_amount_received: {self.total_amount_received[client]}")
-
+ 
     def update_total_amount_sent(self,client, amount=0):
         if client not in self.total_amount_sent:
             self.total_amount_sent[client] = 0
         
         self.total_amount_sent[client] += amount
-        logging.info(f"action: update_total_amount_sent | client: {client} | total_amount_sent: {self.total_amount_sent[client]}")
 
     def send_eof(self, client):
         logging.info(f"action: send_eof | client: {client} | total_amount_sent: {self.total_amount_sent[client]}")

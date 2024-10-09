@@ -22,10 +22,16 @@ class Filter(Node):
         self.broker.public_message(sink=self.sink, routing_key=gender, message=data.serialize())
 
     def process_data(self, data: GamesDTO):
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        counted_games = set()  
         for gender in self.genders:
             games_in_gender = []
             for game in data.games_dto:
                 if self.is_gender(game.genres, gender):
                     games_in_gender.append(game)
+                    counted_games.add(game)        
             if len(games_in_gender) > 0:
                 self.send_game(GamesDTO(client_id=data.client_id, state_games=STATE_Q2345, games_dto=games_in_gender), gender)
+        
+        self.update_amount_sent_by_node(data.get_client(), len(counted_games))
+          
