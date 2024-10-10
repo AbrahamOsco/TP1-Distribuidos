@@ -13,9 +13,10 @@ import os
 import signal
 
 QUEUE_SELECTQ2345_FILTERGENDER = "selectq2345_filterGender"
-
 QUEUE_FILTERGENDER_FILTERDECADE = "filterGender_filterDecade"
-QUEUE_FILTERGENDER_SELECTIDNAME = "filterGender_selectIDName"
+
+QUEUE_FILTERGENDER_SELECTIDNAME_INDIE = "filterGender_selectIDNameIndie"
+QUEUE_FILTERGENDER_SELECTIDNAME_ACTION = "filterGender_selectIDNameAction"
 
 EXCHANGE_EOF_FILTERGENDER = "Exchange_filterGender"
 
@@ -30,11 +31,12 @@ class FilterGender:
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.broker.create_queue(name =QUEUE_SELECTQ2345_FILTERGENDER, callback = self.handler_filter_by_a_gender())
         self.broker.create_queue(name =QUEUE_FILTERGENDER_FILTERDECADE)
-        self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME)
+        self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME_INDIE)
+        self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME_ACTION)
 
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
                             exchange_name =EXCHANGE_EOF_FILTERGENDER,
-                            next_queues =[QUEUE_FILTERGENDER_FILTERDECADE, QUEUE_FILTERGENDER_SELECTIDNAME])
+                            next_queues =[QUEUE_FILTERGENDER_FILTERDECADE, QUEUE_FILTERGENDER_SELECTIDNAME_INDIE])
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTERGENDER, callback =eof_calculator(self.handler_eof_games))
 
     def handler_filter_by_a_gender(self):
@@ -63,7 +65,9 @@ class FilterGender:
         actions_gamesDTO = self.get_gamesDTO_for_gender(batch_game, 'action')
         
         self.broker.public_message(queue_name =QUEUE_FILTERGENDER_FILTERDECADE, message =indie_gamesDTO.serialize())
-        self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME, message =indie_gamesDTO.serialize())
+        self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME_INDIE, message =indie_gamesDTO.serialize())
+        self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME_ACTION, message =actions_gamesDTO.serialize())
+
         self.handler_eof_games.add_new_processing()
 
 

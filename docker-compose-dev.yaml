@@ -489,6 +489,58 @@ services:
         condition: service_healthy
 
 
+  filterScoreNegative_1:
+    container_name: filterscorenegative_1
+    image: filterscorenegative:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterscorenegative_1
+      - NODE_ID=30
+      - TOTAL_NODES=2
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterScoreNegative_2:
+    container_name: filterscorenegative_2
+    image: filterscorenegative:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterscorenegative_2
+      - NODE_ID=31
+      - TOTAL_NODES=2
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+
+  monitorStorageQ4_1:
+    container_name: monitorstorageq4_1
+    image: monitorstorageq4:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=monitorstorageq4_1
+      - NODE_ID=33
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+
 networks:
   system_network:
     ipam:

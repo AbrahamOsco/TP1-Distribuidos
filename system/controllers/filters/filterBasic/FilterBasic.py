@@ -44,7 +44,7 @@ class FilterBasic:
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
                                 exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ2345, QUEUE_FILTER_SELECTQ1])
         self.handler_eof_reviews = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Reviews", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTERBASIC_SCOREPOSITIVE])
+                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTERBASIC_SCOREPOSITIVE, QUEUE_FILTERBASIC_SCORENEGATIVE])
 
     def callback_eof_calculator(self):
         def handler_message(ch, method, properties, body):
@@ -81,6 +81,7 @@ class FilterBasic:
         elif result_dto.operation_type == OperationType.OPERATION_TYPE_REVIEWS_INDEX_DTO:
             reviewsDTO = ReviewsDTO(reviews_raw =data_filtered, client_id= result_dto.client_id, state_reviews=STATE_REVIEW_INITIAL)
             self.broker.public_message(queue_name =QUEUE_FILTERBASIC_SCOREPOSITIVE, message= reviewsDTO.serialize())
+            self.broker.public_message(queue_name =QUEUE_FILTERBASIC_SCORENEGATIVE, message= reviewsDTO.serialize())
             self.handler_eof_reviews.add_new_processing()
 
     def filter_fields_item(self, result_dto):

@@ -18,6 +18,8 @@ docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "
 docker build -f ./system/controllers/storages/monitorStorageQ3/Dockerfile -t "monitorstorageq3:latest" .
 docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
 docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertoppositivereviews:latest" .
+docker build -f ./system/controllers/filters/filterScoreNegative/Dockerfile -t "filterscorenegative:latest" .
+docker build -f ./system/controllers/storages/monitorStorageQ4/Dockerfile -t "monitorstorageq4:latest" .
 
 
 #docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
