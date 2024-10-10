@@ -1,3 +1,4 @@
+import os
 from client.fileReader.FileReader import FileReader
 import logging
 QueriesX = ["Query2", "Query3", "Query4", "Query5"]
@@ -5,19 +6,20 @@ QueriesX = ["Query2", "Query3", "Query4", "Query5"]
 class QueriesResponses:
     def __init__(self):
         self.responses = {}
+        self.percent_of_file_for_use =  float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
         self.loadQuery1()
         for query in QueriesX:
             self.loadQueryX(query)
 
     def loadQuery1(self):
-        reader = FileReader("Query1")
+        reader = FileReader("Query1", percent_of_file_for_use= self.percent_of_file_for_use)
         windows = reader.get_next_line()[0]
         linux = reader.get_next_line()[0]
         mac = reader.get_next_line()[0]
         self.responses["Query1"] = {"windows": windows, "linux": linux, "mac": mac}
 
     def loadQueryX(self, query):
-        reader = FileReader(query)
+        reader = FileReader(query, percent_of_file_for_use= self.percent_of_file_for_use)
         self.responses[query] = []
         response = reader.get_next_line()
         while response is not None:

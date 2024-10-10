@@ -11,20 +11,21 @@ FilesPrefixes = {
 }
 
 class FileReader:
-    def __init__(self, file_name, batch_size=25):
+    def __init__(self, file_name, batch_size=25, percent_of_file_for_use:float=PERCENT_OF_FILE_FOR_USE):
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
+        logging.info(f"FilesPrefixes: {FilesPrefixes[percent_of_file_for_use]} 👈")
         csv.field_size_limit(sys.maxsize)
         self.file_name = file_name
         self.batch_size = batch_size
         if file_name not in FILE_PATHS:
             self.file_path = "./data/responses/"
-            self.file_path += FilesPrefixes[PERCENT_OF_FILE_FOR_USE]
+            self.file_path += FilesPrefixes[percent_of_file_for_use]
             self.file_path += file_name
             self.file_path += ".csv"
             self.usage_limit = os.path.getsize(self.file_path)
         else:
             self.file_path = FILE_PATHS[file_name]
-            self.usage_limit = PERCENT_OF_FILE_FOR_USE * os.path.getsize(self.file_path)
+            self.usage_limit = percent_of_file_for_use * os.path.getsize(self.file_path)
         self.file =  open(self.file_path, mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)
         self.bytes_read = 0

@@ -264,7 +264,7 @@ def get_gateway(queries):
 
 def generar_docker_compose(output_file:str, queries=[], filterbasic="0", select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
                            filter_decade="0", select_id_name_indie="0", select_id_name_action="0", filter_score_positive="0",
-                           filter_review_english="0", filter_score_negative="0"):
+                           filter_review_english="0", filter_score_negative="0", percent_of_file_for_use="0.1"):
     node_amounts["filterbasic"] = int(filterbasic)
     node_amounts["selectq1"] = int(select_q1)
     node_amounts["platformcounter"] = int(platform_counter)
@@ -302,6 +302,7 @@ services:
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
     environment:
+      - PERCENT_OF_FILE_FOR_USE={percent_of_file_for_use}
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -369,43 +370,43 @@ if __name__ == "__main__":
         print("Invalid Query")
         sys.exit(1)
     if query_input == "A":
-        if len(sys.argv) != 14:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter] [SelectQ2345] [FilterGender] [FilterDecade] [SelectIDNameIndie] [FilterScorePositive] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
+        if len(sys.argv) != 15:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter] [SelectQ2345] [FilterGender] [FilterDecade] [SelectIDNameIndie] [FilterScorePositive] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish] <PercentOfFilesForUse>")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5],
                                select_q2345=sys.argv[6], filter_gender=sys.argv[7], filter_decade=sys.argv[8],
                                  select_id_name_indie=sys.argv[9], filter_score_positive=sys.argv[10],
                                     select_id_name_action=sys.argv[11], filter_score_negative=sys.argv[12],
-                                    filter_review_english=sys.argv[13])
+                                    filter_review_english=sys.argv[13], percent_of_file_for_use=sys.argv[14])
     elif query_input == "1":
-        if len(sys.argv) != 6:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter]")
-            sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5])
-    elif query_input == "2":
         if len(sys.argv) != 7:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [FilterDecade]")
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter] <PercentOfFilesForUse>")
+            sys.exit(1)
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5], percent_of_file_for_use=sys.argv[6])
+    elif query_input == "2":
+        if len(sys.argv) != 8:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [FilterDecade] <PercentOfFilesForUse>")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               filter_decade=sys.argv[6])
+                               filter_decade=sys.argv[6], percent_of_file_for_use=sys.argv[7])
     elif query_input == "3":
-        if len(sys.argv) != 8:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameIndie] [FilterScorePositive] ")
-            sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_indie=sys.argv[6], filter_score_positive=sys.argv[7])
-    elif query_input == "4":
         if len(sys.argv) != 9:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish]")
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameIndie] [FilterScorePositive] <PercentOfFilesForUse>")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], filter_review_english=sys.argv[8])
+                               select_id_name_indie=sys.argv[6], filter_score_positive=sys.argv[7], percent_of_file_for_use=sys.argv[8])
+    elif query_input == "4":
+        if len(sys.argv) != 10:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish] <PercentOfFilesForUse>")
+            sys.exit(1)
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], filter_review_english=sys.argv[8], percent_of_file_for_use=sys.argv[9])
     elif query_input == "5":
-        if len(sys.argv) != 8:
-            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative]")
+        if len(sys.argv) != 9:
+            print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] <PercentOfFilesForUse>")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7])
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], percent_of_file_for_use=sys.argv[8])
     else:
         print("Invalid Query")
         sys.exit(1)
