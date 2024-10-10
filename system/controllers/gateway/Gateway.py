@@ -22,6 +22,8 @@ class Gateway(Node):
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
         self.socket_peer, addr = self.socket_accepter.accept()
+        if self.socket_peer is None:
+            return
         logging.info("action: Waiting a client to connect | result: success ✅")
         self.shared_namespace.protocol = ServerProtocol(self.socket_peer)
     
@@ -34,14 +36,18 @@ class Gateway(Node):
             process.join()
 
     def stop_server(self):
-        self.socket_peer.close()
-        self.socket_accepter.close()
+        if self.socket_peer is not None:
+            self.socket_peer.close()
+        if self.socket_accepter is not None:
+            self.socket_accepter.close()
         logging.info("action: server stopped | result: success ✅")
 
     def run_server(self):
-        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_sever())
+        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_server())
         while True:
             self.accept_a_connection()
+            if self.socket_peer is None:
+                break
             while True:
                 try:
                     raw_dto = self.shared_namespace.protocol.recv_data_raw()
@@ -65,8 +71,6 @@ class Gateway(Node):
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
 
     def abort(self):
-        self.stop()
-        logging.info("action: broker stop | result: success ✅")
         for process in self.processes:
             process.terminate()
             process.join()

@@ -22,9 +22,12 @@ class Socket:
             msg = "action: accept | result: fail | error: Socket is not a server socket"
             logging.error(msg)
             raise RuntimeError(msg)
-        skt_peer, addr = self.socket.accept()
-        socket_peer_object = Socket(socket_peer=skt_peer, port=self.port)
-        return socket_peer_object, addr
+        try:
+            skt_peer, addr = self.socket.accept()
+            socket_peer_object = Socket(socket_peer=skt_peer, port=self.port)
+            return socket_peer_object, addr
+        except OSError as e:
+            return None, e
     
     def connect(self):
         if self.ip == "":
