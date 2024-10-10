@@ -1,4 +1,3 @@
-import logging
 from common.protocol.Protocol import Protocol
 from common.DTO.GameEOFDTO import OPERATION_TYPE_GAMEEOF
 from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
@@ -15,19 +14,19 @@ class ServerProtocol(Protocol):
         super().__init__(socket)
 
     def recv_data_raw(self):
-        operation_type = self.recv_number_1_byte()
-        client_id = self.recv_number_1_byte()
+        operation_type = self.recv_number_n_bytes(1)
+        client_id = self.recv_number_n_bytes(1)
         if operation_type == OPERATION_TYPE_GAMEEOF:
-            amount = self.recv_number_4_bytes()
+            amount = self.recv_number_n_bytes(4)
             return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=int(amount))
         if operation_type == OPERATION_TYPE_REVIEWEOF:
-            amount = self.recv_number_4_bytes()
+            amount = self.recv_number_n_bytes(4)
             return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=int(amount))
         list_items_raw = []
-        items_amount = self.recv_number_2_bytes()
+        items_amount = self.recv_number_n_bytes(2)
         for _ in range(items_amount):
             element = []
-            field_amount = self.recv_number_2_bytes()
+            field_amount = self.recv_number_n_bytes(2)
             for _ in range(field_amount):
                 field = self.recv_string()
                 element.append(field)
@@ -36,16 +35,16 @@ class ServerProtocol(Protocol):
 
     def send_result(self, result):
         if result is None:
-            self.send_number_1_byte(OPERATION_TYPE_RESULTSEOF)
+            self.send_number_n_bytes(1, OPERATION_TYPE_RESULTSEOF)
             return
-        self.send_number_1_byte(result.operation_type)
+        self.send_number_n_bytes(1, result.operation_type)
         if result.operation_type == OPERATION_TYPE_QUERY1:
-            self.send_number_4_bytes(result.windows)
-            self.send_number_4_bytes(result.linux)
-            self.send_number_4_bytes(result.mac)
+            self.send_number_n_bytes(4, result.windows)
+            self.send_number_n_bytes(4, result.linux)
+            self.send_number_n_bytes(4, result.mac)
         elif result.operation_type == OPERATION_TYPE_QUERY2345:
-            self.send_number_1_byte(result.query)
-            self.send_number_2_bytes(len(result.games))
+            self.send_number_n_bytes(1, result.query)
+            self.send_number_n_bytes(2, len(result.games))
             for game in result.games:
                 self.send_string(game)
         else:

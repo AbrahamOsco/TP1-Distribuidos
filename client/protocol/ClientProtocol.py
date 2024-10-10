@@ -18,26 +18,26 @@ class ClientProtocol(Protocol):
 
 # [ ["1", "3", "abcasda", "1", "0"], ["2", "4", "abc", "-1", "0"], ... ] 
     def send_data_raw(self, data_raw_dto):
-        self.send_number_1_byte(data_raw_dto.operation_type)
-        self.send_number_1_byte(self.id) 
-        self.send_number_2_bytes(len(data_raw_dto.data_raw))
+        self.send_number_n_bytes(1, data_raw_dto.operation_type)
+        self.send_number_n_bytes(1, self.id) 
+        self.send_number_n_bytes(2, len(data_raw_dto.data_raw))
         for item in data_raw_dto.data_raw:
-            self.send_number_2_bytes(len(item))
+            self.send_number_n_bytes(2, len(item))
             for field in item:
                 self.send_string(field)
 
     def send_games_eof(self, amount):
-        self.send_number_1_byte(OPERATION_TYPE_GAMEEOF)
-        self.send_number_1_byte(self.id)
-        self.send_number_4_bytes(amount)
+        self.send_number_n_bytes(1, OPERATION_TYPE_GAMEEOF)
+        self.send_number_n_bytes(1, self.id)
+        self.send_number_n_bytes(4, amount)
 
     def send_reviews_eof(self, amount):
-        self.send_number_1_byte(OPERATION_TYPE_REVIEWEOF)
-        self.send_number_1_byte(self.id)
-        self.send_number_4_bytes(amount)
+        self.send_number_n_bytes(1, OPERATION_TYPE_REVIEWEOF)
+        self.send_number_n_bytes(1, self.id)
+        self.send_number_n_bytes(4, amount)
 
     def recv_result(self):
-        operation_type = self.recv_number_1_byte()
+        operation_type = self.recv_number_n_bytes(1)
         if operation_type == OPERATION_TYPE_RESULTSEOF:
             return None
         if operation_type not in self.getResult:
@@ -47,14 +47,14 @@ class ClientProtocol(Protocol):
         return self.getResult[operation_type]()
     
     def get_query1(self):
-        windows = self.recv_number_4_bytes()
-        linux = self.recv_number_4_bytes()
-        mac = self.recv_number_4_bytes()
+        windows = self.recv_number_n_bytes(4)
+        linux = self.recv_number_n_bytes(4)
+        mac = self.recv_number_n_bytes(4)
         return Query1ResultDTO(windows, linux, mac)
     
     def get_query2345(self):
-        query = self.recv_number_1_byte()
-        amount = self.recv_number_2_bytes()
+        query = self.recv_number_n_bytes(1)
+        amount = self.recv_number_n_bytes(2)
         games = []
         for _ in range (amount):
             game = self.recv_string()

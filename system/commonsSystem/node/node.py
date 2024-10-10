@@ -1,5 +1,6 @@
 import logging
 import os
+import signal
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_OK, STATE_COMMIT, STATE_FINISH, STATE_DEFAULT
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
@@ -223,6 +224,7 @@ class Node:
             logging.error(f"action: error | result: {e}")
 
     def run(self):
+        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop())
         self.broker.start_consuming()
     
     def stop(self):

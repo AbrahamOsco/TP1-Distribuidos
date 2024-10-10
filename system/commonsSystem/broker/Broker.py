@@ -63,9 +63,16 @@ class Broker:
             self.channel.start_consuming()
         except Exception as e:
             sys.exit(-1)
+        logging.info("action: start_consuming | result: finished ✅")
 
     def close(self):
-        self.connection.close()
+        try:
+            logging.info("action: stop consuming | result: pending ⌚")
+            self.channel.stop_consuming()
+            logging.info("action: stop consuming | result: success ✅")
+            self.connection.close()
+        except Exception as e:
+            logging.info(f"action: close | result: failed ❌ | error: {e}")
 
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
