@@ -35,10 +35,23 @@ class FilterReviewsEnglish:
             ch.basic_ack(delivery_tag =method.delivery_tag)
         return handler_message
     
-    def detect_language(self, a_text):
-        language, _ = langid.classify(a_text)
-        return language
-
+    def its_in_english(self, a_text_review):
+        language, _ = langid.classify(a_text_review)
+        return language == 'en'
+    
+    # {"mario":[a,b,c, ...], "luigui3": [a,b,c, ...]}
+    def filter_using_english(self, batch_game_with_reviews):
+        games = {}
+        for key, value in batch_game_with_reviews.items():
+            english_count = 0
+            for v in value:
+                if self.its_in_english(v):
+                    english_count += 1
+            if english_count >= AMOUNT_NEED_REVIEWS_ENGLISH:
+                games[key] = english_count
+                logging.info(f"El juego {key} es en inglés")
+        return games
+    
     def filter_using_english(self, batch_games_with_reviews):
         for key, value in batch_games_with_reviews.data.items():
             logging.info(f"Key: {key} Value {value} 🔥🔥🔥🔥🔥🔥🔥") 
