@@ -67,6 +67,7 @@ class Storage(Node):
     def send_result(self):
         values = sorted(self.list.items(), key=lambda item: (item[1], item[0]))
         index = int(self.percentile * len(values)) -1
+        logging.info(f"Percentile cal. Total games: {len(values)}. Sending: {len(values[index:])}")
         games_to_send = []
         for app_id, _ in values[index:]:
             games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.games[app_id]))
