@@ -53,7 +53,7 @@ class MonitorStorageQ3:
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and result_dto.old_operation_type == ALL_GAMES_WAS_SENT:
                 self.eof_games = result_dto
-                logging.info(f"Entre al EOFF Game de monitor 🔥 🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡⚡ {self.eof_games}")
+                logging.info(f"Entre al EOFF Game de monitor q3 🔥 🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡🔥 ⚡⚡ {self.eof_games}")
                 self.broker.create_queue(name =QUEUE_SCOREPOSITIVE_MONITORSTORAGEQ3, callback = self.handler_insert_data_monitor()) # Creo recien la queue here
             elif result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and result_dto.old_operation_type == ALL_REVIEWS_WAS_SENT:
                 self.eof_reviews = result_dto

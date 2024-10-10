@@ -13,6 +13,7 @@ import signal
 EXCHANGE_EOF_SCORENEGATIVE = "Exchange_filterScoreNegative"
 QUEUE_FILTERBASIC_SCORENEGATIVE = "filterBasic_scoreNegative"
 QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4 = "scoreNegative_monitorStorageQ4"
+QUEUE_SCORENEGATIVE_MONITORSTORAGEQ5 = "scoreNegative_monitorStorageQ5"
 
 SCORE_NEGATIVE = -1
 
@@ -26,9 +27,11 @@ class FilterScoreNegative:
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.broker.create_queue(name =QUEUE_FILTERBASIC_SCORENEGATIVE, callback = self.handler_filter_by_score_negative())
         self.broker.create_queue(name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4)
+        self.broker.create_queue(name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ5)
 
         self.handler_eof_reviews = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Reviews", total_nodes= self.total_nodes,
-                            exchange_name =EXCHANGE_EOF_SCORENEGATIVE, next_queues =[QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4]) # tambien agregar selectIDNAME
+                            exchange_name =EXCHANGE_EOF_SCORENEGATIVE, next_queues =[QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4,
+                             QUEUE_SCORENEGATIVE_MONITORSTORAGEQ5])
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_SCORENEGATIVE, callback =eof_calculator(self.handler_eof_reviews))
 
 
@@ -44,16 +47,21 @@ class FilterScoreNegative:
         return handler_message
     
     def get_reviewsDTO_with_score_negative(self, batch_reviews):
-        some_reviews = []
+        some_reviews_to_monitorq4 = []
+        some_reviews_to_monitorq5 = []
         for review in batch_reviews.reviews_dto:
             if review.score == SCORE_NEGATIVE:
-                some_reviews.append(ReviewDTO(app_id =review.app_id, review_text=review.review_text))
-        reviews_dto = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto =some_reviews)
-        return reviews_dto
+                some_reviews_to_monitorq4.append(ReviewDTO(app_id =review.app_id, review_text=review.review_text))
+                some_reviews_to_monitorq5.append(ReviewDTO(app_id =review.app_id))
+        reviews_dto_to_monitor_q4 = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto =some_reviews_to_monitorq4)
+        reviews_dto_to_monitor_q5 = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto =some_reviews_to_monitorq5)
+
+        return reviews_dto_to_monitor_q4, reviews_dto_to_monitor_q5
 
     def filter_using_score_negative(self, batch_review):
-        reviews_dto = self.get_reviewsDTO_with_score_negative(batch_review)
-        self.broker.public_message(queue_name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4, message =reviews_dto.serialize())
+        reviews_monitorq4, reviews_monitorq5 = self.get_reviewsDTO_with_score_negative(batch_review)
+        self.broker.public_message(queue_name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4, message =reviews_monitorq4.serialize())
+        self.broker.public_message(queue_name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ5, message =reviews_monitorq5.serialize())
         self.handler_eof_reviews.add_new_processing()
 
     def run(self):

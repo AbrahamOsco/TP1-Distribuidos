@@ -19,6 +19,8 @@ QUEUE_FILTERGENDER_SELECTIDNAME = "filterGender_selectIDName"
 
 QUEUE_SELECTIDNAME_MONITORSTORAGEQ3 = "selectIDName_monitorStorageQ3"
 QUEUE_SELECTIDNAME_MONITORSTORAGEQ4 = "selectIDName_monitorStorageQ4"
+QUEUE_SELECTIDNAME_MONITORSTORAGEQ5 = "selectIDName_monitorStorageQ5"
+
 GENDER_FOR_MONITORQ3 = "indie"
 GENDER_FOR_MONITORQ4 = "action"
 
@@ -36,9 +38,11 @@ class SelectIDName:
 
         self.broker.create_queue(name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ3)
         self.broker.create_queue(name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ4)
+        self.broker.create_queue(name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ5)
         
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
-                            exchange_name =EXCHANGE_EOF_SELECTIDNAME, next_queues =[QUEUE_SELECTIDNAME_MONITORSTORAGEQ3, QUEUE_SELECTIDNAME_MONITORSTORAGEQ4])
+                            exchange_name =EXCHANGE_EOF_SELECTIDNAME,
+                            next_queues =[QUEUE_SELECTIDNAME_MONITORSTORAGEQ3, QUEUE_SELECTIDNAME_MONITORSTORAGEQ4, QUEUE_SELECTIDNAME_MONITORSTORAGEQ5])
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_SELECTIDNAME, callback =eof_calculator(self.handler_eof_games))
 
 
@@ -53,7 +57,6 @@ class SelectIDName:
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     
-
     def send_games_for_monitors(self, batch_data):
         only_games_indie = []
         only_games_action = []
@@ -66,6 +69,8 @@ class SelectIDName:
         games_actionDTO = GamesDTO(client_id =batch_data.client_id, state_games =StateGame.STATE_ID_NAME.value, games_dto =only_games_action)
         self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ3, message =games_indiesDTO.serialize())
         self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ4, message =games_actionDTO.serialize())
+        self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ5, message =games_actionDTO.serialize())
+        
         self.handler_eof_games.add_new_processing()
 
     def run(self):

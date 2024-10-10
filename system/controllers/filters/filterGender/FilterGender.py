@@ -58,7 +58,7 @@ class FilterGender:
 
     def filter_for_gender(self, batch_game):
         indie_gamesDTO = self.get_gamesDTO_for_gender(batch_game, ['indie'])
-        action_indie_gamesDTO = self.get_gamesDTO_for_gender(batch_game, ['action', 'indie'])
+        action_indie_gamesDTO = self.get_gamesDTO_for_gender(batch_game, ['action', 'indie',])
         
         self.broker.public_message(queue_name =QUEUE_FILTERGENDER_FILTERDECADE, message =indie_gamesDTO.serialize())
         self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME, message =action_indie_gamesDTO.serialize())

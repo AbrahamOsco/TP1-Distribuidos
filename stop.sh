@@ -11,6 +11,7 @@ docker rm -f selectidname_1 selectidname_2 selectidname_3
 docker rm -f monitorstorageq3_1 groupertoppositivereviews
 docker rm -f filterscorenegative_1 filterscorenegative_2
 docker rm -f monitorstorageq4_1  filterreviewsenglish_1
+docker rm -f monitorstorageq5_1  grouperpercentile_1
 
 
 docker network rm -f tp2_system_network

@@ -3,7 +3,7 @@ import csv
 import logging
 import math
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 0.2
+PERCENT_OF_FILE_FOR_USE = 0.4
 MAX_FIELD_SIZE_CSV = 1000000000
 
 class FileReader:
@@ -34,7 +34,7 @@ class FileReader:
                     self.read_all = True
                     self.close()
                     break
-                data_raw = next(self.reader) #retorn a list of string ej: ['123232', 'mario bros', '2022', ...]
+                data_raw = next(self.reader) 
                 total_size_raw = 0 
                 for element in data_raw:
                     total_size_raw += len(element)

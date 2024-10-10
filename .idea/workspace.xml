@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b0877a44-f558-4e80-9a08-9a467fe2a1b6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/client/fileReader/FileReader.py" beforeDir="false" afterPath="$PROJECT_DIR$/client/fileReader/FileReader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose-dev.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-dev.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/query1.json" beforeDir="false" afterPath="$PROJECT_DIR$/results/query1.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/query2.json" beforeDir="false" afterPath="$PROJECT_DIR$/results/query2.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/query3.json" beforeDir="false" afterPath="$PROJECT_DIR$/results/query3.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/query4.json" beforeDir="false" afterPath="$PROJECT_DIR$/results/query4.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stop.sh" beforeDir="false" afterPath="$PROJECT_DIR$/stop.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/commonsSystem/DTO/ResultQueryDTO.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/commonsSystem/DTO/ResultQueryDTO.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/commonsSystem/broker/Broker.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/commonsSystem/broker/Broker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/controllers/filters/filterGender/FilterGender.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/controllers/filters/filterGender/FilterGender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/controllers/filters/filterScoreNegative/FilterScoreNegative.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/controllers/filters/filterScoreNegative/FilterScoreNegative.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/controllers/select/selectIDName/SelectIDName.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/controllers/select/selectIDName/SelectIDName.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/controllers/storages/monitorStorageQ3/MonitorStorageQ3.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/controllers/storages/monitorStorageQ3/MonitorStorageQ3.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="2nGZgTVxIlZnmjm5swk67KUKFTd" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23339.19" />
+        <option value="bundled-python-sdk-0029f7779945-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23339.19" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b0877a44-f558-4e80-9a08-9a467fe2a1b6" name="Changes" comment="" />
+      <created>1728601488090</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1728601488090</updated>
+      <workItem from="1728601492217" duration="246000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -525,6 +525,37 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  monitorStorageQ5_1:
+    container_name: monitorstorageq5_1
+    image: monitorstorageq5:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=monitorstorageq5_1
+      - NODE_ID=35
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  grouperPercentile_1:
+    container_name: grouperpercentile_1
+    image: grouperpercentile:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperPercentile/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=grouperpercentile_1
+      - NODE_ID=36
+      - TOTAL_NODES=2
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
 
 networks:
   system_network:

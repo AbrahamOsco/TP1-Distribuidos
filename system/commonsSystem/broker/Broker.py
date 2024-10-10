@@ -61,12 +61,12 @@ class Broker:
                                        properties=pika.BasicProperties(delivery_mode=2))
 
     def start_consuming(self):
-        try:
+        #try:
             self.channel.start_consuming()
-        except Exception as e:
-            if self.was_closed == False:
-                logging.error(f" action: Handling a error {e} | result: success ✅")
-            self.close()
+        #except Exception as e:
+        #    if self.was_closed == False:
+        #        logging.error(f" action: Handling a error {e} | result: success ✅")
+        #    self.close()
     
     def close(self):
         if self.was_closed:
