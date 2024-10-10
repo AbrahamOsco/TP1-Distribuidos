@@ -47,7 +47,7 @@ class FilterScoreNegative:
         some_reviews = []
         for review in batch_reviews.reviews_dto:
             if review.score == SCORE_NEGATIVE:
-                some_reviews.append(ReviewDTO(app_id =review.app_id))
+                some_reviews.append(ReviewDTO(app_id =review.app_id, review_text=review.review_text))
         reviews_dto = ReviewsDTO(client_id=batch_reviews.client_id, reviews_dto =some_reviews)
         return reviews_dto
 

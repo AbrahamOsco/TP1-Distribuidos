@@ -2,9 +2,12 @@ from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.utils.serialize import serialize_str, deserialize_str
 from system.commonsSystem.DTO.SerializerQuery.SerializerFinalQuery import SerializerFinalQuery
 from system.commonsSystem.DTO.SerializerQuery.SerializerInitialQuery import SerializerInitialQuery
+from system.commonsSystem.DTO.SerializerQuery.SerializerReviewsInitial import SerializerReviewsInitial
+
 
 RESULT_INITIAL = 1
 RESULT_TOP = 2
+RESULT_REVIEWS_INITIAL = 3
 
 class ResultQueryDTO:
     def __init__(self, client_id: int = 0, data ={}, status =RESULT_INITIAL):
@@ -12,7 +15,9 @@ class ResultQueryDTO:
         self.client_id = client_id
         self.data = data
         self.status = status
-        self.command_result = {RESULT_INITIAL: SerializerInitialQuery(), RESULT_TOP: SerializerFinalQuery()}
+        self.command_result = {RESULT_INITIAL: SerializerInitialQuery(),
+                             RESULT_TOP: SerializerFinalQuery(), 
+                             RESULT_REVIEWS_INITIAL: SerializerReviewsInitial()}
 
     def serialize(self):
         result_bytes = bytearray()

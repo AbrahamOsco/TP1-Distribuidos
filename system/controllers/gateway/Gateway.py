@@ -13,6 +13,9 @@ import traceback
 QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
 QUEUE_RESULTQ2_GATEWAY = "resultq2_gateway"
 QUEUE_RESULTQ3_GATEWAY = "resultq3_gateway"
+QUEUE_RESULTQ4_GATEWAY = "resultq4_gateway"
+QUEUE_RESULTQ5_GATEWAY = "resultq5_gateway"
+
 PORT_GATEWAY = 12345
 
 class Gateway:
@@ -25,6 +28,8 @@ class Gateway:
         self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_1))
         self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_2))
         self.broker.create_queue(name =QUEUE_RESULTQ3_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_3))
+        self.broker.create_queue(name =QUEUE_RESULTQ4_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_4))
+        self.broker.create_queue(name =QUEUE_RESULTQ5_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_5))
         self.raw_handler = RawHandler(self.broker)
     
     def recv_result_query(self, result_type):
