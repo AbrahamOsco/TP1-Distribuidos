@@ -104,7 +104,7 @@ fi
 PERCENT_OF_FILE_FOR_USE=$(solicitar_porcentaje)
 
 if [ "$QUERIES" == "A" ]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
@@ -119,14 +119,14 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_FILTER_REVIEW_ENGLISH \
       $PERCENT_OF_FILE_FOR_USE
 elif [[ "$QUERIES" == *"1"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER \
       $PERCENT_OF_FILE_FOR_USE
 elif [[ "$QUERIES" == *"2"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -134,7 +134,7 @@ elif [[ "$QUERIES" == *"2"* ]]; then
       $NUM_FILTER_DECADE \
       $PERCENT_OF_FILE_FOR_USE
 elif [[ "$QUERIES" == *"3"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -143,7 +143,7 @@ elif [[ "$QUERIES" == *"3"* ]]; then
       $NUM_FILTER_SCORE_POSITIVE \
       $PERCENT_OF_FILE_FOR_USE
 elif [[ "$QUERIES" == *"4"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -153,7 +153,7 @@ elif [[ "$QUERIES" == *"4"* ]]; then
       $NUM_FILTER_REVIEW_ENGLISH \
       $PERCENT_OF_FILE_FOR_USE
 elif [[ "$QUERIES" == *"5"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
