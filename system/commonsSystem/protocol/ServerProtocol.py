@@ -1,4 +1,3 @@
-import logging
 from common.protocol.Protocol import Protocol
 from common.DTO.GameEOFDTO import OPERATION_TYPE_GAMEEOF
 from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
