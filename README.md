@@ -1,21 +1,12 @@
-# Bienvenido a la rama DOJO, el lugar pefecto para hacer katas ⚔️
-###  En la carpeta ExampleRabbitMQ:
-1. Ir a la carpeta base-images
-1. Dar permisos con chmod +x  y ejecutar: ./build.sh
-1. Ir a la carpeta por ej: hello_world:
-1. Dar permisos y ejecutar: ./run.sh y to clean use: ./stop.sh.
-1. Idem a otras carpetas publisher-subscriber, routing, work-queues. Leer comentarios
-
+# TP Escalabilidad
 
 ## Instrucciones de uso
 
 Para generar el archivo docker compose se debe correr el comando: 
 * **./generar-compose.sh docker-compose-dev.yaml**
 
-Luego se puede construir los contenedores usando 
+Al correr dicho comando preguntara si desea ejecutar todas las consultas, ingresando S ejecutara las 5 consultas, caso contrario pedira que se ingrese el numero de consulta que se desea ejecutar (se debe ingresar un numero entre 1 y 5). Luego preguntara si desea seleccionar cantidad de nodos, esto permite escalar los mismos, ingresando S preguntara por cada nodo que se puede escalar cuantos se desea utilizar, caso contrario utilizara por defecto 1 nodo de cada tipo
 
-* **docker-compose -f docker-compose-dev.yaml build**
+Finalmente se puede correr utilizando 
 
-Finalmente se puede correr los mismos usando
-
-* **docker-compose -f docker-compose-dev.yaml up**
+* **./run.sh**
