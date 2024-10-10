@@ -13,8 +13,9 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
+        logging.info(f"percent_of_file_for_use: {self.config_params['percent_of_file_for_use']} 👈")
         self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.config_params["percent_of_file_for_use"])
-        self.review_reader = FileReader(file_name='reviews', batch_size=2000)
+        self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.config_params["percent_of_file_for_use"])
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
         self.expected_responses = QueriesResponses()
         self.actual_responses = {}
