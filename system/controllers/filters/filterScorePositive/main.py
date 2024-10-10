@@ -3,5 +3,4 @@ from system.controllers.filters.filterScorePositive.FilterScorePositive import F
 def main():
    filterScorePositive = FilterScorePositive()
    filterScorePositive.run()
-
 main()

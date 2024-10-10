@@ -8,7 +8,6 @@ from system.controllers.gateway.RawHandler import RawHandler
 import signal
 import logging
 import os
-import traceback
 
 QUEUE_RESULTQ1_GATEWAY = "resultq1_gateway"
 QUEUE_RESULTQ2_GATEWAY = "resultq2_gateway"
@@ -54,7 +53,6 @@ class Gateway:
             self.broker.start_consuming()
         except Exception as e:
             if self.there_was_sigterm == False:
-                logging.error(f"traceback.format_exc(): ❌ {traceback.format_exc()}")
                 logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
         finally:
             self.free_all_resource()
@@ -66,6 +64,7 @@ class Gateway:
         self.broker.close()
 
     def handler_sigterm(self, signum, frame):
+        self.raw_handler.close()
         self.there_was_sigterm = True
         self.free_all_resource()
 

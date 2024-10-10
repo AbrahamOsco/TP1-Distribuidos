@@ -17,6 +17,7 @@ class RawHandler:
         self.batchs_games = 0
         self.batchs_reviews = 0
         self.review_index_init= False
+        self.there_was_sigterm =False
         self.broker = broker
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
 
@@ -65,5 +66,10 @@ class RawHandler:
         list_items.pop(0)
 
     def run(self, protocol):
-        while not self.all_client_data_was_recv:
+        while not self.all_client_data_was_recv and not self.there_was_sigterm:
             self.handler_messages(protocol.recv_data_raw())
+
+    def close(self):
+        self.there_was_sigterm = True
+
+    

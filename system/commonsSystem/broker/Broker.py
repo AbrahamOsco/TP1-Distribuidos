@@ -2,6 +2,7 @@ from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
 import logging
 import pika
+import sys
 
 HEARTBEAT = 5000
 
@@ -13,12 +14,8 @@ class Broker:
         initialize_log(logging_level='INFO')
         self.queues = {}
         self.was_closed = False
-        self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
-        params = pika.ConnectionParameters()
+        self.enable_worker_queues() 
 
-
-
-    # Toda queue que creemos por default sera durable. y anonima si no nos pasan nombre
     def create_queue(self, name='', durable=True, callback=None):
         try:
             a_queue = Queue(name=name, durable=durable, callback=callback)
@@ -27,7 +24,6 @@ class Broker:
             self.queues[a_queue.get_name()] = a_queue
             if callback is not None:
                 self.channel.basic_consume(queue=a_queue.get_name(), auto_ack=False, on_message_callback=callback)
-            a_queue.show_status()
             return a_queue.get_name()
         except Exception as e:
             logging.error(f"Failed to create queue {name}: {e}")
@@ -38,7 +34,6 @@ class Broker:
     def bind_queue(self, exchange_name, queue_name, binding_key = None):
         self.queues[queue_name].set_binding_key(binding_key)
         self.channel.queue_bind(exchange =exchange_name, queue =queue_name, routing_key =binding_key)
-        logging.info(f"action: Binding queue: {queue_name} to exchange: {exchange_name} | result: sucess ✅")
 
     # Necesita el nombre del exchange y el nombre de la queue, el binding key ya se lo guarda no necesitas pasarlo.
     def unbind_queue(self, exchange_name, queue_name):
@@ -46,7 +41,6 @@ class Broker:
         
     #Se debe crear el exchange de ambos lados (productor y consumidor) 3 exchange_types: 'direct', 'fanout', 'topic'
     def create_exchange(self, exchange_type, name=''):
-        logging.info(f"action: Created a Exchange: | name: {name} | type: {exchange_type} | result: sucess ✅")
         self.channel.exchange_declare(exchange =name, exchange_type =exchange_type)
     
     def create_fanout_and_bind(self, name_exchange ="", callback =None):
@@ -67,13 +61,13 @@ class Broker:
                                        properties=pika.BasicProperties(delivery_mode=2))
 
     def start_consuming(self):
-        #try:
+        try:
             self.channel.start_consuming()
-        #except Exception as e:
-        #    if self.was_closed == False:
-        #        logging.error(f" action: Handling a error {e} | result: success ✅")
-        #    self.close()
-
+        except Exception as e:
+            if self.was_closed == False:
+                logging.error(f" action: Handling a error {e} | result: success ✅")
+            self.close()
+    
     def close(self):
         if self.was_closed:
             return 

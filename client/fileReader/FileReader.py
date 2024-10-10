@@ -3,7 +3,7 @@ import csv
 import logging
 import math
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 1.0
+PERCENT_OF_FILE_FOR_USE = 0.2
 MAX_FIELD_SIZE_CSV = 1000000000
 
 class FileReader:

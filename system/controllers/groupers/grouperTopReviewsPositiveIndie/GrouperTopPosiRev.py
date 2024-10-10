@@ -16,6 +16,7 @@ import signal
 
 QUEUE_MONITORSTORAGEQ3_GROUPER_TOPPOSIREVIEW = "monitorStorageQ3_grouperReview"
 QUEUE_RESULTQ3_GATEWAY = "resultq3_gateway"
+TOP_SIZE_QUERY3 = 5
 
 class GrouperTopPosiRev:
     def __init__(self):
@@ -23,7 +24,7 @@ class GrouperTopPosiRev:
         self.id = os.getenv("NODE_ID")
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.top_games = TopResults(size =10)
+        self.top_games = TopResults(size = TOP_SIZE_QUERY3)
         self.broker.create_queue(name =QUEUE_MONITORSTORAGEQ3_GROUPER_TOPPOSIREVIEW, callback = self.handler_calculate_top_avg_playtime())
         self.broker.create_queue(name =QUEUE_RESULTQ3_GATEWAY)
 

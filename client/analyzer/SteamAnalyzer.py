@@ -10,7 +10,6 @@ import csv
 import os
 import signal
 import time
-import traceback
 
 AMOUNT_BATCH_TO_SEND = 100000000
 
@@ -45,7 +44,7 @@ class SteamAnalyzer:
             self.get_result_from_queries()
         except Exception as e:
             if self.there_was_sigterm == False:
-                logging.error(f"action: Handling a error | error: ❌ {e} TraceBack: {traceback.format_exc()} | result: sucess ✅")
+                logging.error(f"action: Handling a error | error: ❌ {e} | result: sucess ✅")
         finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
