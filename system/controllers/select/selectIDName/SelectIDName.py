@@ -15,11 +15,13 @@ import os
 import signal
 
 
-QUEUE_FILTERGENDER_SELECTIDNAME_INDIE = "filterGender_selectIDNameIndie"
-QUEUE_FILTERGENDER_SELECTIDNAME_ACTION = "filterGender_selectIDNameAction"
+QUEUE_FILTERGENDER_SELECTIDNAME = "filterGender_selectIDName"
 
 QUEUE_SELECTIDNAME_MONITORSTORAGEQ3 = "selectIDName_monitorStorageQ3"
 QUEUE_SELECTIDNAME_MONITORSTORAGEQ4 = "selectIDName_monitorStorageQ4"
+GENDER_FOR_MONITORQ3 = "indie"
+GENDER_FOR_MONITORQ4 = "action"
+
 
 EXCHANGE_EOF_SELECTIDNAME = "Exchange_selectIDName"
 
@@ -30,8 +32,7 @@ class SelectIDName:
         self.total_nodes = int(os.getenv("TOTAL_NODES"))
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME_INDIE, callback = self.handler_select_IDName(self.select_id_and_name_to_monitor_q3))
-        #self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME_ACTION, callback = self.handler_select_IDName(self.select_id_and_name_to_monitor_q4))
+        self.broker.create_queue(name =QUEUE_FILTERGENDER_SELECTIDNAME, callback = self.handler_select_IDName())
 
         self.broker.create_queue(name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ3)
         self.broker.create_queue(name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ4)
@@ -41,27 +42,31 @@ class SelectIDName:
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_SELECTIDNAME, callback =eof_calculator(self.handler_eof_games))
 
 
-    def handler_select_IDName(self, function_to_send_result):
+    def handler_select_IDName(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
+                #result_dto.amount_data *=2 # por 2 porque envio (1 indie y 1 action al mismo tiempo)
                 self.handler_eof_games.init_leader_and_push_eof(result_dto)
             else:
-                function_to_send_result(result_dto)
-                self.handler_eof_games.add_new_processing()
+                self.send_games_for_monitors(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
     
 
-    def select_id_and_name_to_monitor_q3(self, batch_data):
-        new_gamesDTO = GamesDTO(client_id =batch_data.client_id, state_games =StateGame.STATE_ID_NAME.value, games_dto =batch_data.games_dto)
-        self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ3, message =new_gamesDTO.serialize() )
-        #self.handler_eof_games.add_new_processing()
-
-    def select_id_and_name_to_monitor_q4(self, batch_data):
-        new_gamesDTO = GamesDTO(client_id =batch_data.client_id, state_games =StateGame.STATE_ID_NAME.value, games_dto =batch_data.games_dto)
-        self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME_ACTION, message =new_gamesDTO.serialize() )
-        #self.handler_eof_games.add_new_processing()
+    def send_games_for_monitors(self, batch_data):
+        only_games_indie = []
+        only_games_action = []
+        for game in batch_data.games_dto:
+            if GENDER_FOR_MONITORQ3 in game.genres.lower():
+                only_games_indie.append(game)
+            if GENDER_FOR_MONITORQ4 in game.genres.lower():
+                only_games_action.append(game)
+        games_indiesDTO = GamesDTO(client_id =batch_data.client_id, state_games =StateGame.STATE_ID_NAME.value, games_dto =only_games_indie)
+        games_actionDTO = GamesDTO(client_id =batch_data.client_id, state_games =StateGame.STATE_ID_NAME.value, games_dto =only_games_action)
+        self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ3, message =games_indiesDTO.serialize())
+        self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ4, message =games_actionDTO.serialize())
+        self.handler_eof_games.add_new_processing()
 
     def run(self):
         self.broker.start_consuming()

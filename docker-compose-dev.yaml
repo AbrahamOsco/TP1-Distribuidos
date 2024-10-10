@@ -523,7 +523,6 @@ services:
       rabbitmq:
         condition: service_healthy
 
-
   monitorStorageQ4_1:
     container_name: monitorstorageq4_1
     image: monitorstorageq4:latest
@@ -533,6 +532,22 @@ services:
       - PYTHONPATH=/app
       - NODE_NAME=monitorstorageq4_1
       - NODE_ID=33
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterReviewsEnglish:
+    container_name: filterreviewsenglish_1
+    image: filterreviewsenglish:latest
+    entrypoint: python3 /app/system/controllers/filters/filterReviewsEnglish/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_NAME=filterreviewsenglish_1
+      - NODE_ID=34
     networks:
       - system_network
     restart: on-failure

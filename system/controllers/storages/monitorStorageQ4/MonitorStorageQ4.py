@@ -14,8 +14,8 @@ import signal
 QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4 = "scoreNegative_monitorStorageQ4"
 QUEUE_SELECTIDNAME_MONITORSTORAGEQ4 = "selectIDName_monitorStorageQ4"
 QUEUE_MONITORSTORAGEQ4_FILTERENGLISH = "monitorStorageQ4_filterEnglish"
-
 BATCH_DIC_SIZE = 1000
+AMOUNT_NEED_REVIEWS_ENGLISH = 5000
 
 class MonitorStorageQ4:
     def __init__(self):
@@ -39,11 +39,12 @@ class MonitorStorageQ4:
            del self.games[app_id]
         return some_games
     
-    def apply_filters_review_greater_zero(self):
-        self.games = dict(filter(lambda item: item[1][1] > 0, self.games.items()))
+    def apply_filters_review_greater_min(self):
+        self.games = dict(filter(lambda item: item[1][1] > AMOUNT_NEED_REVIEWS_ENGLISH, self.games.items()))
 
     def send_batches_results(self):
-        self.apply_filters_review_greater_zero()
+        self.apply_filters_review_greater_min()
+        logging.info(f"Size rsultant del dic luego del filtro 5k {len(self.games)} 🔥 🚗🚗🚗🚗🚗🚗")
         while len(self.games) > 0:
             batch_games = self.get_next_batch_of_game()
             monitor_resultDTO = ResultQueryDTO(client_id =self.eof_reviews.client_id, data =batch_games)
@@ -58,9 +59,9 @@ class MonitorStorageQ4:
                 self.broker.create_queue(name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4, callback = self.handler_insert_data_monitor()) # Creo recien la queue here
             elif result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and result_dto.old_operation_type == ALL_REVIEWS_WAS_SENT:
                 self.eof_reviews = result_dto
+                logging.info(f"ENviando todo a Review English!! 🦅🦅🦅🦅🦅🦅🦅   🤯🤯🤯🤯")
                 self.send_batches_results()
                 self.broker.public_message(queue_name =QUEUE_MONITORSTORAGEQ4_FILTERENGLISH, message =self.eof_reviews.serialize())
-                logging.info(f"ENviando todo a Review English!! 🦅🦅🦅🦅🦅🦅🦅  Games: {self.games} 🤯🤯🤯🤯🤯🤯🤯🤯")
             else:
                 self.udpate_storage_with_dto(result_dto)
             ch.basic_ack(delivery_tag=method.delivery_tag)
