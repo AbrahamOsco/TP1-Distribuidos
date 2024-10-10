@@ -47,22 +47,20 @@ class Filter(Node):
         amount_received_by_node = self.amount_received_by_node[client]
         for gender in self.genders:
             amount_sent_by_node = self.amount_sent_by_node[client][gender]
-            logging.info(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node {gender}: {amount_sent_by_node}")
+            logging.debug(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node {gender}: {amount_sent_by_node}")
             self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, client,STATE_OK,gender,amount_received_by_node,amount_sent_by_node).serialize())
 
     def check_confirmations(self, data: EOFDTO):
         gender = data.get_attribute()
-        logging.info(f"total amount sent en check confirmations: {self.total_amount_sent} data amount: {data.get_amount_sent()}")
         self.update_totals(data.client, gender, data.get_amount_received(), data.get_amount_sent())   
-        logging.info(f"total amount sent:{self.total_amount_sent}")
         self.confirmations += 1
-        logging.info(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
+        logging.debug(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes * len(self.genders) - 1:
             self.check_amounts(data)
 
     def check_amounts(self, data: EOFDTO):
         client = data.get_client()
-        logging.info(f"action: check_amounts | client: {client} | total_amount_received: {self.total_amount_received[client]} | expected_total_amount_received: {self.expected_total_amount_received[client]}")
+        logging.debug(f"action: check_amounts | client: {client} | total_amount_received: {self.total_amount_received[client]} | expected_total_amount_received: {self.expected_total_amount_received[client]}")
         if self.total_amount_received[client] == self.expected_total_amount_received[client]:
             self.pre_eof_actions(client)
             self.send_eof(data)
@@ -95,7 +93,7 @@ class Filter(Node):
 
     def inform_eof_to_nodes(self, data: EOFDTO):
         client = data.get_client()
-        logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        logging.debug(f"action: inform_eof_to_nodes | client: {client}")
         self.reset_totals(client)
         for gender in self.genders:
             self.update_totals(client, gender, self.amount_received_by_node.get(client, 0), self.amount_sent_by_node[client].get(gender, 0))

@@ -48,7 +48,7 @@ class Storage(Node):
     def check_amounts(self, data: EOFDTO):
         client = data.get_client()
         tipo = data.get_type()
-        logging.info(f"action: check_amounts | client: {client} | tipo: {tipo} | total_amount_received: {self.total_amount_received} | expected_total_amount_received: {self.expected_total_amount_received}")
+        logging.debug(f"action: check_amounts | client: {client} | tipo: {tipo} | total_amount_received: {self.total_amount_received} | expected_total_amount_received: {self.expected_total_amount_received}")
         if self.total_amount_received[client].get(tipo, 0) == self.expected_total_amount_received[client].get(tipo, 0):
             if tipo == "games":
                 return
@@ -56,7 +56,7 @@ class Storage(Node):
             self.send_eof(data)
             self.reset_list()
             self.status = STATUS_STARTED
-            self.reset_amounts(client)
+            self.reset_amounts(data)
             return
         raise PrematureEOFException()
      

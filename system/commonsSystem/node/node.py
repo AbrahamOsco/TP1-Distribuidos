@@ -99,26 +99,24 @@ class Node:
         client = data.get_client()
         amount_received_by_node = self.amount_received_by_node[client]
         amount_sent_by_node = self.amount_sent_by_node[client]
-        logging.info(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node: {amount_sent_by_node}")
+        logging.debug(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node: {amount_sent_by_node}")
         self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, client,STATE_OK,"",amount_received_by_node,amount_sent_by_node).serialize())
 
     def send_eof_finish(self, data: EOFDTO):
         client = data.get_client()
-        logging.info(f"action: send_eof_finish | client: {client}")
+        logging.debug(f"action: send_eof_finish | client: {client}")
         self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, client,STATE_FINISH).serialize())
 
     def check_confirmations(self, data: EOFDTO):
-        logging.info(f"total amount sent en check confirmations: {self.total_amount_sent} data amount: {data.get_amount_sent()}")
         self.update_totals(data.client, data.get_amount_received(), data.get_amount_sent())   
-        logging.info(f"total amount sent:{self.total_amount_sent}")
         self.confirmations += 1
-        logging.info(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
+        logging.debug(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes:
             self.check_amounts(data)
 
     def check_amounts(self, data: EOFDTO):
         client = data.get_client()
-        logging.info(f"action: check_amounts | client: {client} | total_amount_received: {self.total_amount_received[client]} | expected_total_amount_received: {self.expected_total_amount_received[client]}")
+        logging.debug(f"action: check_amounts | client: {client} | total_amount_received: {self.total_amount_received[client]} | expected_total_amount_received: {self.expected_total_amount_received[client]}")
         if self.total_amount_received[client] == self.expected_total_amount_received[client]:
             self.pre_eof_actions(client)
             self.send_eof(data)
@@ -136,7 +134,7 @@ class Node:
         self.ask_confirmations(data)
 
     def process_node_eof(self, data: EOFDTO):
-        logging.info(f"action: process_node_eof | client: {data.client}")
+        logging.debug(f"action: process_node_eof | client: {data.client}")
         if data.client in self.clients_pending_confirmations:
             if data.is_ok():
                 self.check_confirmations(data)
@@ -175,7 +173,7 @@ class Node:
 
     def inform_eof_to_nodes(self, data: EOFDTO):
         client = data.get_client()
-        logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        logging.debug(f"action: inform_eof_to_nodes | client: {client}")
         self.reset_totals(client)
         self.update_totals(client, self.amount_received_by_node.get(client, 0), self.amount_sent_by_node.get(client, 0))
         self.expected_total_amount_received[client] = data.get_amount_sent()
@@ -187,7 +185,7 @@ class Node:
 
     def ask_confirmations(self, data: EOFDTO):
         self.confirmations = 1
-        logging.info(f"action: ask_confirmations | client: {data.get_client()} | pending_confirmations: {self.clients_pending_confirmations}")
+        logging.debug(f"action: ask_confirmations | client: {data.get_client()} | pending_confirmations: {self.clients_pending_confirmations}")
         data.set_state(STATE_COMMIT)
         self.broker.public_message(sink=self.node_name + "_eofs", message=data.serialize())
 
@@ -213,13 +211,13 @@ class Node:
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except UnfinishedGamesException as e:
-            logging.info(f"action: error | Unfinished Games Exception")
+            logging.debug(f"action: error | Unfinished Games Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except UnfinishedReviewsException as e:
-            logging.info(f"action: error | Unfinished Reviews Exception")
+            logging.debug(f"action: error | Unfinished Reviews Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except PrematureEOFException as e:
-            logging.info(f"action: error | Premature EOF Exception")
+            logging.debug(f"action: error | Premature EOF Exception")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
         except Exception as e:
             logging.error(f"action: error | result: {e}")

@@ -22,7 +22,7 @@ class Filter(Node):
         tipo = data.get_type()
         amount_received_by_node = self.amount_received_by_node[client][tipo]
         amount_sent_by_node = self.amount_sent_by_node[client][tipo]
-        logging.info(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node: {amount_sent_by_node}")
+        logging.debug(f"action: send_eof_confirmation | client: {client} | amount_received_by_node: {amount_received_by_node} | amount_sent_by_node: {amount_sent_by_node}")
         self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, client,STATE_OK,"",amount_received_by_node,amount_sent_by_node).serialize())
 
     def send_reviews(self, data: RawDTO):
@@ -83,7 +83,7 @@ class Filter(Node):
         tipo = data.get_type()
         self.update_totals(data.get_client(), tipo, data.get_amount_received(), data.get_amount_sent())   
         self.confirmations += 1
-        logging.info(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
+        logging.debug(f"action: check_confirmations | client: {data.get_client()} | confirmations: {self.confirmations}")
         if self.confirmations == self.amount_of_nodes:
             self.check_amounts(data)
 
@@ -123,11 +123,10 @@ class Filter(Node):
 
     def inform_eof_to_nodes(self, data):
         client = data.get_client()
-        logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        logging.debug(f"action: inform_eof_to_nodes | client: {client}")
         tipo = data.get_type()
         self.reset_totals(client, tipo)
         self.update_totals(client, tipo, self.amount_received_by_node[client].get(tipo, 0), self.amount_sent_by_node[client].get(tipo, 0))
-        logging.info(f"exped total amount received: {data.get_amount_sent()}")
         self.update_expected_total_amount_received(client, tipo, data.get_amount_sent())
         self.clients_pending_confirmations.append(client)
         if self.amount_of_nodes < 2:

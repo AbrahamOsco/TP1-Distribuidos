@@ -58,6 +58,8 @@ services:
         condition: service_healthy
       filterbasic_0:
         condition: service_started
+      filterbasic_1:
+        condition: service_started
 
   filterbasic_0:
     container_name: filterbasic_0
@@ -71,18 +73,64 @@ services:
             condition: service_healthy
         selectq1_0:
             condition: service_started
+        selectq1_1:
+            condition: service_started
         selectq2345_0:
+            condition: service_started
+        selectq2345_1:
             condition: service_started
         filterscorepositive_0:
             condition: service_started
+        filterscorepositive_1:
+            condition: service_started
         filterscorenegative_0:
+            condition: service_started
+        filterscorenegative_1:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=DataRaw
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=DataParsed
+        - SINK_TYPE=topic
+
+  filterbasic_1:
+    container_name: filterbasic_1
+    image: filterbasic:latest
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        selectq1_0:
+            condition: service_started
+        selectq1_1:
+            condition: service_started
+        selectq2345_0:
+            condition: service_started
+        selectq2345_1:
+            condition: service_started
+        filterscorepositive_0:
+            condition: service_started
+        filterscorepositive_1:
+            condition: service_started
+        filterscorenegative_0:
+            condition: service_started
+        filterscorenegative_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterbasic
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -101,12 +149,40 @@ services:
             condition: service_healthy
         platformcounter_0:
             condition: service_started
+        platformcounter_1:
+            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=DataParsed
+        - SOURCE_KEY=games
+        - SOURCE_TYPE=topic
+        - SINK=GamesPlatform
+        - SINK_TYPE=direct
+
+  selectq1_1:
+    container_name: selectq1_1
+    image: selectq1:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        platformcounter_0:
+            condition: service_started
+        platformcounter_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectq1
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
@@ -130,7 +206,31 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=GamesPlatform
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=CountByPlatform
+        - SINK_TYPE=direct
+
+  platformcounter_1:
+    container_name: platformcounter_1
+    image: platformcounter:latest
+    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        platformreducer:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=platformcounter
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -171,12 +271,40 @@ services:
             condition: service_healthy
         filtergender_0:
             condition: service_started
+        filtergender_1:
+            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=DataParsed
+        - SOURCE_KEY=games
+        - SOURCE_TYPE=topic
+        - SINK=GamesQ2345
+        - SINK_TYPE=direct
+
+  selectq2345_1:
+    container_name: selectq2345_1
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        filtergender_0:
+            condition: service_started
+        filtergender_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectq2345
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
@@ -195,16 +323,57 @@ services:
             condition: service_healthy
         selectidnameaction_0:
             condition: service_started
+        selectidnameaction_1:
+            condition: service_started
         selectidnameindie_0:
             condition: service_started
+        selectidnameindie_1:
+            condition: service_started
         filterdecade_0:
+            condition: service_started
+        filterdecade_1:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=GamesQ2345
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=GenderGames
+        - SINK_TYPE=topic
+        - GENDERS=Indie,Action
+
+  filtergender_1:
+    container_name: filtergender_1
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        selectidnameaction_0:
+            condition: service_started
+        selectidnameaction_1:
+            condition: service_started
+        selectidnameindie_0:
+            condition: service_started
+        selectidnameindie_1:
+            condition: service_started
+        filterdecade_0:
+            condition: service_started
+        filterdecade_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filtergender
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -229,7 +398,32 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Indie
+        - SOURCE_TYPE=topic
+        - SINK=DecadeGames
+        - SINK_TYPE=direct
+        - DECADE=2010
+
+  filterdecade_1:
+    container_name: filterdecade_1
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        groupertopaverageplaytime:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterdecade
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
@@ -277,7 +471,31 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Indie
+        - SOURCE_TYPE=topic
+        - SINK=MonitorQ3
+        - SINK_TYPE=direct
+
+  selectidnameindie_1:
+    container_name: selectidnameindie_1
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq3:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectidnameindie
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
@@ -301,7 +519,32 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsPositives
+        - SINK_TYPE=direct
+        - SCORE_WANTED=1
+
+  filterscorepositive_1:
+    container_name: filterscorepositive_1
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq3:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorepositive
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
@@ -375,7 +618,33 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Action
+        - SOURCE_TYPE=topic
+        - SINK=MonitorQ45
+        - SINK_TYPE=fanout
+
+  selectidnameaction_1:
+    container_name: selectidnameaction_1
+    image: selectidname:latest
+    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorjoinerq4:
+            condition: service_started
+        monitorstorageq5:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectidnameaction
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
         - SOURCE_TYPE=topic
@@ -401,7 +670,34 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsNegatives
+        - SINK_TYPE=fanout
+        - SCORE_WANTED=-1
+
+  filterscorenegative_1:
+    container_name: filterscorenegative_1
+    image: filterscore:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorjoinerq4:
+            condition: service_started
+        monitorstorageq5:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorenegative
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
@@ -420,6 +716,8 @@ services:
         rabbitmq:
             condition: service_healthy
         filterreviewenglish_0:
+            condition: service_started
+        filterreviewenglish_1:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
@@ -450,7 +748,31 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_ID=0
-        - AMOUNT_OF_NODES=1
+        - AMOUNT_OF_NODES=2
+        - SOURCE=ActionGamesReviewed
+        - SOURCE_KEY=default
+        - SOURCE_TYPE=direct
+        - SINK=ActionGamesEnglishReviews
+        - SINK_TYPE=direct
+
+  filterreviewenglish_1:
+    container_name: filterreviewenglish_1
+    image: filterreviewenglish:latest
+    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq4:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterreviewenglish
+        - NODE_ID=1
+        - AMOUNT_OF_NODES=2
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct

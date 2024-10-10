@@ -30,7 +30,6 @@ class ClientProtocol(Protocol):
         self.send_number_1_byte(OPERATION_TYPE_GAMEEOF)
         self.send_number_1_byte(self.id)
         self.send_number_4_bytes(amount)
-        logging.info(f"Games EOF sent, AMOUNT: {amount}")
 
     def send_reviews_eof(self, amount):
         self.send_number_1_byte(OPERATION_TYPE_REVIEWEOF)
