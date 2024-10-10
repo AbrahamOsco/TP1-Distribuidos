@@ -7,6 +7,7 @@ class Counter(Node):
     def __init__(self):
         super().__init__()
         self.reset_counter()
+        self.sent_amount_updated = False
 
     def reset_counter(self):
         self.result = {
@@ -25,7 +26,7 @@ class Counter(Node):
 
     def send_result(self, data):
         self.broker.public_message(sink=self.sink, message=self.trim_data(data).serialize(), routing_key="default")
-        self.update_amount_sent_by_node(data["client_id"], 1)
+        # self.update_amount_sent_by_node(data["client_id"], 1)
 
     def process_data(self, data: GamesDTO):
         client_id = data.get_client()
@@ -35,3 +36,8 @@ class Counter(Node):
         self.result["linux"] += platform_count["linux"]
         self.result["mac"] += platform_count["mac"]
         self.update_amount_received_by_node(data.get_client(), data.get_amount())
+
+        if not self.sent_amount_updated:
+            self.update_amount_sent_by_node(client_id, 1)
+            self.sent_amount_updated = True
+
