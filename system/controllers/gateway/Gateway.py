@@ -3,6 +3,7 @@ from system.commonsSystem.node.node import Node
 import logging
 import multiprocessing
 import os
+import signal
 from multiprocessing import Manager
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
@@ -32,7 +33,13 @@ class Gateway(Node):
         for process in self.processes:
             process.join()
 
+    def stop_server(self):
+        self.socket_peer.close()
+        self.socket_accepter.close()
+        logging.info("action: server stopped | result: success ✅")
+
     def run_server(self):
+        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_sever())
         while True:
             self.accept_a_connection()
             while True:
@@ -59,6 +66,8 @@ class Gateway(Node):
 
     def abort(self):
         self.stop()
+        logging.info("action: broker stop | result: success ✅")
         for process in self.processes:
             process.terminate()
             process.join()
+        logging.info("Gateway abort | result: success ✅")

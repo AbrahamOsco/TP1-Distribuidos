@@ -65,7 +65,11 @@ class Broker:
             sys.exit(-1)
 
     def close(self):
-        self.connection.close()
+        try:
+            self.channel.stop_consuming()
+            self.connection.close()
+        except Exception as e:
+            logging.info(f"action: close | result: failed ❌ | error: {e}")
 
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
