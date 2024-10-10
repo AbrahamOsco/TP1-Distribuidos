@@ -31,7 +31,7 @@ class Filter(Node):
         if len(reviews.reviews_dto) == 0:
             return
         self.broker.public_message(sink=self.sink, message=reviews.serialize(), routing_key="reviews")
-        self.update_amount_sent_by_node(data.get_client(), "reviews", len(reviews.reviews_dto()))
+        self.update_amount_sent_by_node(data.get_client(), "reviews", len(reviews.reviews_dto))
 
     def send_games(self, data: RawDTO):
         self.update_amount_received_by_node(data.get_client(), "games", len(data.raw_data))
@@ -111,7 +111,6 @@ class Filter(Node):
             return
         if self.amount_of_nodes < 2:
             raise PrematureEOFException()
-        logging.info(f"total received: {self.total_amount_received[client].get(tipo, 0)} | total expected: {self.expected_total_amount_received[client].get(tipo, 0)}")
         self.reset_totals(client, tipo)
         self.update_totals(client, tipo, self.amount_received_by_node[client].get(tipo, 0), self.amount_sent_by_node[client].get(tipo, 0))
         self.ask_confirmations(data)

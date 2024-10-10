@@ -30,6 +30,9 @@ class EOFDTO:
     def get_client(self):
         return self.client
     
+    def get_attribute(self):
+        return self.attribute
+    
     def is_EOF(self):
         return True
 

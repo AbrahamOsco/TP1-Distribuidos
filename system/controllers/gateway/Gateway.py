@@ -6,7 +6,7 @@ import os
 from multiprocessing import Manager
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
-from common.DTO.Query1ResultDTO import Query1ResultDTO
+from system.commonsSystem.DTO.EOFDTO import EOFDTO
 
 class Gateway(Node):
     def __init__(self):
@@ -47,7 +47,8 @@ class Gateway(Node):
         result = data.to_result()
         self.shared_namespace.protocol.send_result(result)
 
-    def inform_eof_to_nodes(self, client_id):
+    def inform_eof_to_nodes(self, data: EOFDTO):
+        client_id = data.get_client()
         if client_id not in self.result_eofs_by_client:
             self.result_eofs_by_client[client_id] = 0
         self.result_eofs_by_client[client_id] += 1
