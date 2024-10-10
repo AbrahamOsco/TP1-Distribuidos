@@ -2,9 +2,26 @@
     "client_id": 1,
     "games": [
         {
-            "Max Payne": 168,
-            "Space Trader: Merchant Marine": 167,
-            "Bunch of Heroes": 125
+            "ARK: Survival Evolved": 7195,
+            "Evolve Stage 2": 5842,
+            "No Man's Sky": 8512,
+            "Z1 Battle Royale": 5635,
+            "Call of Duty\u00ae: Black Ops III": 10522,
+            "APB Reloaded": 5110,
+            "Dota 2": 10610,
+            "Starbound": 5007,
+            "theHunter Classic": 5727,
+            "Rust": 16005,
+            "Batman\u2122: Arkham Knight": 7283,
+            "Robocraft": 12556,
+            "PAYDAY 2": 27136,
+            "Dead by Daylight": 6495,
+            "DayZ": 30003,
+            "Tom Clancy\u2019s The Division\u2122": 5598,
+            "Grand Theft Auto IV: The Complete Edition": 5978,
+            "Grand Theft Auto V": 11013,
+            "Heroes & Generals": 11977,
+            "Nether: Resurrected": 5341
         }
     ]
 }

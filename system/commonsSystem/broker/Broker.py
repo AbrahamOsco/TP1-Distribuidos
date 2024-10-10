@@ -3,15 +3,20 @@ from common.utils.utils import initialize_log
 import logging
 import pika
 
+HEARTBEAT = 5000
+
 class Broker:
 
     def __init__(self):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq', heartbeat =HEARTBEAT ))
         self.channel = self.connection.channel()
         initialize_log(logging_level='INFO')
         self.queues = {}
         self.was_closed = False
         self.enable_worker_queues() # Toda queue con name sera una working queue! 👈
+        params = pika.ConnectionParameters()
+
+
 
     # Toda queue que creemos por default sera durable. y anonima si no nos pasan nombre
     def create_queue(self, name='', durable=True, callback=None):

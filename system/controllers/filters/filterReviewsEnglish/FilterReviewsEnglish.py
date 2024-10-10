@@ -15,12 +15,13 @@ import signal
 
 QUEUE_MONITORSTORAGEQ4_FILTERENGLISH = "monitorStorageQ4_filterEnglish"
 QUEUE_RESULTQ4_GATEWAY = "resultq4_gateway"
-AMOUNT_NEED_REVIEWS_ENGLISH = 100
+AMOUNT_NEED_REVIEWS_ENGLISH = 5000
 
 class FilterReviewsEnglish:
     def __init__(self):
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.id = os.getenv("NODE_ID")
+        langid.set_languages(['en'])
         self.games ={}
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
