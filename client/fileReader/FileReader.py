@@ -2,7 +2,7 @@ import os
 import csv
 import sys
 import logging
-PERCENT_OF_FILE_FOR_USE = 0.1
+PERCENT_OF_FILE_FOR_USE = 1
 
 FilesPrefixes = {
     0.1: "1",

@@ -1,3 +1,6 @@
+docker compose -f docker-compose-dev.yaml stop -t 1
+docker compose -f docker-compose-dev.yaml down
+
 docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
 docker build -f ./system/controllers/filters/filterBasic/Dockerfile -t "filterbasic:latest" .
