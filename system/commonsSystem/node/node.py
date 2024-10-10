@@ -171,7 +171,7 @@ class Node:
         if client in self.amount_sent_by_node:
             del self.amount_sent_by_node[client]
         if client in self.clients:
-            del self.clients[client]
+            self.clients.remove(client)
 
     def inform_eof_to_nodes(self, data: EOFDTO):
         client = data.get_client()
