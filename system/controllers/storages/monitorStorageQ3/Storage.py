@@ -48,21 +48,23 @@ class Storage(Node):
             self.send_games(games)
 
     def process_reviews(self, data: ReviewsDTO):
-        if self.status == STATUS_REVIEWING:
-            self.update_amount_received_by_node(data.get_client(), data.get_amount())
-            self.update_amount_sent_by_node(data.get_client(), data.get_amount())
-            for review in data.reviews_dto:
-                if review.app_id in self.list:
-                    self.list[review.app_id] += 1
+        if self.status == STATUS_STARTED:
+            raise UnfinishedReviewsException()
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
+        for review in data.reviews_dto:
+            if review.app_id in self.list:
+                self.list[review.app_id] += 1
 
     def process_games(self, data: GamesDTO):
-        if self.status == STATUS_STARTED:
-            self.update_amount_received_by_node(data.get_client(), data.get_amount())
-            self.update_amount_sent_by_node(data.get_client(), data.get_amount())
-            self.client_id = data.client_id
-            for game in data.games_dto:
-                self.list[game.app_id] = 0
-                self.games[game.app_id] = game.name
+        if self.status == STATUS_REVIEWING:
+            raise UnfinishedGamesException()
+        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
+        self.client_id = data.client_id
+        for game in data.games_dto:
+            self.list[game.app_id] = 0
+            self.games[game.app_id] = game.name
 
     def process_data(self, data):
         if data.is_reviews():

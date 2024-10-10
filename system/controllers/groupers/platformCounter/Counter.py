@@ -16,15 +16,16 @@ class Counter(Node):
             "mac": 0,
         }
 
-    def pre_eof_actions(self):
+    def pre_eof_actions(self, client_id):
         self.send_result(self.result)
         self.reset_counter()
 
     def trim_data(self, data):
-        return GamesDTO(client_id=data["client_id"], state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
+        return GamesDTO(client_id=int(data["client_id"]), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
 
     def send_result(self, data):
         self.broker.public_message(sink=self.sink, message=self.trim_data(data).serialize(), routing_key="default")
+        self.update_amount_sent_by_node(data["client_id"], 1)
 
     def process_data(self, data: GamesDTO):
         client_id = data.get_client()
@@ -34,4 +35,3 @@ class Counter(Node):
         self.result["linux"] += platform_count["linux"]
         self.result["mac"] += platform_count["mac"]
         self.update_amount_received_by_node(data.get_client(), data.get_amount())
-        self.update_amount_sent_by_node(data.get_client(), data.get_amount())

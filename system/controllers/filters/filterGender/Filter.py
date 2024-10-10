@@ -12,9 +12,10 @@ class Filter(Node):
     def is_gender(self, genders, wanted_gender):
         return wanted_gender in genders.split(',')
     
-    def send_eof(self, client):
+    def send_eof(self, data):
+        client = data.get_client()
         for gender in self.genders:
-            self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO, client, False).serialize(), routing_key=gender)
+            self.broker.public_message(sink=self.sink, message=EOFDTO(OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, client, False).serialize(), routing_key=gender)
     
     def send_game(self, data:GamesDTO, gender):
         data.set_state(STATE_GENRE)

@@ -15,7 +15,7 @@ class Storage(Node):
         self.list = {}
         self.current_client = 0
 
-    def pre_eof_actions(self):
+    def pre_eof_actions(self, client_id):
         self.reset_list()
     
     def send_result(self, review):

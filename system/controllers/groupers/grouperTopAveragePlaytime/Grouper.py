@@ -13,7 +13,7 @@ class Grouper(Node):
         self.min_time = 0
         self.current_client = 0
 
-    def pre_eof_actions(self):
+    def pre_eof_actions(self, client_id):
         self.send_result()
         self.reset_list()
 

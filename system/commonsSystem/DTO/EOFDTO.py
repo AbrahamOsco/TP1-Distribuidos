@@ -1,3 +1,6 @@
+from system.commonsSystem.DTO.DTO import DTO
+from system.commonsSystem.DTO.enums.OperationType import OperationType
+
 STATE_DEFAULT = 1
 STATE_COMMIT = 2 ## Informa a los hermanos que llegó un eof y le pide sus cantidades
 STATE_OK = 3 ## Informa sus cantidades
@@ -29,6 +32,11 @@ class EOFDTO:
     
     def is_EOF(self):
         return True
+
+    def get_type(self):
+        if self.operation_type == OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value:
+            return "games"
+        return "reviews"
     
     def get_amount_received(self):
         return self.amount_received
@@ -38,9 +46,10 @@ class EOFDTO:
     
     def serialize(self):
         eof_bytes = bytearray()
-        eof_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.operation_type.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.client.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(DTO.serialize_str(self.attribute))
         eof_bytes.extend(self.amount_received.to_bytes(4, byteorder='big'))
         eof_bytes.extend(self.amount_sent.to_bytes(4, byteorder='big'))
         return bytes(eof_bytes)
@@ -53,8 +62,9 @@ class EOFDTO:
         offset += 1
         state = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        attribute, offset = DTO.deserialize_str(data, offset)
         amount_received = int.from_bytes(data[offset:offset+4], byteorder='big')
         offset += 4
         amount_sent = int.from_bytes(data[offset:offset+4], byteorder='big')
         offset += 4
-        return EOFDTO(operation_type, client, state, amount_received, amount_sent), offset
+        return EOFDTO(operation_type, client, state, attribute, amount_received, amount_sent), offset
