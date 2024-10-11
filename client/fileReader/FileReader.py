@@ -2,16 +2,18 @@ import os
 import csv
 import sys
 import logging
-PERCENT_OF_FILE_FOR_USE = 1
 
 FilesPrefixes = {
     0.1: "1",
-    0.4: "2",
-    1: "3"
+    0.2: "2",
+    0.3: "3",
+    0.4: "4",
+    0.5: "5",
+    1: ""
 }
 
 class FileReader:
-    def __init__(self, file_name, batch_size=25, percent_of_file_for_use:float=PERCENT_OF_FILE_FOR_USE):
+    def __init__(self, file_name, batch_size=25, percent_of_file_for_use:float=-1):
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         logging.info(f"FilesPrefixes: {FilesPrefixes[percent_of_file_for_use]} 👈")
         csv.field_size_limit(sys.maxsize)

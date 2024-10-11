@@ -24,7 +24,6 @@ services:
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
     environment:
-      - PERCENT_OF_FILE_FOR_USE=1
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app

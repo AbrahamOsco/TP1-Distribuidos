@@ -4,9 +4,9 @@ import logging
 QueriesX = ["Query2", "Query3", "Query4", "Query5"]
 
 class QueriesResponses:
-    def __init__(self):
+    def __init__(self,percent_of_file_for_use:float):
         self.responses = {}
-        self.percent_of_file_for_use =  float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
+        self.percent_of_file_for_use =  percent_of_file_for_use
         self.loadQuery1()
         for query in QueriesX:
             self.loadQueryX(query)

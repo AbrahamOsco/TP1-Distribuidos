@@ -24,20 +24,6 @@ function solicitar_numero_entero() {
   done
 }
 
-# Función para validar que la entrada sea un número decimal específico
-function solicitar_porcentaje() {
-  local porcentaje
-  while true; do
-    read -p "Ingrese el porcentaje del dataset a utilizar (0.1, 0.4, 1): " porcentaje
-    if [[ "$porcentaje" == "0.1" || "$porcentaje" == "0.4" || "$porcentaje" == "1" ]]; then
-      echo $porcentaje
-      return
-    else
-      echo "Error: Debe ingresar un valor válido (0.1, 0.4, 1)."
-    fi
-  done
-}
-
 # Función para validar que la entrada sea un número entero
 function solicitar_si_no() {
   local mensaje=$1
@@ -100,11 +86,8 @@ else
   NUM_FILTER_REVIEW_ENGLISH=1
 fi
 
-# Solicitar el porcentaje de dataset a utilizar
-PERCENT_OF_FILE_FOR_USE=$(solicitar_porcentaje)
-
 if [ "$QUERIES" == "A" ]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
@@ -116,49 +99,48 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_FILTER_SCORE_POSITIVE \
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
-      $NUM_FILTER_REVIEW_ENGLISH \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_FILTER_REVIEW_ENGLISH
+
 elif [[ "$QUERIES" == *"1"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
-      $NUM_PLATFORM_COUNTER \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_PLATFORM_COUNTER
+
 elif [[ "$QUERIES" == *"2"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
-      $NUM_FILTER_DECADE \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_FILTER_DECADE
+
 elif [[ "$QUERIES" == *"3"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_INDIE \
-      $NUM_FILTER_SCORE_POSITIVE \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_FILTER_SCORE_POSITIVE 
+
 elif [[ "$QUERIES" == *"4"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
-      $NUM_FILTER_REVIEW_ENGLISH \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_FILTER_REVIEW_ENGLISH
+
 elif [[ "$QUERIES" == *"5"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
-      $NUM_FILTER_SCORE_NEGATIVE \
-      $PERCENT_OF_FILE_FOR_USE
+      $NUM_FILTER_SCORE_NEGATIVE
 fi
