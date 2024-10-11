@@ -1,5 +1,7 @@
 docker compose -f docker-compose-dev.yaml stop -t 1
 docker compose -f docker-compose-dev.yaml down
+docker build -f ./base_images/Dockerfile -t "common:latest" .
+docker build -f ./system/Dockerfile -t "system:latest" .
 
 docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
