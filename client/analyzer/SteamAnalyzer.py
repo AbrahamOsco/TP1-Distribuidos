@@ -82,13 +82,6 @@ class SteamAnalyzer:
             logging.info(f"action: result_received 📊 | result: success ✅")
             self.actual_responses = resultQuerys.append_data(self.actual_responses)
         logging.info("action: All the results 📊 were received! ✅")
-        # query_count = 1
-        # for query in self.actual_responses:
-        #     logging.info(f"action: query | query: {query} | response: {self.actual_responses[query]}")
-        #     file_name = f"./data/responses/query_result_{query_count}.txt"
-        #     with open(file_name, "w") as file:
-        #         file.write("\n".join(self.actual_responses[query]))
-        #     query_count += 1
         diff = self.expected_responses.diff(self.actual_responses)
         for query in diff:
             logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
