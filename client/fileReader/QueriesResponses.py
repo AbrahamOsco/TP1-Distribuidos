@@ -4,12 +4,15 @@ import logging
 QueriesX = ["Query2", "Query3", "Query4", "Query5"]
 
 class QueriesResponses:
-    def __init__(self,percent_of_file_for_use:float):
+    def __init__(self, should_send_reviews):
         self.responses = {}
-        self.percent_of_file_for_use =  percent_of_file_for_use
+        self.percent_of_file_for_use =  float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
         self.loadQuery1()
-        for query in QueriesX:
-            self.loadQueryX(query)
+        if should_send_reviews:
+            for query in QueriesX:
+                self.loadQueryX(query)
+        else:
+            self.loadQueryX("Query2")
 
     def loadQuery1(self):
         reader = FileReader("Query1", percent_of_file_for_use= self.percent_of_file_for_use)

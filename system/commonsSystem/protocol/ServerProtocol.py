@@ -18,10 +18,10 @@ class ServerProtocol(Protocol):
         client_id = self.recv_number_n_bytes(1)
         if operation_type == OPERATION_TYPE_GAMEEOF:
             amount = self.recv_number_n_bytes(4)
-            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=int(amount))
+            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default", amount)])
         if operation_type == OPERATION_TYPE_REVIEWEOF:
             amount = self.recv_number_n_bytes(4)
-            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=int(amount))
+            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default",amount)])
         list_items_raw = []
         items_amount = self.recv_number_n_bytes(2)
         for _ in range(items_amount):

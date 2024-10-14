@@ -24,8 +24,7 @@ class Socket:
             raise RuntimeError(msg)
         try:
             skt_peer, addr = self.socket.accept()
-            socket_peer_object = Socket(socket_peer=skt_peer, port=self.port)
-            return socket_peer_object, addr
+            return skt_peer, addr
         except OSError as e:
             return None, e
     

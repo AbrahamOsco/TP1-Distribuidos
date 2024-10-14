@@ -1,4 +1,3 @@
-import logging
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.node.node import Node
@@ -8,33 +7,31 @@ class Counter(Node):
         super().__init__()
         self.reset_counter()
 
-    def reset_counter(self):
-        self.result = {
-            "client_id": "",
-            "windows": 0,
-            "linux": 0,
-            "mac": 0,
-        }
+    def reset_counter(self, client_id=None):
+        if client_id is None:
+            self.result = {}
+        else:
+            del self.result[client_id]
 
     def pre_eof_actions(self, client_id):
-        self.send_result(self.result)
-        self.reset_counter()
-
-    def trim_data(self, data):
-        return GamesDTO(client_id=int(data["client_id"]), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
+        data = self.result[client_id]
+        result = GamesDTO(client_id=int(client_id), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
+        self.send_result(result)
+        self.reset_counter(client_id)
 
     def send_result(self, data):
-        self.broker.public_message(sink=self.sink, message=self.trim_data(data).serialize(), routing_key="default")
+        self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data: GamesDTO):
         client_id = data.get_client()
-        self.result["client_id"] = client_id
+        if client_id not in self.result:
+            self.result[client_id] = {"windows": 0, "linux": 0, "mac": 0}
         platform_count = data.get_platform_count()
-        self.result["windows"] += platform_count["windows"]
-        self.result["linux"] += platform_count["linux"]
-        self.result["mac"] += platform_count["mac"]
-        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.result[client_id]["windows"] += platform_count["windows"]
+        self.result[client_id]["linux"] += platform_count["linux"]
+        self.result[client_id]["mac"] += platform_count["mac"]
+        self.eof.update_amount_received_by_node(data.get_client(), data.get_amount())
 
-        if client_id not in self.amount_sent_by_node:
-            self.update_amount_sent_by_node(client_id, 1)
+        if client_id not in self.eof.amount_sent_by_node:
+            self.eof.update_amount_sent_by_node(client_id, 1)
 

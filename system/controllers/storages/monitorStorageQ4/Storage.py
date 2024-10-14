@@ -11,25 +11,31 @@ class Storage(Node):
         self.reset_list()
         self.amount_needed = int(os.getenv("AMOUNT_NEEDED"))
 
-    def reset_list(self):
-        self.list = {}
-        self.current_client = 0
+    def reset_list(self, client_id=None):
+        if client_id is None:
+            self.list = {}
+        else:
+            del self.list[client_id]
 
     def pre_eof_actions(self, client_id):
-        self.reset_list()
+        self.reset_list(client_id)
     
-    def send_result(self, review):
-        result = GamesDTO(client_id=self.current_client, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4)
+    def send_result(self, client_id, review):
+        result = GamesDTO(client_id=client_id, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4)
         self.broker.public_message(sink=self.sink, message=result.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):
-        self.current_client = data.get_client()
-        self.update_amount_received_by_node(data.get_client(), data.get_amount())
+        client_id = data.get_client()
+        if client_id not in self.list:
+            self.list[client_id] = {}
+        self.eof.update_amount_received_by_node(client_id, data.get_amount())
+        if client_id not in self.eof.amount_sent_by_node:
+            self.eof.update_amount_sent_by_node(client_id, 0)
         for review in data.reviews_dto:
-            if review.name not in self.list:
-                self.list[review.name] = 1
+            if review.name not in self.list[client_id]:
+                self.list[client_id][review.name] = 1
             else:
-                self.list[review.name] += 1
-            if self.list[review.name] == self.amount_needed:
-                self.send_result(review)
-                self.update_amount_sent_by_node(data.get_client(), 1)
+                self.list[client_id][review.name] += 1
+            if self.list[client_id][review.name] == self.amount_needed:
+                self.send_result(client_id, review)
+                self.eof.update_amount_sent_by_node(client_id, 1)
