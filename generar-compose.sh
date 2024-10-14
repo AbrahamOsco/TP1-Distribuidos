@@ -39,6 +39,7 @@ function solicitar_si_no() {
   done
 }
 
+NUM_CLIENTS=$(solicitar_numero_entero "Ingrese la cantidad de clientes: ")
 # Solicitar las cantidades para cada tipo de servicio
 ALL_QUERIES=$(solicitar_si_no "¿Desea ejecutar todas las consultas? (S/N): ")
 QUERIES=""
@@ -99,23 +100,23 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_FILTER_SCORE_POSITIVE \
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
-      $NUM_FILTER_REVIEW_ENGLISH
-
+      $NUM_FILTER_REVIEW_ENGLISH \
+      $NUM_CLIENTS
 elif [[ "$QUERIES" == *"1"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
-      $NUM_PLATFORM_COUNTER
-
+      $NUM_PLATFORM_COUNTER \
+      $NUM_CLIENTS
 elif [[ "$QUERIES" == *"2"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
-      $NUM_FILTER_DECADE
-
+      $NUM_FILTER_DECADE \
+      $NUM_CLIENTS
 elif [[ "$QUERIES" == *"3"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -123,8 +124,8 @@ elif [[ "$QUERIES" == *"3"* ]]; then
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_INDIE \
-      $NUM_FILTER_SCORE_POSITIVE 
-
+      $NUM_FILTER_SCORE_POSITIVE \
+      $NUM_CLIENTS
 elif [[ "$QUERIES" == *"4"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -133,8 +134,8 @@ elif [[ "$QUERIES" == *"4"* ]]; then
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
-      $NUM_FILTER_REVIEW_ENGLISH
-
+      $NUM_FILTER_REVIEW_ENGLISH \
+      $NUM_CLIENTS
 elif [[ "$QUERIES" == *"5"* ]]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -142,5 +143,6 @@ elif [[ "$QUERIES" == *"5"* ]]; then
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
-      $NUM_FILTER_SCORE_NEGATIVE
+      $NUM_FILTER_SCORE_NEGATIVE \
+      $NUM_CLIENTS
 fi

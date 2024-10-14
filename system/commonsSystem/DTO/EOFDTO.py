@@ -7,11 +7,10 @@ STATE_OK = 3 ## Informa sus cantidades
 STATE_FINISH = 4 ## Informa que terminó y que el cliente debe ser eliminado de memoria
 
 class EOFDTO:
-    def __init__(self, type, client:int, state:int, attribute="", amount_received = 0, amount_sent = 0):
+    def __init__(self, type, client:int, state:int, amount_received:int = 0, amount_sent = []):
         self.operation_type = type
         self.state = state
         self.client = client
-        self.attribute = attribute
         self.amount_sent = amount_sent
         self.amount_received = amount_received
     
@@ -30,9 +29,6 @@ class EOFDTO:
     def get_client(self):
         return self.client
     
-    def get_attribute(self):
-        return self.attribute
-    
     def is_EOF(self):
         return True
 
@@ -41,20 +37,22 @@ class EOFDTO:
             return "games"
         return "reviews"
     
-    def get_amount_received(self):
-        return self.amount_received
-    
-    def get_amount_sent(self):
-        return self.amount_sent
+    def get_amount_sent(self, tipo="default"):
+        for i in self.amount_sent:
+            if i[0] == tipo:
+                return i[1]
+        return 0
     
     def serialize(self):
         eof_bytes = bytearray()
         eof_bytes.extend(self.operation_type.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.client.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
-        eof_bytes.extend(DTO.serialize_str(self.attribute))
         eof_bytes.extend(self.amount_received.to_bytes(4, byteorder='big'))
-        eof_bytes.extend(self.amount_sent.to_bytes(4, byteorder='big'))
+        eof_bytes.extend(len(self.amount_sent).to_bytes(1, byteorder='big'))
+        for i in self.amount_sent:
+            eof_bytes.extend(DTO.serialize_str(i[0]))
+            eof_bytes.extend(i[1].to_bytes(4, byteorder='big'))
         return bytes(eof_bytes)
     
     def deserialize(data, offset):
@@ -65,9 +63,13 @@ class EOFDTO:
         offset += 1
         state = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
-        attribute, offset = DTO.deserialize_str(data, offset)
         amount_received = int.from_bytes(data[offset:offset+4], byteorder='big')
         offset += 4
-        amount_sent = int.from_bytes(data[offset:offset+4], byteorder='big')
-        offset += 4
-        return EOFDTO(operation_type, client, state, attribute, amount_received, amount_sent), offset
+        amount_sent = []
+        amount_sent_len = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        for i in range(amount_sent_len):
+            attribute, offset = DTO.deserialize_str(data, offset)
+            amount_sent.append((attribute, int.from_bytes(data[offset:offset+4], byteorder='big')))
+            offset += 4
+        return EOFDTO(operation_type, client, state, amount_received, amount_sent), offset

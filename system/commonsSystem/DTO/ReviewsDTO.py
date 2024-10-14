@@ -67,7 +67,7 @@ class ReviewsDTO(DTO):
     def get_client(self):
         return self.client_id
 
-    def filter_reviews(self, filter_func):
+    def filter_data(self, filter_func):
         self.reviews_dto = list(filter(filter_func, self.reviews_dto))
 
     def apply_on_reviews(self, func):

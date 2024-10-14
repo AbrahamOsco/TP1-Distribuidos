@@ -97,7 +97,7 @@ class GamesDTO(DTO):
     def is_games(self):
         return True
     
-    def filter_games(self, filter_func):
+    def filter_data(self, filter_func):
         self.games_dto = list(filter(filter_func, self.games_dto))
 
     def to_result(self):

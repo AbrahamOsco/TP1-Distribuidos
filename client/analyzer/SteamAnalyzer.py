@@ -1,5 +1,4 @@
 import logging
-import random
 from common.utils.utils import initialize_log 
 import os
 import threading
@@ -14,24 +13,20 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        percent_of_file_for_use = self.get_percent_of_file_for_use()
-        logging.info(f"percent_of_file_for_use: {percent_of_file_for_use} 👈")
-        self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=percent_of_file_for_use)
-        self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=percent_of_file_for_use)
+        logging.info(f"percent_of_file_for_use: {self.config_params['percent_of_file_for_use']} 👈")
+        self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.config_params["percent_of_file_for_use"])
+        self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.config_params["percent_of_file_for_use"])
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
-        self.expected_responses = QueriesResponses(percent_of_file_for_use)
+        self.expected_responses = QueriesResponses(self.should_send_reviews)
         self.actual_responses = {}
         self.threads = []
-
-    def get_percent_of_file_for_use(self):
-        valores = [0.1, 0.2, 0.3, 0.4, 0.5]
-        return random.choice(valores)
 
     def initialize_config(self):
         self.config_params = {}
         self.config_params["id"] = int(os.getenv("NODE_ID"))
         self.config_params["log_level"] = os.getenv("LOGGING_LEVEL")
         self.config_params["hostname"] = os.getenv("HOSTNAME")
+        self.config_params["percent_of_file_for_use"] = float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
         initialize_log(self.config_params["log_level"])
     
     def connect_to_server(self):

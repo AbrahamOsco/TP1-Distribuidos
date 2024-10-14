@@ -1,26 +1,15 @@
 import os
-import logging
-from system.commonsSystem.node.node import Node
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLAYTIME
+from system.commonsSystem.node.filterNode import FilterNode
+from system.commonsSystem.DTO.GamesDTO import STATE_PLAYTIME
+from system.commonsSystem.DTO.GenreDTO import GenreDTO
 
-class Filter(Node):
+class Filter(FilterNode):
     def __init__(self):
-        super().__init__()
+        super().__init__(STATE_PLAYTIME)
         self.decade = int(os.getenv("DECADE"))
 
-    def is_correct_decade(self, date):
-        if len(date.split(', ')) < 2:
+    def fulfills_criteria(self, element: GenreDTO):
+        if len(element.release_date.split(', ')) < 2:
             return False
-        year = int(date.split(', ')[1])
+        year = int(element.release_date.split(', ')[1])
         return year >= self.decade and year < self.decade + 10
-
-    def send_game(self, data:GamesDTO):
-        data.set_state(STATE_PLAYTIME)
-        self.update_amount_sent_by_node(data.get_client(), data.get_amount())
-        self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
-
-    def process_data(self, data:GamesDTO):
-        self.update_amount_received_by_node(data.get_client(), data.get_amount())
-        data.filter_games(lambda x: self.is_correct_decade(x.release_date))
-        if len(data.games_dto) > 0:
-            self.send_game(data)
