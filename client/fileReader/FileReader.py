@@ -16,7 +16,7 @@ class FileReader:
         self.reader = csv.reader(self.file)
         self.bytes_read = 0
         self.is_closed = False
-        next(self.reader) # skip header in both datasets
+        next(self.reader)
         self.lines_read = 0
 
     def get_next_batch(self):
@@ -26,14 +26,14 @@ class FileReader:
             return None
         try:
             current_size = 0
-            for _ in range(self.batch_size): # refactor if and number magic was deleted.
+            for _ in range(self.batch_size): 
                 if self.bytes_read > self.usage_limit:
                     self.close()
                     break
-                data_raw = next(self.reader) # ["hola12", "hola13", "hola14", "hola15"]
+                data_raw = next(self.reader) 
                 self.lines_read += 1
-                total_size_raw = sum(len(element) for element in data_raw) # 24 bytes
-                self.bytes_read += (total_size_raw + len(data_raw)) # 24 bytes + 4 bytes (4 bytes (3 comas and 1 \n)
+                total_size_raw = sum(len(element) for element in data_raw)
+                self.bytes_read += (total_size_raw + len(data_raw)) 
                 current_size += total_size_raw
                 data_read.append(data_raw)
         except StopIteration:

@@ -13,9 +13,9 @@ FilesPrefixesResponse = {
 
 class ResponseReader:
 
-    def __init__(self, query_name, percent_of_file):
+    def __init__(self, query_name, percent_of_file_for_use):
         self.file_path = "./data/responses/"
-        self.file_path += FilesPrefixesResponse[percent_of_file]
+        self.file_path += FilesPrefixesResponse[percent_of_file_for_use]
         self.file_path += query_name + ".csv"
         self.file =  open(self.file_path, mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)

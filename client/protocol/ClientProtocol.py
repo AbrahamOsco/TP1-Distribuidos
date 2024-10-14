@@ -59,3 +59,4 @@ class ClientProtocol(Protocol):
             game = self.recv_string()
             games.append(game)
         return Query2345ResultDTO(query, games)
+

@@ -1,3 +1,4 @@
+
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -23,12 +24,36 @@ services:
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
     environment:
+      - PERCENT_OF_FILE_FOR_USE=0.5
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
       - SEND_REVIEWS=1
-      - PERCENT_OF_FILE_FOR_USE=0.1
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+
+  client2:
+    container_name: client2
+    image: client:latest
+    entrypoint: python3 /app/client/main.py
+    volumes:
+      - ./data/games.csv:/data/games.csv
+      - ./data/dataset.csv:/data/dataset.csv
+      - ./data/responses:/data/responses
+    environment:
+      - PERCENT_OF_FILE_FOR_USE=0.2
+      - NODE_ID=2
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - HOSTNAME=gateway
+      - SEND_REVIEWS=1
     networks:
       - system_network
     restart: on-failure
@@ -91,8 +116,8 @@ services:
 
   selectq1_0:
     container_name: selectq1_0
-    image: selectq1:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
+    image: select:latest
+    entrypoint: python3 /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -112,6 +137,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
+        - SELECT=2
 
   platformcounter_0:
     container_name: platformcounter_0
@@ -161,8 +187,8 @@ services:
 
   selectq2345_0:
     container_name: selectq2345_0
-    image: selectq2345:latest
-    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    image: select:latest
+    entrypoint: python3 /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -182,6 +208,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesQ2345
         - SINK_TYPE=direct
+        - SELECT=3
 
   filtergender_0:
     container_name: filtergender_0
@@ -262,8 +289,8 @@ services:
 
   selectidnameindie_0:
     container_name: selectidnameindie_0
-    image: selectidname:latest
-    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    image: select:latest
+    entrypoint: python3 /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -283,6 +310,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ3
         - SINK_TYPE=direct
+        - SELECT=6
 
   filterscorepositive_0:
     container_name: filterscorepositive_0
@@ -358,8 +386,8 @@ services:
 
   selectidnameaction_0:
     container_name: selectidnameaction_0
-    image: selectidname:latest
-    entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
+    image: select:latest
+    entrypoint: python3 /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -381,6 +409,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
+        - SELECT=6
 
   filterscorenegative_0:
     container_name: filterscorenegative_0
