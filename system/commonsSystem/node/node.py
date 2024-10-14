@@ -77,7 +77,7 @@ class Node:
         self.eof.update_totals(data)  
         client = data.get_client() 
         self.confirmations[client] += 1
-        logging.info(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
+        logging.debug(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
         if self.confirmations[client] == self.amount_of_nodes:
             self.check_amounts(data)
 
