@@ -9,7 +9,8 @@ import sys
 
 class Broker:
 
-    def __init__(self):
+    def __init__(self, tag=""):
+        self.tag = tag
         self.stablish_connection()
         initialize_log(logging_level='INFO')
         self.queues = {}
@@ -63,13 +64,13 @@ class Broker:
             self.channel.start_consuming()
         except Exception as e:
             sys.exit(-1)
-        logging.info("action: start_consuming | result: finished ✅")
+        logging.info(f"action: start_consuming {self.tag} | result: finished ✅")
 
     def close(self):
         try:
-            logging.info("action: stop consuming | result: pending ⌚")
+            logging.info(f"action: stop consuming {self.tag} | result: pending ⌚")
             self.channel.stop_consuming()
-            logging.info("action: stop consuming | result: success ✅")
+            logging.info(f"action: stop consuming {self.tag}| result: success ✅")
             self.connection.close()
         except Exception as e:
             logging.info(f"action: close | result: failed ❌ | error: {e}")

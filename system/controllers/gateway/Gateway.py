@@ -8,7 +8,7 @@ from multiprocessing import Manager
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-import time
+from system.commonsSystem.broker.Broker import Broker
 
 class Gateway(Node):
     def __init__(self):
@@ -22,7 +22,6 @@ class Gateway(Node):
         self.shared_namespace = manager.Namespace()
         self.shared_namespace.protocols = {}
         self.manager_lock = manager.Lock()
-        self.broker_lock = manager.Lock()
         super().__init__()
 
     def accept_a_connection(self):
@@ -63,30 +62,30 @@ class Gateway(Node):
             self.processes.append(client_handler)
         self.stop_server()
 
-    def abort_client(self, socket_peer):
+    def abort_client(self, socket_peer, broker):
         socket_peer.close()
+        broker.close()
         logging.info("action: client disconnected")
 
     def _handle_client(self, skt_peer, semaphore):
         socket_peer = Socket(socket_peer=skt_peer)
         protocol = ServerProtocol(socket_peer)
-        signal.signal(signal.SIGTERM, lambda _n,_f: self.abort_client(socket_peer))
-        initialized = False
+        broker = Broker(tag="client")
+        signal.signal(signal.SIGTERM, lambda _n,_f: self.abort_client(socket_peer, broker))
+        raw_dto = protocol.recv_data_raw()
+        with self.manager_lock:
+            protocols = self.shared_namespace.protocols
+            protocols[raw_dto.get_client()] = protocol
+            self.shared_namespace.protocols = protocols
         while self.running:
             try:
+                broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
                 raw_dto = protocol.recv_data_raw()
-                if not initialized:
-                    with self.manager_lock:
-                        protocols = self.shared_namespace.protocols
-                        protocols[raw_dto.get_client()] = protocol
-                        self.shared_namespace.protocols = protocols
-                    initialized = True
-                with self.broker_lock:
-                    self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
             except Exception as e:
                 logging.info(f"action: client disconnected")
                 break
         socket_peer.close()
+        broker.close()
         semaphore.release()
         logging.info("action: exiting client")
 
