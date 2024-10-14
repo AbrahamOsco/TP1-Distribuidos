@@ -4,83 +4,47 @@ import sys
 import logging
 PERCENT_OF_FILE_FOR_USE = 1
 
-FilesPrefixes = {
-    0.1: "1",
-    0.2: "2",
-    0.3: "3",
-    0.4: "4",
-    0.5: "5",
-    1: ""
-}
-
 class FileReader:
     def __init__(self, file_name, batch_size=25, percent_of_file_for_use:float=PERCENT_OF_FILE_FOR_USE):
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         csv.field_size_limit(sys.maxsize)
         self.file_name = file_name
         self.batch_size = batch_size
-        if file_name not in FILE_PATHS:
-            self.file_path = "./data/responses/"
-            self.file_path += FilesPrefixes[percent_of_file_for_use]
-            self.file_path += file_name
-            self.file_path += ".csv"
-            self.usage_limit = os.path.getsize(self.file_path)
-        else:
-            self.file_path = FILE_PATHS[file_name]
-            self.usage_limit = percent_of_file_for_use * os.path.getsize(self.file_path)
+        self.file_path = FILE_PATHS[file_name]
+        self.usage_limit = percent_of_file_for_use * os.path.getsize(self.file_path)
         self.file =  open(self.file_path, mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)
         self.bytes_read = 0
         self.is_closed = False
-        self.last_read = None
-        if file_name in FILE_PATHS:
-            next(self.reader) # skip header
+        next(self.reader) # skip header in both datasets
         self.lines_read = 0
 
     def get_next_batch(self):
-        games = []
+        data_read = []
         if(self.is_closed):
             logging.info(f"action: get_next_batch | event: Closed the file '{self.file_name}' | result: sucess ✅ |")
             return None
         try:
             current_size = 0
-            if self.last_read is not None:
-                games.append(self.last_read)
-                total_size_raw = sum(len(element) for element in self.last_read)
-                self.bytes_read += (total_size_raw + len(self.last_read))
-                current_size += total_size_raw
-                self.last_read = None
-            for _ in range(self.batch_size):
+            for _ in range(self.batch_size): # refactor if and number magic was deleted.
                 if self.bytes_read > self.usage_limit:
                     self.close()
                     break
                 data_raw = next(self.reader) # ["hola12", "hola13", "hola14", "hola15"]
                 self.lines_read += 1
                 total_size_raw = sum(len(element) for element in data_raw) # 24 bytes
-                if current_size + total_size_raw > 2**24:
-                    self.last_read = data_raw
-                    break
-                self.bytes_read += (total_size_raw + len(data_raw)) # 24 bytes + 4 bytes (3 bytes coma +1 \n)
+                self.bytes_read += (total_size_raw + len(data_raw)) # 24 bytes + 4 bytes (4 bytes (3 comas and 1 \n)
                 current_size += total_size_raw
-                games.append(data_raw)
+                data_read.append(data_raw)
         except StopIteration:
             self.close()
-        return games
-    
+        return data_read
+
     def get_lines_read(self):
         return self.lines_read
 
-    def get_next_line(self):
-        if(self.is_closed):
-            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
-            return None
-        try:
-            return next(self.reader)
-        except StopIteration:
-            self.close()
-    
     def close(self):
          if not self.is_closed:
             self.file.close()
             self.is_closed = True
-            logging.info(f"action: 👉file_associated_with_{self.file_name}_is_closed | result: sucess | file closed : {self.is_closed} 🆓")
+            logging.info(f"action: File associated with {self.file_name} is closed | file closed : {self.is_closed} 🆓 | result: sucess ✅")

@@ -1,35 +1,40 @@
 import os
-from client.fileReader.FileReader import FileReader
 import logging
-QueriesX = ["Query2", "Query3", "Query4", "Query5"]
+from client.responses.ResponseReader import ResponseReader
+
+QueriesX = ["Query3", "Query4", "Query5"]
 
 class QueriesResponses:
     def __init__(self, should_send_reviews):
         self.responses = {}
-        self.percent_of_file_for_use =  float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
-        self.loadQuery1()
-        if should_send_reviews:
-            for query in QueriesX:
-                self.loadQueryX(query)
-        else:
-            self.loadQueryX("Query2")
+        self.percent_of_file =  float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
+        self.should_send_reviews = should_send_reviews
+        self.run()
 
-    def loadQuery1(self):
-        reader = FileReader("Query1", percent_of_file_for_use= self.percent_of_file_for_use)
+    def run(self):
+        self.load_query1()
+        self.load_other_queries("Query2")
+        if self.should_send_reviews:
+            for query in QueriesX:
+                self.load_other_queries(query)
+
+    def load_query1(self):
+        reader = ResponseReader(query_name="Query1", percent_of_file= self.percent_of_file)
         windows = reader.get_next_line()[0]
         linux = reader.get_next_line()[0]
         mac = reader.get_next_line()[0]
+        reader.close()
         self.responses["Query1"] = {"windows": windows, "linux": linux, "mac": mac}
 
-    def loadQueryX(self, query):
-        reader = FileReader(query, percent_of_file_for_use= self.percent_of_file_for_use)
+    def load_other_queries(self, query):
+        reader = ResponseReader(query_name=query, percent_of_file= self.percent_of_file)
         self.responses[query] = []
-        response = reader.get_next_line()
-        while response is not None:
-            self.responses[query].append(",".join(response))
-            response = reader.get_next_line()
+        response_current = reader.get_next_line()
+        while response_current is not None:
+            self.responses[query].append(",".join(response_current))
+            response_current = reader.get_next_line()
 
-    def diffQuery(self, response1, response2):
+    def diff_query(self, response1, response2):
         # Find strings only in response1
         only_in_arr1 = [f"+ {item}" for item in response1 if item not in response2]
         # Find strings only in response2
@@ -50,5 +55,5 @@ class QueriesResponses:
                         logging.info(f"OS:{os} Expected: {self.responses[query][os]} | Actual: {responses[query][os]}")
                         diff[query].append(os)
             else:
-                diff[query] = self.diffQuery(self.responses[query], responses[query])
+                diff[query] = self.diff_query(self.responses[query], responses[query])
         return diff

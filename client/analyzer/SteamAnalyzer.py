@@ -3,7 +3,7 @@ from common.utils.utils import initialize_log
 import os
 import threading
 from client.fileReader.FileReader import FileReader
-from client.fileReader.QueriesResponses import QueriesResponses
+from client.responses.QueriesResponses import QueriesResponses
 from common.DTO.GamesRawDTO import GamesRawDTO
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 from common.socket.Socket import Socket
@@ -20,6 +20,10 @@ class SteamAnalyzer:
         self.expected_responses = QueriesResponses(self.should_send_reviews)
         self.actual_responses = {}
         self.threads = []
+
+    def get_percent_of_file_for_use(self):
+        valores = [0.1] # 0.2, 0.3, 0.4, 0.5
+        return random.choice(valores)
 
     def initialize_config(self):
         self.config_params = {}
@@ -61,8 +65,8 @@ class SteamAnalyzer:
 
     def run(self):
         self.connect_to_server()
-        self.threads.append(threading.Thread(target=self.send_data))
-        self.threads.append(threading.Thread(target=self.get_result_from_queries))
+        self.threads.append(threading.Thread(target =self.send_data))
+        self.threads.append(threading.Thread(target =self.get_result_from_queries))
         for thread in self.threads:
             thread.start()
         for thread in self.threads:
