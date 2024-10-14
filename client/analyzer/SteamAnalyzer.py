@@ -5,22 +5,27 @@ from common.DTO.ReviewsRawDTO import ReviewsRawDTO
 from common.socket.Socket import Socket
 from client.protocol.ClientProtocol import ClientProtocol
 from client.resultWriter.ResultWriter import ResultWriter
+from client.analyzer.CompareResults import CompareResults
 import logging
 import csv
 import os
 import signal
 import time
-
+import traceback
 AMOUNT_BATCH_TO_SEND = 100000000
+BATCH_SIZE = 1000
+TOTAL_QUERYS = 5
 
 class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name ='games', batch_size =1000)
-        self.review_reader = FileReader(file_name ='reviews', batch_size =1000)
+        self.game_reader = FileReader(file_name ='games', batch_size =BATCH_SIZE)
+        self.review_reader = FileReader(file_name ='reviews', batch_size =BATCH_SIZE)
         self.result_writer = ResultWriter()
         self.there_was_sigterm = False
+        self.compare_results = CompareResults(0.1)
+        self.results_obtained = 0
         signal.signal(signal.SIGTERM, self.handler_sigterm)
 
     def initialize_config(self):
@@ -37,15 +42,15 @@ class SteamAnalyzer:
         self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
 
     def run(self):
-        try:
+        #try:
             self.connect_to_server()
             self.send_games()
             self.send_reviews()
             self.get_result_from_queries()
-        except Exception as e:
-            if self.there_was_sigterm == False:
-                logging.error(f"action: Handling a error | error: ❌ {e} | result: sucess ✅")
-        finally:
+        #except Exception as e:
+        #    if self.there_was_sigterm == False:
+        #        logging.error(f"action: Handling a error | error: ❌ {e} | result: sucess ✅")
+        #finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
 
@@ -60,33 +65,32 @@ class SteamAnalyzer:
         self.free_all_resource()
 
     def send_games(self):
-        i = 0
-        while  not self.game_reader.read_all_data() and i < AMOUNT_BATCH_TO_SEND:
+        while  not self.game_reader.read_all_data():
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
             self.protocol.send_data_raw(GamesRawDTO(client_id =self.config_params['id'], games_raw =some_games))
-            i += 1
         self.protocol.send_eof(ALL_GAMES_WAS_SENT, self.config_params['id'])
         if self.game_reader.read_all_data():
-            logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches | result: success ✅")
+            logging.info(f"action: 10% of games.csv 🕹️ has been sent in batches Amount_data{self.game_reader.amount_data} | result: success ✅")
 
     def send_reviews(self):
-        i = 0
-        while not self.review_reader.read_all_data() and i < AMOUNT_BATCH_TO_SEND:
+        while not self.review_reader.read_all_data():
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
-            i += 1
-            #logging.info(f"action: Enviando un batch de Reviews Bytes Leidos:{self.review_reader.bytes_read}/{self.review_reader.usage_limit} 👁️‍🗨️👁️‍🗨️")
         self.protocol.send_eof(ALL_REVIEWS_WAS_SENT, self.config_params['id'])
         if self.review_reader.read_all_data():
-            logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! | result: success ✅")
+            logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! Amount_data{self.game_reader.amount_data} | result: success ✅")
 
     def get_result_from_queries(self):
-        while True:
+        while self.results_obtained < TOTAL_QUERYS :
             logging.info("action: Waiting for results from queries | result: pending ⌚")
             result_query = self.protocol.recv_result_query()
             self.result_writer.run(result_query)
+            self.results_obtained +=1
+        self.compare_results.compare()
+
+
 

@@ -19,6 +19,8 @@ class ResultWriter:
         writer_function(result_query, number_query)
 
     def write_query(self, result_query, number_query):
+        if (number_query == ResultType.RESULT_QUERY_4.value or number_query == ResultType.RESULT_QUERY_5.value):
+            result_query["games"] = list(result_query["games"][0].keys()) # Solo guardamos los names!
         with open(f"/results/query{number_query}.json", "w") as json_file:
             json.dump(result_query, json_file, indent =4)
         result_in_str = json.dumps(result_query, indent =4)

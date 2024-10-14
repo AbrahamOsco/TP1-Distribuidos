@@ -34,6 +34,7 @@ class ClientProtocol(Protocol):
         windows = self.recv_number_4_bytes()
         linux = self.recv_number_4_bytes()
         mac = self.recv_number_4_bytes()
+        result_dic["client_id"] = client_id
         result_dic["Windows"] = windows
         result_dic["Linux"] = linux
         result_dic["Mac"] = mac

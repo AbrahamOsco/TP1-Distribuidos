@@ -3,7 +3,7 @@ import csv
 import logging
 import math
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 0.4
+PERCENT_OF_FILE_FOR_USE = 0.1
 MAX_FIELD_SIZE_CSV = 1000000000
 
 class FileReader:
@@ -19,14 +19,14 @@ class FileReader:
         self.is_closed = False
         self.fix_header_game = False
         self.read_all = False
-
+        self.amount_data = -1 # header no cuenta. 
     def read_all_data(self):
         return self.read_all
 
     def get_next_batch(self):
         games = []
         if(self.is_closed):
-            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
+            logging.info(f"action: get next batch | event: File '{self.file_name}' is closed | result: sucess ✅")
             return None
         try:
             for _ in range(self.batch_size):
@@ -34,7 +34,8 @@ class FileReader:
                     self.read_all = True
                     self.close()
                     break
-                data_raw = next(self.reader) 
+                data_raw = next(self.reader)
+                self.amount_data +=1
                 total_size_raw = 0 
                 for element in data_raw:
                     total_size_raw += len(element)

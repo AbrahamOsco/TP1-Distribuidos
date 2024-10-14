@@ -1,44 +1,8 @@
 {
     "client_id": 1,
     "games": [
-        {
-            "Batman\u2122: Arkham Knight": 7283,
-            "APB Reloaded": 5110,
-            "Starbound": 5007,
-            "Call of Duty\u00ae: Ghosts": 4673,
-            "Warframe": 4471,
-            "Space Engineers": 4088,
-            "Arma 3": 3597,
-            "War Thunder": 3566,
-            "Watch_Dogs\u2122": 3436,
-            "DARK SOULS\u2122: Prepare To Die\u2122 Edition": 3435,
-            "PlanetSide 2": 3199,
-            "Realm of the Mad God Exalt": 2580,
-            "The Forest": 2482,
-            "Insurgency": 2117,
-            "Max Payne 3": 1764,
-            "Takedown: Red Sabre": 1723,
-            "Dungeon Defenders II": 1702,
-            "No More Room in Hell": 1686,
-            "Batman\u2122: Arkham Origins": 1565,
-            "Call of Duty\u00ae: Black Ops II": 1451,
-            "Fallout: New Vegas": 1438,
-            "HITMAN\u2122": 1427,
-            "Awesomenauts - the 2D moba": 1416,
-            "Warhammer: End Times - Vermintide": 1408,
-            "Dying Light": 1397,
-            "Tomb Raider": 1355,
-            "Deadlight": 1279,
-            "The Witcher: Enhanced Edition Director's Cut": 1274,
-            "Wreckfest": 1271,
-            "Surgeon Simulator": 1271,
-            "Hitman: Absolution\u2122": 1063,
-            "How to Survive": 1001,
-            "Resident Evil 6": 954,
-            "Homefront\u00ae: The Revolution": 941,
-            "Mirror's Edge\u2122": 896,
-            "Counter-Strike: Source": 894,
-            "Star Conflict": 884
-        }
+        "Realm of the Mad God Exalt",
+        "Awesomenauts - the 2D moba",
+        "Torchlight II"
     ]
 }

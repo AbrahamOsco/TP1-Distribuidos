@@ -1,10 +1,4 @@
 {
     "client_id": 1,
-    "games": [
-        {
-            "APB Reloaded": 5110,
-            "Starbound": 5007,
-            "Batman\u2122: Arkham Knight": 7283
-        }
-    ]
+    "games": []
 }

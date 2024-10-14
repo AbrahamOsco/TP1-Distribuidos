@@ -19,8 +19,9 @@ services:
     container_name: client1
     image: client:latest
     volumes:
-      - ./data/games/games.csv:/data/games.csv
-      - ./data/reviews/dataset.csv:/data/dataset.csv
+      - ./data/games.csv:/data/games.csv
+      - ./data/dataset.csv:/data/dataset.csv
+      - ./resultsExpect:/resultsExpect
       - ./results:/results
     environment:
       - NODE_ID=1
