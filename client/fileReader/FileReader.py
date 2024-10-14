@@ -40,7 +40,7 @@ class FileReader:
     def get_next_batch(self):
         games = []
         if(self.is_closed):
-            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
+            logging.info(f"action: get_next_batch | event: Closed the file '{self.file_name}' | result: sucess ✅ |")
             return None
         try:
             current_size = 0
@@ -54,13 +54,13 @@ class FileReader:
                 if self.bytes_read > self.usage_limit:
                     self.close()
                     break
-                data_raw = next(self.reader)
+                data_raw = next(self.reader) # ["hola12", "hola13", "hola14", "hola15"]
                 self.lines_read += 1
-                total_size_raw = sum(len(element) for element in data_raw)
+                total_size_raw = sum(len(element) for element in data_raw) # 24 bytes
                 if current_size + total_size_raw > 2**24:
                     self.last_read = data_raw
                     break
-                self.bytes_read += (total_size_raw + len(data_raw))
+                self.bytes_read += (total_size_raw + len(data_raw)) # 24 bytes + 4 bytes (3 bytes coma +1 \n)
                 current_size += total_size_raw
                 games.append(data_raw)
         except StopIteration:

@@ -35,7 +35,7 @@ class SteamAnalyzer:
         initialize_log(self.config_params["log_level"])
     
     def connect_to_server(self):
-        self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
+        self.socket = Socket(self.config_params["hostname"], 12345)
         result, msg =  self.socket.connect()
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
         self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)

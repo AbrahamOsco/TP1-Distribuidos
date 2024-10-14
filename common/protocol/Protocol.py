@@ -18,7 +18,7 @@ class Protocol:
         number_in_bytes, bytes_recv = self.socket.recv_all(n)
         if bytes_recv != n:
             self.socket.close()
-            raise RuntimeError("action: recv_number_1_byte | result: fail |")
+            raise RuntimeError(f"action: recv_number_{n}_byte | result: fail |")
         number_int = int.from_bytes(number_in_bytes, byteorder='big') 
         return number_int
 
@@ -26,11 +26,11 @@ class Protocol:
         string_in_bytes = a_string.encode(FORMAT_ENCODED)
         size_string_bytes = len(string_in_bytes)
         
-        self.send_number_n_bytes(3, size_string_bytes)
+        self.send_number_n_bytes(4, size_string_bytes)
         self.socket.sendall(string_in_bytes)
 
     def recv_string(self):
-        size_string_bytes = self.recv_number_n_bytes(3)
+        size_string_bytes = self.recv_number_n_bytes(4)
         str_in_bytes, bytes_recv = self.socket.recv_all(size_string_bytes) 
         if size_string_bytes != bytes_recv:
             self.socket.close()

@@ -16,7 +16,6 @@ class ClientProtocol(Protocol):
             OPERATION_TYPE_QUERY2345: self.get_query2345,
         }
 
-# [ ["1", "3", "abcasda", "1", "0"], ["2", "4", "abc", "-1", "0"], ... ] 
     def send_data_raw(self, data_raw_dto):
         self.send_number_n_bytes(1, data_raw_dto.operation_type)
         self.send_number_n_bytes(1, self.id) 
