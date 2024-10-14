@@ -14,7 +14,6 @@ class Gateway(Node):
     def __init__(self):
         self.socket_accepter = Socket(port=12345)
         self.result_eofs_by_client = {}
-        self.processes = []
         self.running = True
         self.pool_size = 5
         self.amount_of_queries = int(os.getenv("AMOUNT_OF_QUERIES", 5))
@@ -33,19 +32,18 @@ class Gateway(Node):
         return socket_peer
     
     def start(self):
-        self.processes.append(multiprocessing.Process(target=self.run))
-        self.processes.append(multiprocessing.Process(target=self.run_server))
-        for process in self.processes:
-            process.start()
-        for process in self.processes:
-            process.join()
+        self.listener_proc = multiprocessing.Process(target=self.run_server)
+        self.listener_proc.start()
+        self.run()
+        self.listener_proc.terminate()
+        self.listener_proc.join()
 
     def stop_server(self):
-        if self.socket_accepter is not None:
-            self.socket_accepter.close()
         for process in self.client_processes:
             process.terminate()
             process.join()
+        if self.socket_accepter is not None:
+            self.socket_accepter.close()
         logging.info("action: server stopped | result: success ✅")
 
     def run_server(self):
@@ -59,7 +57,7 @@ class Gateway(Node):
                 break
             client_handler = multiprocessing.Process(target=self._handle_client, args=(socket_peer,semaphore))
             client_handler.start()
-            self.processes.append(client_handler)
+            self.client_processes.append(client_handler)
         self.stop_server()
 
     def abort_client(self, socket_peer, broker):
@@ -105,8 +103,8 @@ class Gateway(Node):
             self.result_eofs_by_client[client_id] = None
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
 
-    def abort(self):
-        for process in self.processes:
-            process.terminate()
-            process.join()
+    def stop(self):
+        self.broker.close()
+        self.listener_proc.terminate()
+        self.listener_proc.join()
         logging.info("Gateway abort | result: success ✅")
