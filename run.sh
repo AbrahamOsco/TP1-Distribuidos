@@ -25,13 +25,8 @@ docker build -f ./system/controllers/storages/monitorStorageQ5/Dockerfile -t "mo
 docker build -f ./system/controllers/groupers/grouperPercentile/Dockerfile -t "grouperpercentile:latest" .
 
 
-#docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
-#docker build -f ./system/controllers/filters/filterReviewEnglish/Dockerfile -t "filterreviewenglish:latest" .
-#docker build -f ./system/controllers/filters/filterScoreXPositives/Dockerfile -t "filterscorexpositives:latest" .
-#docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
-#docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertopreviewspositiveindie:latest" .
-#docker build -f ./system/controllers/groupers/grouperTopAveragePlaytime/Dockerfile -t "groupertopaverageplaytime:latest" .
-docker compose -f docker-compose-dev.yaml up -d
-docker compose -f docker-compose-dev.yaml logs -f
+docker compose -f new_docker_compose.yaml up -d
+docker compose -f new_docker_compose.yaml logs -f
+
 #docker compose -f docker-compose-dev.yaml down -t 7
 #docker compose -f docker-compose-dev.yaml up

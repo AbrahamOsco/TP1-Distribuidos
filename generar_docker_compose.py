@@ -1,110 +1,107 @@
 import sys
 
-def get_source(service_name):
-    if service_name == "filterbasic":
-        return "DataRaw"
-    elif service_name == "selectq1" or service_name == "selectq2345" or service_name == "selectq345":
-        return "DataParsed"
-    elif service_name == "platformcounter":
-        return "GamesPlatform"
-    elif service_name == "filtergender":
-        return "GamesQ2345"
-    elif service_name == "filterdecade":
-        return "GamesIndieQ2"
-    elif service_name == "selectidnameindie":
-        return "GamesIndieQ3"
-    elif service_name == "monitorstorageq3":
-        return "GamesIndieQ3Sumarized"
-    elif service_name == "groupertopreviewspos":
-        return "GamesIndieMonitor"
-    elif service_name == "selectidnameaction":
-        return "GamesActionQ45"
-    elif service_name == "monitorjoinerq4" or service_name == "monitorstorageq5":
-        return "GamesActionQ45Sumarized"
-    elif service_name == "filterreviewenglish":
-        return "GamesActionPositives"
-    elif service_name == "filterscorexpositive" or service_name == "filterscorenegative":
-        return "ReviewsRaw"
-    elif service_name == "output":
-        return "ClientsResponse"
-    else:
-        return "ERROR"
+node_id = 3
 
-def get_sink(service_name):
-    if service_name == "gateway":
-        return "DataParsed"
-    elif service_name == "selectq1":
-        return "GamesPlatform"
-    elif service_name == "platformcounter":
-        return "countbyplatform"
-    elif service_name == "selectq2345":
-        return "GamesQ2345"
-    elif service_name == "filtergenderindieq2":
-        return "GamesIndieQ2"
-    elif service_name == "filterdecade":
-        return "GamesIndieDecadeQ2"
-    elif service_name == "filtergenderindieq3":
-        return "GamesIndieQ3"
-    elif service_name == "selectidnameindie":
-        return "GamesIndieQ3Sumarized"
-    elif service_name == "monitorstorageq3":
-        return "GamesIndieMonitor"
-    elif service_name == "filtergenderactionq45":
-        return "GamesActionQ45"
-    elif service_name == "selectidnameaction":
-        return "GamesActionQ45Sumarized"
-    elif service_name == "monitorjoinerq4":
-        return "GamesActionPositives"
-    elif service_name == "filterreviewenglish":
-        return "ReviewsEnglishPositives"
-    elif service_name == "filterscorexpositive":
-        return "ReviewsPositives"
-    elif service_name == "filterscorenegative":
-        return "ReviewsNegatives"
-    elif service_name == "monitorstorageq4" or service_name == "monitorstorageq5" or service_name == "platformreducer" or service_name == "groupertopaverageplaytime" or service_name == "groupertopreviewspos":
-        return "ClientsResponse"
-    else:
-        return "ERROR"
+def generate_network():
+  return """
+networks:
+  system_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24
+"""
 
-def generar_docker_compose(output_file, filter_basic, select_q1, platform_counter, select_q2345, filter_gender,
-                           filter_decade, select_id_name_indie, select_id_name_action, select_q345, filter_score_positive,
-                           filter_review_english, filter_score_X_positives, filter_score_negative):
-    compose_base = """
-version: '3.8'
+def add_top_size(top_size):
+  return f"""
+      - TOP_SIZE={top_size}"""
 
+def generate_services(name_service, count, image, entrypoint_path, top_size = 0):
+    services = ""
+    top_enviroment = ""
+    global node_id
+    node_id_current = node_id
+    if top_size !=0 : 
+      top_enviroment = add_top_size(top_size)
+    for i in range(0, count):
+        node_id_current = node_id
+        node_id_current = node_id_current + (i)
+        service = f"""\n  {name_service}_{i+1}:
+    container_name: {name_service}_{i+1}
+    image: {image}
+    entrypoint: python3 {entrypoint_path}
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID={node_id_current}
+      - TOTAL_NODES={count} {top_enviroment}
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+"""
+        services += service
+    node_id += count
+    return services
+
+def get_compose_query1():
+  compose_query_1 = generate_services("filterbasic", 3, "filterbasic:latest", "/app/system/controllers/filters/filterBasic/main.py")
+  compose_query_1 += generate_services("selectq1", 3, "selectq1:latest", "/app/system/controllers/select/selectQ1/main.py")
+  compose_query_1 += generate_services("platformcounter", 2, "platformcounter:latest", "/app/system/controllers/groupers/platformCounter/main.py")
+  compose_query_1 += generate_services("platformreducer", 1, "platformreducer:latest", "/app/system/controllers/reducers/platformReducer/main.py")
+  return compose_query_1
+
+def get_compose_query2():
+  compose_query_2 = generate_services("selectq2345", 3, "selectq2345:latest", "/app/system/controllers/select/selectQ2345/main.py")
+  compose_query_2 += generate_services("filtergender", 3, "filtergender:latest", "/app/system/controllers/filters/filterGender/main.py")
+  compose_query_2 += generate_services("filterdecade", 2, "filterdecade:latest", "/app/system/controllers/filters/filterDecade/main.py")
+  compose_query_2 += generate_services("groupertopavgplaytime", 1, "groupertopavgplaytime:latest", "/app/system/controllers/groupers/grouperTopAvgPlaytime/main.py", 10)
+  return compose_query_2
+
+def get_compose_query3():
+  compose_query_3 = generate_services("filterscorepositive", 3, "filterscorepositive:latest", "/app/system/controllers/filters/filterScorePositive/main.py")
+  compose_query_3 += generate_services("selectidname", 3, "selectidname:latest", "/app/system/controllers/select/selectIDName/main.py")
+  compose_query_3 += generate_services("monitorstorageq3", 1, "monitorstorageq3:latest", "/app/system/controllers/storages/monitorStorageQ3/main.py")
+  compose_query_3 += generate_services("groupertoppositivereviews", 1, "groupertoppositivereviews:latest", "/app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py", 5)
+  return compose_query_3
+
+
+
+def generar_docker_compose_basic(amount_queries):
+  docker_compose_content = """version: '3.8'
 services:
   rabbitmq:
     container_name: rabbitmq
     image: rabbit:latest
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"  # Puerto para conexion con RabbitMQ
+      - "15672:15672"  # Puerto para la interfaz de administracion
     networks:
       - system_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:15672"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "curl", "-f", "http://localhost:15672"] # -f hace q curl falle silenciosamente si la web no funciona
+      interval: 10s #verifica salud de rabbit each 10 s
+      timeout: 5s # si rabbit no responde en 5s falla 
+      retries: 10 # luego de 10 intentos => no es saludable
 
   client1:
     container_name: client1
     image: client:latest
     entrypoint: python3 /app/client/main.py
     volumes:
-      - ./data/games/games.csv:/data/games.csv
-      - ./data/reviews/dataset.csv:/data/dataset.csv
+      - ./data/games.csv:/data/games.csv
+      - ./data/dataset.csv:/data/dataset.csv
+      - ./resultsExpect:/resultsExpect
       - ./results:/results
     environment:
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - AMOUNT_OF_NODES=1
-      - TOP_SIZE=5
       - HOSTNAME=gateway
+      - PERCENT_OF_FILE_FOR_USE=0.1
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -114,129 +111,36 @@ services:
   gateway:
     container_name: gateway
     image: gateway:latest
-    entrypoint: python3 /app/system/controllers/gateway/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+    entrypoint: python3 /app/system/controllers/gateway/main.py 
     environment:
-      - NODE_NAME:"gateway"
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
       - NODE_ID=2
-      - SOURCE=""
-      - SINK=""
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_OF_NODES=1
-      - TOP_SIZE=5
-
-  platformreducer:
-    container_name: platformreducer
-    image: platformreducer:latest
-    entrypoint: python3 /app/system/controllers/reducers/platformReducer/main.py
     networks:
       - system_network
-    restart: on-failure
     depends_on:
       rabbitmq:
-        condition: service_healthy
-    environment:
-      - PYTHONPATH=/app
-      - NODE_NAME="platformreducer"
-      - NODE_ID=3
-      - SOURCE="CountByPlatform"
-      - SINK={get_sink("platformreducer")}
-      - LOGGING_LEVEL=INFO
-
-  groupertopaverageplaytime:
-    container_name: groupertopaverageplaytime
-    image: groupertopaverageplaytime:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - PYTHONPATH=/app
-      - NODE_NAME="groupertopaverageplaytime"
-      - NODE_ID=4
-      - SOURCE="GamesIndieDecadeQ2"
-      - SINK={get_sink("groupertopaverageplaytime")}
-      - LOGGING_LEVEL=INFO
-      - TOP_SIZE=10
+        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
 """
-    def generar_servicios(tipo_servicio, nombre_servicio, cantidad):
-        servicios = ""
-        id = 4
-        for i in range(1, int(cantidad) + 1):
-            id += 1
-            servicios += f"""
-  {nombre_servicio.lower()}{"_"}{i}:
-    container_name: {nombre_servicio.lower()}{"_"}{i}
-    image: {nombre_servicio.lower()}:latest
-    entrypoint: python3 /app/system/controllers/{tipo_servicio}/{nombre_servicio}/main.py
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - NODE_NAME="{nombre_servicio.lower()}{"_"}{i}"
-      - NODE_ID={id}
-      - SOURCE={get_source(nombre_servicio.lower())}
-      - SINK={get_sink(nombre_servicio.lower())}
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - AMOUNT_NEEDED=5000
-      - DECADE=2010
-      - AMOUNT_OF_NODES={cantidad}
-      - GENDERS="Action,Indie"
-      - TOP_SIZE=5
-"""
-        return servicios
+  docker_compose_content += get_compose_query1()
+  if amount_queries >=2: 
+    docker_compose_content += get_compose_query2()
+  if amount_queries >=3:
+    docker_compose_content += get_compose_query3()
+  
+  docker_compose_content += generate_network()
 
-    client_services = generar_servicios("select","selectQ1", select_q1)
-    client_services += generar_servicios("filters","filterBasic", filter_basic)
-    client_services += generar_servicios("groupers","platformCounter", platform_counter)
-    client_services += generar_servicios("select","selectQ2345", select_q2345)
-    client_services += generar_servicios("filters","filterGender", filter_gender)
-    client_services += generar_servicios("filters","filterDecade", filter_decade)
-    client_services += generar_servicios("select","selectIDNameIndie", select_id_name_indie)
-    client_services += generar_servicios("select","selectIDNameAction", select_id_name_action)
-    client_services += generar_servicios("select","selectQ345", select_q345)
-    client_services += generar_servicios("filters","filterScorePositive", filter_score_positive)
-    client_services += generar_servicios("filters","filterReviewEnglish", filter_review_english)
-    client_services += generar_servicios("filters","filterScoreXPositives", filter_score_X_positives)
-    client_services += generar_servicios("filters","filterScoreNegative", filter_score_negative)
+  with open('new_docker_compose.yaml', 'w') as file:
+    file.write(docker_compose_content)
+  print("Archivo new_docker_compose.yaml creado con éxito.")
 
-    networks = """
-networks:
-  system_network:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.25.125.0/24
-"""
-
-    docker_compose_content = compose_base + client_services + networks
-
-    with open(output_file, 'w') as f:
-        f.write(docker_compose_content)
-
-    print(f"{output_file} generado con los siguientes parámetros:")
-    print(f"FilterBasic: {filter_basic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
-          f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade: {filter_decade}, "
-          f"SelectIDNameIndie: {select_id_name_indie}, SelectIDNameAction: {select_id_name_action}, SelectQ345: {select_q345}, "
-          f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
-          f"FilterScoreXPositives: {filter_score_X_positives}, FilterScoreNegative: {filter_score_negative}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 15:
-        print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <FilterBasic> <SelectQ1> <PlatformCounter> <SelectQ2345> <FilterGender> <FilterDecade> <SelectIDNameIndie> <SelectIDNameAction> <SelectQ345> <FilterScorePositive> <FilterReviewEnglish> <FilterScore50kPositives> <FilterScoreNegative>")
-        sys.exit(1)
+  argc = len(sys.argv)  # Cantidad de argumentos pasados (incluido el nombre del script)
+  print(f"sys.argv: {sys.argv}")
+  if argc < 2:
+    print("Por favor, pasa la cantidad de consultas como argumento.")
+    sys.exit(1)
+  amount_queries = int(sys.argv[1])
+  generar_docker_compose_basic(amount_queries)
 
-    generar_docker_compose(*sys.argv[1:])

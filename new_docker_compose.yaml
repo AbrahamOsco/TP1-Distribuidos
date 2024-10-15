@@ -54,49 +54,49 @@ services:
   filterbasic_1:
     container_name: filterbasic_1
     image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=3
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
   filterbasic_2:
     container_name: filterbasic_2
     image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=4
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
   filterbasic_3:
     container_name: filterbasic_3
     image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py 
+    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=5
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
-  selectQ1_1:
+  selectq1_1:
     container_name: selectq1_1
     image: selectq1:latest
     entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
@@ -104,14 +104,14 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=6
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
-  selectQ1_2:
+  selectq1_2:
     container_name: selectq1_2
     image: selectq1:latest
     entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
@@ -119,14 +119,14 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=7
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable        
+        condition: service_healthy
 
-  selectQ1_3:
+  selectq1_3:
     container_name: selectq1_3
     image: selectq1:latest
     entrypoint: python3 /app/system/controllers/select/selectQ1/main.py
@@ -134,12 +134,12 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - NODE_ID=8
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable        
+        condition: service_healthy
 
   platformcounter_1:
     container_name: platformcounter_1
@@ -148,14 +148,13 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=platformcounter_1
       - NODE_ID=9
-      - TOTAL_NODES=2
+      - TOTAL_NODES=2 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
   platformcounter_2:
     container_name: platformcounter_2
@@ -164,170 +163,158 @@ services:
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=platformcounter_1
       - NODE_ID=10
-      - TOTAL_NODES=2
+      - TOTAL_NODES=2 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Espera hasta que RabbitMQ esté saludable
+        condition: service_healthy
 
-#Es una unica instancia el reducer
-  platformreducer:
+  platformreducer_1:
     container_name: platformreducer_1
     image: platformreducer:latest
     entrypoint: python3 /app/system/controllers/reducers/platformReducer/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME="platformreducer"
       - NODE_ID=11
+      - TOTAL_NODES=1 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-
-  selectQ2345_1:
+  selectq2345_1:
     container_name: selectq2345_1
     image: selectq2345:latest
     entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectq2345_1
       - NODE_ID=12
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  selectQ2345_2:
+  selectq2345_2:
     container_name: selectq2345_2
     image: selectq2345:latest
     entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectq2345_2
       - NODE_ID=13
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  selectQ2345_3:
+  selectq2345_3:
     container_name: selectq2345_3
     image: selectq2345:latest
     entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectq2345_3
       - NODE_ID=14
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy        
+        condition: service_healthy
 
-  filterGender_1:
+  filtergender_1:
     container_name: filtergender_1
     image: filtergender:latest
     entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filtergender_1
       - NODE_ID=15
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy        
+        condition: service_healthy
 
-  filterGender_2:
+  filtergender_2:
     container_name: filtergender_2
     image: filtergender:latest
     entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filtergender_2
       - NODE_ID=16
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
-        condition: service_healthy    
-  
-  filterGender_3:
+        condition: service_healthy
+
+  filtergender_3:
     container_name: filtergender_3
     image: filtergender:latest
     entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filtergender_3
       - NODE_ID=17
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  filterDecade_1:
+  filterdecade_1:
     container_name: filterdecade_1
     image: filterdecade:latest
     entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterdecade_1
       - NODE_ID=18
-      - TOTAL_NODES=2
+      - TOTAL_NODES=2 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  filterDecade_2:
+  filterdecade_2:
     container_name: filterdecade_2
     image: filterdecade:latest
     entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterdecade_2
       - NODE_ID=19
-      - TOTAL_NODES=2
+      - TOTAL_NODES=2 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  grouperTopAvgPlaytime:
+  groupertopavgplaytime_1:
     container_name: groupertopavgplaytime_1
     image: groupertopavgplaytime:latest
     entrypoint: python3 /app/system/controllers/groupers/grouperTopAvgPlaytime/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=groupertopavgplaytime
       - NODE_ID=20
-      - TOTAL_NODES=1
+      - TOTAL_NODES=1 
       - TOP_SIZE=10
     networks:
       - system_network
@@ -335,228 +322,126 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  filterScorePositive_1:
+  filterscorepositive_1:
     container_name: filterscorepositive_1
     image: filterscorepositive:latest
     entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterscorepositive_1
       - NODE_ID=21
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  filterScorePositive_2:
+  filterscorepositive_2:
     container_name: filterscorepositive_2
     image: filterscorepositive:latest
     entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterscorepositive_2
       - NODE_ID=22
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  filterScorePositive_3:
+  filterscorepositive_3:
     container_name: filterscorepositive_3
     image: filterscorepositive:latest
     entrypoint: python3 /app/system/controllers/filters/filterScorePositive/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=filterscorepositive_3
       - NODE_ID=23
-      - TOTAL_NODES=3
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  selectIDName_1:
+  selectidname_1:
     container_name: selectidname_1
     image: selectidname:latest
     entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectidname_1
-      - NODE_ID=25
-      - TOTAL_NODES=3
+      - NODE_ID=24
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-
-  selectIDName_2:
+  selectidname_2:
     container_name: selectidname_2
     image: selectidname:latest
     entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectidname_2
-      - NODE_ID=26
-      - TOTAL_NODES=3
+      - NODE_ID=25
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  selectIDName_3:
+  selectidname_3:
     container_name: selectidname_3
     image: selectidname:latest
     entrypoint: python3 /app/system/controllers/select/selectIDName/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=selectidname_3
-      - NODE_ID=27
-      - TOTAL_NODES=3
+      - NODE_ID=26
+      - TOTAL_NODES=3 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  monitorStorageQ3_1:
+  monitorstorageq3_1:
     container_name: monitorstorageq3_1
     image: monitorstorageq3:latest
     entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=monitorstorageq3_1
-      - NODE_ID=28
+      - NODE_ID=27
+      - TOTAL_NODES=1 
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
 
-  grouperTopPositiveReview:
+  groupertoppositivereviews_1:
     container_name: groupertoppositivereviews_1
     image: groupertoppositivereviews:latest
     entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
     environment:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - NODE_NAME=groupertoppositivereviews
-      - NODE_ID=29
+      - NODE_ID=28
+      - TOTAL_NODES=1 
       - TOP_SIZE=5
     networks:
       - system_network
     depends_on:
       rabbitmq:
         condition: service_healthy
-
-
-  filterScoreNegative_1:
-    container_name: filterscorenegative_1
-    image: filterscorenegative:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=filterscorenegative_1
-      - NODE_ID=30
-      - TOTAL_NODES=2
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  filterScoreNegative_2:
-    container_name: filterscorenegative_2
-    image: filterscorenegative:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=filterscorenegative_2
-      - NODE_ID=31
-      - TOTAL_NODES=2
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  monitorStorageQ4_1:
-    container_name: monitorstorageq4_1
-    image: monitorstorageq4:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=monitorstorageq4_1
-      - NODE_ID=33
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  filterReviewsEnglish:
-    container_name: filterreviewsenglish_1
-    image: filterreviewsenglish:latest
-    entrypoint: python3 /app/system/controllers/filters/filterReviewsEnglish/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=filterreviewsenglish_1
-      - NODE_ID=34
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  monitorStorageQ5_1:
-    container_name: monitorstorageq5_1
-    image: monitorstorageq5:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=monitorstorageq5_1
-      - NODE_ID=35
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  grouperPercentile_1:
-    container_name: grouperpercentile_1
-    image: grouperpercentile:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperPercentile/main.py
-    environment:
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - NODE_NAME=grouperpercentile_1
-      - NODE_ID=36
-      - TOTAL_NODES=2
-    networks:
-      - system_network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
 
 networks:
   system_network:
