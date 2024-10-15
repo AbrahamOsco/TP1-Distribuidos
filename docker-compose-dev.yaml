@@ -28,6 +28,7 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
+      - PERCENT_OF_FILE_FOR_USE=0.1
     entrypoint: python3 /app/client/main.py
     networks:
       - system_network

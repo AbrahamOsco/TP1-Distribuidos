@@ -1,7 +1,6 @@
 import logging
 import json
 
-
 class CompareResults:
     def __init__(self, percent_of_file):
         self.percent_of_file = percent_of_file
@@ -14,34 +13,34 @@ class CompareResults:
         self.are_equals_in_name('5')
     
     def are_equals_in_q1(self):
-        result_expect = None
-        result_obtained = None
         are_equals = True
-        with open("results/query1.json", "r") as file_obtained:
-            result_obtained = json.load(file_obtained)
-        with open(f"resultsExpect/with{self.percent_of_file}/query1.json", "r") as file_expect:
-            result_expect = json.load(file_expect)
+        result_obtained, result_expect = self.get_obtained_and_expect("results/query1.json",
+                                 f"resultsExpect/with{self.percent_of_file}/query1.json")
         platforms = ["Windows", "Linux", "Mac"]
         for a_platform in platforms:
             if result_obtained[a_platform] != result_expect[a_platform]:
                 are_equals = False
         if (are_equals):
             logging.info(f"No hay diferencias en la query1! 💯 ✅")
-            
-
-    def are_equals_in_top(self, number_query):
+        else: 
+            logging.info(f"Hay diferencias en la query1! Expect {result_expect} Obtained {result_obtained}")
+    
+    def get_obtained_and_expect(self, file_path_obtained, file_path_expect):
         result_expect = None
         result_obtained = None
-        with open(f"results/query{number_query}.json", "r") as file_obtained:
+        with open(file_path_obtained, "r") as file_obtained:
             result_obtained = json.load(file_obtained)
-        with open(f"resultsExpect/with{self.percent_of_file}/query{number_query}.json", "r") as file_expect:
+        with open(file_path_expect, "r") as file_expect:
             result_expect = json.load(file_expect)
+        return result_obtained, result_expect
 
+    def are_equals_in_top(self, number_query):
+        result_obtained, result_expect = self.get_obtained_and_expect(f"results/query{number_query}.json",
+                    f"resultsExpect/with{self.percent_of_file}/query{number_query}.json")
+      
         games_expect = result_expect["games"][0]
         games_obtained = result_obtained["games"][0]
-        
         same_game_names = set(games_expect.keys()) == set(games_obtained.keys())
-
         same_values = all( games_expect[game_name] == games_obtained[game_name]  for game_name in games_expect)
 
         for game_name in games_expect:
@@ -52,13 +51,8 @@ class CompareResults:
             logging.info(f"No hay diferencias en la query{number_query}! 💯 ✅")
 
     def are_equals_in_name(self, number_query):
-        result_expect = None
-        result_obtained = None
-        with open(f"results/query{number_query}.json", "r") as file_obtained:
-            result_obtained = json.load(file_obtained)
-        with open(f"resultsExpect/with{self.percent_of_file}/query{number_query}.json", "r") as file_expect:
-            result_expect = json.load(file_expect)
-
+        result_expect, result_obtained = self.get_obtained_and_expect(f"results/query{number_query}.json",
+                 f"resultsExpect/with{self.percent_of_file}/query{number_query}.json")
         games_expect = result_expect["games"]
         games_obtained = result_obtained["games"]
         if set(games_expect) == set(games_obtained):
@@ -73,5 +67,3 @@ class CompareResults:
                 logging.info(f"Juegos en 'expect' que faltan en 'obtained': {missing_in_obtained}")
             elif missing_in_expect:
                 logging.info(f"Juegos en 'obtained' que faltan en 'expect': {missing_in_expect}")
-
-

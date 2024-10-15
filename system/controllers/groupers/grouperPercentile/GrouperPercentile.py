@@ -58,7 +58,7 @@ class GrouperPercentile:
             size_top_games = math.ceil(games_with_reviews.size_games * PERCENTILE_TOP_10_PERCENTAGE)
             self.games_up_percentile = TopResults(size = size_top_games)
         self.games_up_percentile.try_to_insert_top(games_with_reviews)
-        logging.info(f"Current: {self.total_games} {self.games_up_percentile.top_data}")
+        #logging.info(f"Current: {self.total_games} {self.games_up_percentile.top_data}")
 
 
     def run(self):

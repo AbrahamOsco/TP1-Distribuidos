@@ -20,16 +20,19 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.game_reader = FileReader(file_name ='games', batch_size =BATCH_SIZE)
-        self.review_reader = FileReader(file_name ='reviews', batch_size =BATCH_SIZE)
+        self.game_reader = FileReader(file_name ='games', batch_size =BATCH_SIZE,
+                            percent_of_file_for_use =self.config_params["percent_of_file"] )
+        self.review_reader = FileReader(file_name ='reviews', batch_size =BATCH_SIZE,
+                            percent_of_file_for_use =self.config_params["percent_of_file"])
         self.result_writer = ResultWriter()
         self.there_was_sigterm = False
-        self.compare_results = CompareResults(0.1)
+        self.compare_results = CompareResults(self.config_params["percent_of_file"])
         self.results_obtained = 0
         signal.signal(signal.SIGTERM, self.handler_sigterm)
 
     def initialize_config(self):
         self.config_params = {}
+        self.config_params["percent_of_file"] = float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
         self.config_params["id"] = int(os.getenv("NODE_ID"))
         self.config_params["log_level"] = os.getenv("LOGGING_LEVEL")
         self.config_params["hostname"] = os.getenv("HOSTNAME")

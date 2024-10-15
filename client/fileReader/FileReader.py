@@ -3,18 +3,18 @@ import csv
 import logging
 import math
 INDEX_TO_FIX_HEADER = 7
-PERCENT_OF_FILE_FOR_USE = 0.1
 MAX_FIELD_SIZE_CSV = 1000000000
 
 class FileReader:
-    def __init__(self, file_name, batch_size):
+    def __init__(self, file_name, batch_size, percent_of_file_for_use):
         csv.field_size_limit(MAX_FIELD_SIZE_CSV)
         FILE_PATHS = {"games": "./data/games.csv", "reviews": "./data/dataset.csv" }
         self.file_name = file_name
+        self.percent_of_file_for_use = percent_of_file_for_use
         self.batch_size = batch_size
         self.file =  open(FILE_PATHS[file_name], mode ="r", newline ="", encoding ="utf-8")
         self.reader = csv.reader(self.file)
-        self.usage_limit = PERCENT_OF_FILE_FOR_USE * os.path.getsize(FILE_PATHS[file_name])
+        self.usage_limit = self.percent_of_file_for_use * os.path.getsize(FILE_PATHS[file_name])
         self.bytes_read = 0
         self.is_closed = False
         self.fix_header_game = False
