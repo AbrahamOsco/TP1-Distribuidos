@@ -1,5 +1,5 @@
-docker compose -f docker-compose-dev.yaml stop -t 1
-docker compose -f docker-compose-dev.yaml down
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
 docker build -f ./base_images/Dockerfile -t "common:latest" .
 docker build -f ./system/Dockerfile -t "system:latest" .
 
