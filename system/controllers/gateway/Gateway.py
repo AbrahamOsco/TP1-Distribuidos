@@ -9,6 +9,7 @@ from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.broker.Broker import Broker
+from system.controllers.gateway.ClientHandler import ClientHandler
 
 class Gateway(Node):
     def __init__(self):
@@ -39,53 +40,29 @@ class Gateway(Node):
         self.listener_proc.join()
 
     def stop_server(self):
-        for process in self.client_processes:
-            process.terminate()
-            process.join()
+        self.pool.close()
+        self.pool.join()
         if self.socket_accepter is not None:
             self.socket_accepter.close()
         logging.info("action: server stopped | result: success ✅")
 
     def run_server(self):
-        self.client_processes = []
-        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_server())
-        semaphore = multiprocessing.Semaphore(self.pool_size)
-        while self.running:
-            semaphore.acquire()
-            socket_peer = self.accept_a_connection()
-            if socket_peer is None:
-                break
-            client_handler = multiprocessing.Process(target=self._handle_client, args=(socket_peer,semaphore))
-            client_handler.start()
-            self.client_processes.append(client_handler)
-        self.stop_server()
-
-    def abort_client(self, socket_peer, broker):
-        socket_peer.close()
-        broker.close()
-        logging.info("action: client disconnected")
-
-    def _handle_client(self, skt_peer, semaphore):
-        socket_peer = Socket(socket_peer=skt_peer)
-        protocol = ServerProtocol(socket_peer)
-        broker = Broker(tag="client")
-        signal.signal(signal.SIGTERM, lambda _n,_f: self.abort_client(socket_peer, broker))
-        raw_dto = protocol.recv_data_raw()
-        with self.manager_lock:
-            protocols = self.shared_namespace.protocols
-            protocols[raw_dto.get_client()] = protocol
-            self.shared_namespace.protocols = protocols
-        while self.running:
-            try:
-                broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
-                raw_dto = protocol.recv_data_raw()
-            except Exception as e:
-                logging.info(f"action: client disconnected")
-                break
-        socket_peer.close()
-        broker.close()
-        semaphore.release()
-        logging.info("action: exiting client")
+        with multiprocessing.Pool(self.pool_size) as self.pool:
+            signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_server())
+            while self.running:
+                socket_peer = self.accept_a_connection()
+                if socket_peer is None:
+                    break
+                client_handler = ClientHandler(socket_peer)
+                client_id = client_handler.init_client_id()
+                if client_id is None:
+                    continue
+                with self.manager_lock:
+                    protocols = self.shared_namespace.protocols
+                    protocols[client_id] = client_handler.protocol
+                    self.shared_namespace.protocols = protocols
+                self.pool.apply_async(func = client_handler.start, args = ())
+            self.stop_server()
 
     def process_data(self, data: GamesDTO):
         result = data.to_result()

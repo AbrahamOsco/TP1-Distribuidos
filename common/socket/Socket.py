@@ -62,11 +62,28 @@ class Socket:
             try:
                 chunk = self.socket.recv(total_bytes_to_receive - bytes_received) # retorna un objeto en bytes.
                 if chunk == b'':
-                    return self.handler_error_recv_all(bytes_received, "action: recv_all | result: None | client disconnected ")
+                    return None, 0
             except OSError as e:
-                    return self.handler_error_recv_all(bytes_received, f"action: send_all | result: fail | error: {e}")
+                    return self.handler_error_recv_all(bytes_received, f"action: recv_all | result: fail | error: {e}")
             chunks.append(chunk)
             bytes_received += len(chunk)
+        return b''.join(chunks), bytes_received
+    
+    def recv_all_timeout(self, total_bytes_to_receive):
+        bytes_received = 0
+        chunks = []
+        current_timeout = self.socket.gettimeout()
+        self.socket.settimeout(2)
+        while bytes_received < total_bytes_to_receive:
+            try:
+                chunk = self.socket.recv(total_bytes_to_receive - bytes_received)
+                if chunk == b'':
+                    return None, 0
+            except OSError as e:
+                    return self.handler_error_recv_all(bytes_received, f"action: recv_all | result: fail | error: {e}")
+            chunks.append(chunk)
+            bytes_received += len(chunk)
+        self.socket.settimeout(current_timeout)
         return b''.join(chunks), bytes_received
 
     def get_peer_name(self):

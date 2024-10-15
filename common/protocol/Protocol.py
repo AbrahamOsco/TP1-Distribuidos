@@ -22,6 +22,14 @@ class Protocol:
         number_int = int.from_bytes(number_in_bytes, byteorder='big') 
         return number_int
 
+    def recv_number_n_bytes_timeout(self, n):
+        number_in_bytes, bytes_recv = self.socket.recv_all_timeout(n)
+        if bytes_recv != n:
+            self.socket.close()
+            raise RuntimeError("action: recv_number_1_byte | result: fail |")
+        number_int = int.from_bytes(number_in_bytes, byteorder='big') 
+        return number_int
+
     def send_string(self, a_string):
         string_in_bytes = a_string.encode(FORMAT_ENCODED)
         size_string_bytes = len(string_in_bytes)

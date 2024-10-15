@@ -4,6 +4,7 @@ from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
 from common.DTO.Query1ResultDTO import Query1ResultDTO, OPERATION_TYPE_QUERY1
 from common.DTO.Query2345ResultDTO import Query2345ResultDTO, OPERATION_TYPE_QUERY2345
 from common.DTO.ResultEOFDTO import OPERATION_TYPE_RESULTSEOF
+from common.DTO.AuthDTO import OPERATION_TYPE_AUTH
 import logging
 
 class ClientProtocol(Protocol):
@@ -19,7 +20,6 @@ class ClientProtocol(Protocol):
 # [ ["1", "3", "abcasda", "1", "0"], ["2", "4", "abc", "-1", "0"], ... ] 
     def send_data_raw(self, data_raw_dto):
         self.send_number_n_bytes(1, data_raw_dto.operation_type)
-        self.send_number_n_bytes(1, self.id) 
         self.send_number_n_bytes(2, len(data_raw_dto.data_raw))
         for item in data_raw_dto.data_raw:
             self.send_number_n_bytes(2, len(item))
@@ -28,13 +28,15 @@ class ClientProtocol(Protocol):
 
     def send_games_eof(self, amount):
         self.send_number_n_bytes(1, OPERATION_TYPE_GAMEEOF)
-        self.send_number_n_bytes(1, self.id)
         self.send_number_n_bytes(4, amount)
 
     def send_reviews_eof(self, amount):
         self.send_number_n_bytes(1, OPERATION_TYPE_REVIEWEOF)
-        self.send_number_n_bytes(1, self.id)
         self.send_number_n_bytes(4, amount)
+
+    def send_auth(self):
+        self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
+        self.send_number_n_bytes(1, self.id)
 
     def recv_result(self):
         operation_type = self.recv_number_n_bytes(1)

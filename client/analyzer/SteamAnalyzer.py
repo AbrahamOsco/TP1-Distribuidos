@@ -56,6 +56,7 @@ class SteamAnalyzer:
         self.protocol.send_reviews_eof(self.review_reader.get_lines_read())
 
     def send_data(self):
+        self.protocol.send_auth()
         self.send_games()
         self.send_reviews()
 

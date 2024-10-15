@@ -7,15 +7,25 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_DEFAULT
 from common.DTO.ResultEOFDTO import OPERATION_TYPE_RESULTSEOF
 from common.DTO.Query1ResultDTO import OPERATION_TYPE_QUERY1
 from common.DTO.Query2345ResultDTO import OPERATION_TYPE_QUERY2345
+from common.DTO.AuthDTO import OPERATION_TYPE_AUTH
 
 class ServerProtocol(Protocol):
     
     def __init__(self, socket):
         super().__init__(socket)
 
-    def recv_data_raw(self):
+    def recv_auth(self):
+        operation_type = self.recv_number_n_bytes_timeout(1)
+        if operation_type == OPERATION_TYPE_AUTH:
+            client_id = self.recv_number_n_bytes_timeout(1)
+            return client_id
+        return None
+
+    def recv_data_raw(self, client_id):
         operation_type = self.recv_number_n_bytes(1)
-        client_id = self.recv_number_n_bytes(1)
+        if operation_type == OPERATION_TYPE_AUTH:
+            client_id = self.recv_number_n_bytes(1)
+            return client_id
         if operation_type == OPERATION_TYPE_GAMEEOF:
             amount = self.recv_number_n_bytes(4)
             return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default", amount)])
