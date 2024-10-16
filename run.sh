@@ -23,7 +23,7 @@ docker build -f ./system/controllers/reducers/platformReducer/Dockerfile -t "pla
 #docker build -f ./system/controllers/filters/filterReviewsEnglish/Dockerfile -t "filterreviewsenglish:latest" .
 #docker build -f ./system/controllers/storages/monitorStorageQ5/Dockerfile -t "monitorstorageq5:latest" .
 #docker build -f ./system/controllers/groupers/grouperPercentile/Dockerfile -t "grouperpercentile:latest" .
-
+#
 
 docker compose -f new_docker_compose.yaml up -d
 docker compose -f new_docker_compose.yaml logs -f

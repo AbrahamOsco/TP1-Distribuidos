@@ -29,7 +29,7 @@ class Gateway:
         self.broker.create_queue(name =QUEUE_RESULTQ3_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_3))
         self.broker.create_queue(name =QUEUE_RESULTQ4_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_4))
         self.broker.create_queue(name =QUEUE_RESULTQ5_GATEWAY, callback= self.recv_result_query(ResultType.RESULT_QUERY_5))
-        self.raw_handler = RawHandler(self.broker)
+        self.raw_handler = RawHandler()
     
     def recv_result_query(self, result_type):
         def handler_query_result(ch, method, properties, body):
@@ -47,24 +47,24 @@ class Gateway:
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
-        #try:
+        try:
             self.accept_a_connection()
-            self.raw_handler.run(self.protocol)
+            self.raw_handler.start(self.protocol)
             self.broker.start_consuming()
-        #except Exception as e:
+        except Exception as e:
             if self.there_was_sigterm == False:
                 logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
-        #finally:
+        finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
 
     def free_all_resource(self):
+        self.raw_handler.close()
         self.socket_peer.close()
         self.socket_accepter.close()
         self.broker.close()
-
+    
     def handler_sigterm(self, signum, frame):
-        self.raw_handler.close()
         self.there_was_sigterm = True
         self.free_all_resource()
 

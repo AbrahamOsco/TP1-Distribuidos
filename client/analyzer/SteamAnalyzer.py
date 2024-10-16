@@ -12,6 +12,7 @@ import os
 import signal
 import time
 import traceback
+import threading
 AMOUNT_BATCH_TO_SEND = 100000000
 BATCH_SIZE = 1000
 TOTAL_QUERYS = 5
@@ -29,7 +30,8 @@ class SteamAnalyzer:
         self.compare_results = CompareResults(self.config_params["percent_of_file"])
         self.results_obtained = 0
         signal.signal(signal.SIGTERM, self.handler_sigterm)
-
+        self.thread_sender = threading.Thread(target=self.send_data_run)
+    
     def initialize_config(self):
         self.config_params = {}
         self.config_params["percent_of_file"] = float(os.getenv("PERCENT_OF_FILE_FOR_USE"))
@@ -47,8 +49,7 @@ class SteamAnalyzer:
     def run(self):
         #try:
             self.connect_to_server()
-            self.send_games()
-            self.send_reviews()
+            self.thread_sender.start()
             self.get_result_from_queries()
         #except Exception as e:
         #    if self.there_was_sigterm == False:
@@ -61,11 +62,17 @@ class SteamAnalyzer:
         self.socket.close()
         self.review_reader.close()
         self.game_reader.close()
+        if self.thread_sender:
+            self.thread_sender.join()
 
     def handler_sigterm(self, signum, frame):
         logging.info(f"action:⚡signal SIGTERM {signum} was received | result: sucess ✅ ")
         self.there_was_sigterm = True
         self.free_all_resource()
+
+    def send_data_run(self):
+        self.send_games()
+        self.send_reviews()
 
     def send_games(self):
         while  not self.game_reader.read_all_data():

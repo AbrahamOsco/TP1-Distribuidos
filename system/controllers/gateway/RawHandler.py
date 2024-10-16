@@ -1,24 +1,25 @@
-import logging
 from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT, ALL_REVIEWS_WAS_SENT
 from common.DTO.GamesRawDTO import GamesRawDTO, OPERATION_TYPE_GAMES_RAW
 from common.DTO.ReviewsRawDTO import ReviewsRawDTO, OPERATION_TYPE_REVIEWS_RAW
-from system.commonsSystem.DTO.GamesIndexDTO import GamesIndexDTO
-from system.commonsSystem.DTO.ReviewsIndexDTO import ReviewsIndexDTO
-
+from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
+import logging
+import threading
 
 QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 
 class RawHandler:
-    def __init__(self, broker):
+    def __init__(self):
         self.all_client_data_was_recv = False
         self.batchs_games = 0
         self.batchs_reviews = 0
-        self.broker = broker
+        self.broker = Broker()
         self.there_was_sigterm = False
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
+        self.thread_receiver = None
+        self.protocol = None
 
     def handler_messages(self, raw_dto):
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
@@ -44,10 +45,18 @@ class RawHandler:
         self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_dto_to_send.serialize())
         
     def run(self, protocol):
+        self.protocol = protocol
         while not self.all_client_data_was_recv and not self.there_was_sigterm:
-            self.handler_messages(protocol.recv_data_raw())
+            self.handler_messages(self.protocol.recv_data_raw())
+    
+    def start(self, protocol):
+        self.run(protocol)
+        #self.thread_receiver = threading.Thread(target=self.run, args=(protocol,))
+        #self.thread_receiver.start()
 
     def close(self):
+        if self.thread_receiver:
+            self.thread_receiver.join()
         self.there_was_sigterm = True
 
     

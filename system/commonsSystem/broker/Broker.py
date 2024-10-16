@@ -1,5 +1,6 @@
 from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
+import threading
 import logging
 import pika
 import sys
@@ -15,7 +16,7 @@ class Broker:
         self.queues = {}
         self.was_closed = False
         self.enable_worker_queues() 
-
+    
     def create_queue(self, name='', durable=True, callback=None):
         try:
             a_queue = Queue(name=name, durable=durable, callback=callback)
@@ -61,16 +62,19 @@ class Broker:
                                        properties=pika.BasicProperties(delivery_mode=2))
 
     def start_consuming(self):
-        #try:
+        try:
             self.channel.start_consuming()
-        #except Exception as e:
-        #    if self.was_closed == False:
-        #        logging.error(f" action: Handling a error {e} | result: success ✅")
-        #    self.close()
-    
+        except Exception as e:
+            if self.was_closed == False:
+                logging.error(f" action: Handling a error {e} | result: success ✅")
+            self.close()
+
+
     def close(self):
         if self.was_closed:
             return 
+        if self.thread_consumer:
+            self.thread_consumer.join()
         self.channel.stop_consuming()
         logging.info("action: Stopping consuming from RabbitMQ queues | result: success ✅")
         self.channel.close()
