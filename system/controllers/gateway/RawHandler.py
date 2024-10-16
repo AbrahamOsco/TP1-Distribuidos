@@ -50,9 +50,8 @@ class RawHandler:
             self.handler_messages(self.protocol.recv_data_raw())
     
     def start(self, protocol):
-        self.run(protocol)
-        #self.thread_receiver = threading.Thread(target=self.run, args=(protocol,))
-        #self.thread_receiver.start()
+        self.thread_receiver = threading.Thread(target=self.run, args=(protocol,))
+        self.thread_receiver.start()
 
     def close(self):
         if self.thread_receiver:

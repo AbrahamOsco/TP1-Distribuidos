@@ -79,7 +79,7 @@ def get_compose_query5():
 
 
 def generar_docker_compose_basic(amount_queries):
-  docker_compose_content = """version: '3.8'
+  docker_compose_content = """
 services:
   rabbitmq:
     container_name: rabbitmq
