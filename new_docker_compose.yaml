@@ -443,6 +443,96 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  filterscorenegative_1:
+    container_name: filterscorenegative_1
+    image: filterscorenegative:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=29
+      - TOTAL_NODES=2 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterscorenegative_2:
+    container_name: filterscorenegative_2
+    image: filterscorenegative:latest
+    entrypoint: python3 /app/system/controllers/filters/filterScoreNegative/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=30
+      - TOTAL_NODES=2 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  monitorstorageq4_1:
+    container_name: monitorstorageq4_1
+    image: monitorstorageq4:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=31
+      - TOTAL_NODES=1 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterreviewsenglish_1:
+    container_name: filterreviewsenglish_1
+    image: filterreviewsenglish:latest
+    entrypoint: python3 /app/system/controllers/filters/filterReviewsEnglish/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=32
+      - TOTAL_NODES=1 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  monitorstorageq5_1:
+    container_name: monitorstorageq5_1
+    image: monitorstorageq5:latest
+    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=33
+      - TOTAL_NODES=1 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  grouperpercentile_1:
+    container_name: grouperpercentile_1
+    image: grouperpercentile:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperPercentile/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=34
+      - TOTAL_NODES=1 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
 networks:
   system_network:
     ipam:

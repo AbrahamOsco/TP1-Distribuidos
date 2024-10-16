@@ -12,5 +12,6 @@ docker rm -f filterscorenegative_1 filterscorenegative_2
 docker rm -f monitorstorageq4_1  filterreviewsenglish_1
 docker rm -f monitorstorageq5_1  grouperpercentile_1
 
-
+docker network rm -f tp1-distribuidos_system_network 
 docker network rm -f tp2_system_network
+

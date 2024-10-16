@@ -66,6 +66,16 @@ def get_compose_query3():
   compose_query_3 += generate_services("groupertoppositivereviews", 1, "groupertoppositivereviews:latest", "/app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py", 5)
   return compose_query_3
 
+def get_compose_query4():
+  compose_query_4 = generate_services("filterscorenegative", 2, "filterscorenegative:latest", "/app/system/controllers/filters/filterScoreNegative/main.py")
+  compose_query_4 += generate_services("monitorstorageq4", 1, "monitorstorageq4:latest", "/app/system/controllers/storages/monitorStorageQ4/main.py")
+  compose_query_4 += generate_services("filterreviewsenglish", 1, "filterreviewsenglish:latest", "/app/system/controllers/filters/filterReviewsEnglish/main.py")
+  return compose_query_4
+
+def get_compose_query5():
+  compose_query_5 = generate_services("monitorstorageq5", 1, "monitorstorageq5:latest", "/app/system/controllers/storages/monitorStorageQ5/main.py")
+  compose_query_5 += generate_services("grouperpercentile", 1, "grouperpercentile:latest", "/app/system/controllers/groupers/grouperPercentile/main.py")
+  return compose_query_5
 
 
 def generar_docker_compose_basic(amount_queries):
@@ -127,6 +137,10 @@ services:
     docker_compose_content += get_compose_query2()
   if amount_queries >=3:
     docker_compose_content += get_compose_query3()
+  if amount_queries >=4:
+    docker_compose_content += get_compose_query4()
+  if amount_queries >=5:
+    docker_compose_content += get_compose_query5()
   
   docker_compose_content += generate_network()
 
