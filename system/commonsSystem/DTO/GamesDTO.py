@@ -4,7 +4,7 @@ from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 
 class GamesDTO:
-    def __init__(self, client_id:int = 0, state_games:int = 0,  games_raw =[], games_dto =[]):
+    def __init__(self, client_id:int = 0, state_games:int = 1,  games_raw =[], games_dto =[]):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
         self.state_games = state_games 
@@ -17,9 +17,9 @@ class GamesDTO:
         self.games_dto = []
         for game_raw in games_raw:
             a_game_dto = GameDTO(app_id =int(game_raw[0]), name =game_raw[1],
-                release_date =game_raw[2], windows =self.command_platform[game_raw[3]],
-                mac =self.command_platform[game_raw[4]] , linux =self.command_platform[game_raw[5]],
-                avg_playtime_forever =int(game_raw[6]), genres =game_raw[7])
+                release_date =game_raw[2], windows =self.command_platform[game_raw[17]],
+                mac =self.command_platform[game_raw[18]] , linux =self.command_platform[game_raw[19]],
+                avg_playtime_forever =int(game_raw[29]), genres =game_raw[36])
             self.games_dto.append(a_game_dto)
 
     def serialize(self):

@@ -47,14 +47,14 @@ class Gateway:
         self.protocol = ServerProtocol(self.socket_peer)
     
     def run(self):
-        try:
+        #try:
             self.accept_a_connection()
             self.raw_handler.run(self.protocol)
             self.broker.start_consuming()
-        except Exception as e:
+        #except Exception as e:
             if self.there_was_sigterm == False:
                 logging.error(f"action: Handling a error | result: error ❌ | error: {e}")
-        finally:
+        #finally:
             self.free_all_resource()
             logging.info("action: Release all resource | result: success ✅")
 

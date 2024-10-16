@@ -2,9 +2,8 @@ import logging
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 
-DIC_GAME_FEATURES_TO_USE = {"AppID": 0 , "Name": 0, "Windows": 0, "Mac": 0, "Linux": 0,
-                            "Genres": 0, "Release date": 0, "Average playtime forever": 0}
-DIC_REVIEW_FEATURES_TO_USE = { 'app_id':0, 'review_text':0, 'review_score':0 }                              
+DIC_GAME_FEATURES_TO_USE = {0:"app_id" , 1:"name", 2:"release_date", 17: "windows", 18: "mac", 19: "linux", 29: "avg_playtime_forever", 36: "genres"}
+DIC_REVIEW_FEATURES_TO_USE = {0:'app_id', 2:'review_text', 3:'review_score'}
 
 
 def eof_calculator(handler_eof):

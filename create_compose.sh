@@ -1,3 +1,2 @@
-
-AMOUNT_QUERIES=5
+AMOUNT_QUERIES=1
 python3 generar_docker_compose.py $AMOUNT_QUERIES

@@ -10,19 +10,19 @@ docker build -f ./system/controllers/filters/filterBasic/Dockerfile -t "filterba
 docker build -f ./system/controllers/select/selectQ1/Dockerfile -t "selectq1:latest" .
 docker build -f ./system/controllers/groupers/platformCounter/Dockerfile -t "platformcounter:latest" .
 docker build -f ./system/controllers/reducers/platformReducer/Dockerfile -t "platformreducer:latest" .
-docker build -f ./system/controllers/select/selectQ2345/Dockerfile -t "selectq2345:latest" .
-docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filtergender:latest" .
-docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
-docker build -f ./system/controllers/groupers/grouperTopAvgPlaytime/Dockerfile -t "groupertopavgplaytime:latest" .
-docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
-docker build -f ./system/controllers/storages/monitorStorageQ3/Dockerfile -t "monitorstorageq3:latest" .
-docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
-docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertoppositivereviews:latest" .
-docker build -f ./system/controllers/filters/filterScoreNegative/Dockerfile -t "filterscorenegative:latest" .
-docker build -f ./system/controllers/storages/monitorStorageQ4/Dockerfile -t "monitorstorageq4:latest" .
-docker build -f ./system/controllers/filters/filterReviewsEnglish/Dockerfile -t "filterreviewsenglish:latest" .
-docker build -f ./system/controllers/storages/monitorStorageQ5/Dockerfile -t "monitorstorageq5:latest" .
-docker build -f ./system/controllers/groupers/grouperPercentile/Dockerfile -t "grouperpercentile:latest" .
+#docker build -f ./system/controllers/select/selectQ2345/Dockerfile -t "selectq2345:latest" .
+#docker build -f ./system/controllers/filters/filterGender/Dockerfile -t "filtergender:latest" .
+#docker build -f ./system/controllers/filters/filterDecade/Dockerfile -t "filterdecade:latest" .
+#docker build -f ./system/controllers/groupers/grouperTopAvgPlaytime/Dockerfile -t "groupertopavgplaytime:latest" .
+#docker build -f ./system/controllers/filters/filterScorePositive/Dockerfile -t "filterscorepositive:latest" .
+#docker build -f ./system/controllers/storages/monitorStorageQ3/Dockerfile -t "monitorstorageq3:latest" .
+#docker build -f ./system/controllers/select/selectIDName/Dockerfile -t "selectidname:latest" .
+#docker build -f ./system/controllers/groupers/grouperTopReviewsPositiveIndie/Dockerfile -t "groupertoppositivereviews:latest" .
+#docker build -f ./system/controllers/filters/filterScoreNegative/Dockerfile -t "filterscorenegative:latest" .
+#docker build -f ./system/controllers/storages/monitorStorageQ4/Dockerfile -t "monitorstorageq4:latest" .
+#docker build -f ./system/controllers/filters/filterReviewsEnglish/Dockerfile -t "filterreviewsenglish:latest" .
+#docker build -f ./system/controllers/storages/monitorStorageQ5/Dockerfile -t "monitorstorageq5:latest" .
+#docker build -f ./system/controllers/groupers/grouperPercentile/Dockerfile -t "grouperpercentile:latest" .
 
 
 docker compose -f new_docker_compose.yaml up -d

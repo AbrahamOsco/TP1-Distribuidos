@@ -19,7 +19,8 @@ class FileReader:
         self.is_closed = False
         self.fix_header_game = False
         self.read_all = False
-        self.amount_data = -1 # header no cuenta. 
+        self.amount_data = 0 # header no cuenta. 
+        next(self.reader) # leemos el header. 
     def read_all_data(self):
         return self.read_all
 
@@ -40,9 +41,9 @@ class FileReader:
                 for element in data_raw:
                     total_size_raw += len(element)
                 self.bytes_read += (total_size_raw + len(data_raw)) # Sumo bytes de cada elemento de la lista, comas y \n.
-                if self.fix_header_game == False and self.file_name == 'games':
-                    data_raw.insert(INDEX_TO_FIX_HEADER, 'Unknown') # add a new column to synchronize the header
-                    self.fix_header_game = True
+                #if self.fix_header_game == False and self.file_name == 'games':
+                #    data_raw.insert(INDEX_TO_FIX_HEADER, 'Unknown') # add a new column to synchronize the header
+                #    self.fix_header_game = True
                 games.append(data_raw)
         except StopIteration:
             self.close()

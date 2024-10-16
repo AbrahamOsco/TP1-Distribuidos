@@ -16,7 +16,7 @@ class ReviewsDTO:
     def raw_to_dto(self, reviews_raw):
         self.reviews_dto = []
         for review_raw in reviews_raw:
-            a_review_dto = ReviewDTO(app_id =int(review_raw[0]), review_text =review_raw[1], score= int(review_raw[2]))
+            a_review_dto = ReviewDTO(app_id =int(review_raw[0]), review_text =review_raw[2], score= int(review_raw[3]))
             self.reviews_dto.append(a_review_dto)
     
     def serialize(self):
