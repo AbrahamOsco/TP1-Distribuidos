@@ -71,7 +71,7 @@ class SelectIDName:
         self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ4, message =games_actionDTO.serialize())
         self.broker.public_message(queue_name =QUEUE_SELECTIDNAME_MONITORSTORAGEQ5, message =games_actionDTO.serialize())
         
-        self.handler_eof_games.add_new_processing()
+        self.handler_eof_games.add_data_process()
 
     def run(self):
         self.broker.start_consuming()

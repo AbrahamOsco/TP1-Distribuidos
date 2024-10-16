@@ -64,7 +64,7 @@ class FilterGender:
         self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME, message =action_indie_gamesDTO.serialize())
         #self.broker.public_message(queue_name =QUEUE_FILTERGENDER_SELECTIDNAME_INDIE, message =games.serialize())
 
-        self.handler_eof_games.add_new_processing()
+        self.handler_eof_games.add_data_process()
 
 
     def run(self):

@@ -92,7 +92,7 @@ class SteamAnalyzer:
             self.protocol.send_data_raw(ReviewsRawDTO(client_id =self.config_params['id'], reviews_raw =some_reviews))
         self.protocol.send_eof(ALL_REVIEWS_WAS_SENT, self.config_params['id'])
         if self.review_reader.read_all_data():
-            logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! Amount_data{self.game_reader.amount_data} | result: success ✅")
+            logging.info(f"action: 10% of review.csv  📰 🗞️ has been sent in batches! Amount_data{self.review_reader.amount_data} | result: success ✅")
 
     def get_result_from_queries(self):
         while self.results_obtained < TOTAL_QUERYS :

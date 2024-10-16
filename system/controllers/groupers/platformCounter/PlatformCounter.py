@@ -19,7 +19,6 @@ class PlatformCounter:
         initialize_log(logging_level= os.getenv("LOGGING_LEVEL"))
         self.id = os.getenv("NODE_ID")
         self.total_nodes = int(os.getenv("TOTAL_NODES"))
-
         self.platform = PlatformDTO()
         self.registered_client = False
         self.broker = Broker()
@@ -57,7 +56,8 @@ class PlatformCounter:
             self.platform.windows += a_game.windows
             self.platform.linux += a_game.linux
             self.platform.mac += a_game.mac
-        self.handler_eof_games.add_new_processing()
+        self.handler_eof_games.add_data_process(len(gamesDTO.games_dto))
+        self.handler_eof_games.add_data_sent(len(gamesDTO.games_dto))
 
     def run(self):
         self.broker.start_consuming()

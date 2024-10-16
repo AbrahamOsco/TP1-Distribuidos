@@ -1,3 +1,4 @@
+docker volume prune
 chmod +x run.sh stop.sh
 ./stop.sh
 docker build -f ./base_images/common/Dockerfile -t "common:latest" .

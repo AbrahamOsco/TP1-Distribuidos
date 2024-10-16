@@ -54,7 +54,7 @@ class FilterScorePositive:
     def filter_using_score_positive(self, batch_review):
         reviews_dto = self.get_reviewsDTO_with_score_positive(batch_review)
         self.broker.public_message(queue_name =QUEUE_SCOREPOSITIVE_MONITORSTORAGEQ3, message =reviews_dto.serialize())
-        self.handler_eof_reviews.add_new_processing()
+        self.handler_eof_reviews.add_data_process()
 
     def run(self):
         self.broker.start_consuming()

@@ -13,8 +13,8 @@ QUEUE_GATEWAY_FILTER = "gateway_filterBasic"
 class RawHandler:
     def __init__(self):
         self.all_client_data_was_recv = False
-        self.batchs_games = 0
-        self.batchs_reviews = 0
+        self.amount_games = 0
+        self.amount_reviews = 0
         self.broker = Broker()
         self.there_was_sigterm = False
         self.broker.create_queue(name =QUEUE_GATEWAY_FILTER)
@@ -23,12 +23,12 @@ class RawHandler:
 
     def handler_messages(self, raw_dto):
         if raw_dto.operation_type == ALL_GAMES_WAS_SENT:
-            raw_dto.initialize_amount_and_type(self.batchs_games)
+            raw_dto.initialize_amount_and_type(self.amount_games)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Games 🕹️ ⭐ | result: success ✅")
         elif raw_dto.operation_type == ALL_REVIEWS_WAS_SENT:
             self.all_client_data_was_recv = True
-            raw_dto.initialize_amount_and_type(self.batchs_reviews)
+            raw_dto.initialize_amount_and_type(self.amount_reviews)
             self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = raw_dto.serialize())
             logging.info(f"action: Sent EOF of Reviews 📰 ⭐  | result: sucess ✅")
         else:
@@ -38,9 +38,9 @@ class RawHandler:
         a_dto_to_send = None
         if raw_dto.operation_type == OPERATION_TYPE_GAMES_RAW:
             a_dto_to_send = GamesDTO(client_id=raw_dto.client_id, state_games = StateGame.STATE_GAMES_INITIAL.value, games_raw=raw_dto.data_raw)
-            self.batchs_games +=1
+            self.amount_games += len(raw_dto.data_raw)
         elif raw_dto.operation_type == OPERATION_TYPE_REVIEWS_RAW:
-            self.batchs_reviews +=1
+            self.amount_reviews += len(raw_dto.data_raw)
             a_dto_to_send = ReviewsDTO(client_id =raw_dto.client_id, reviews_raw =raw_dto.data_raw)
         self.broker.public_message(queue_name =QUEUE_GATEWAY_FILTER, message = a_dto_to_send.serialize())
         

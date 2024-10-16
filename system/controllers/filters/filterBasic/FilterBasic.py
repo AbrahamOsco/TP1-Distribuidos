@@ -7,7 +7,7 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.enums.StateGame import StateGame
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO, STATE_REVIEW_INITIAL
 from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.utils.utils import handler_sigterm_default
+from system.commonsSystem.utils.utils import handler_sigterm_default, eof_calculator
 import logging
 import os
 import signal
@@ -17,7 +17,8 @@ QUEUE_FILTER_SELECTQ1 = "filterBasic_selectq1"
 QUEUE_FILTER_SELECTQ2345 = "filterBasic_selectq2345"
 QUEUE_FILTERBASIC_SCOREPOSITIVE = "filterBasic_filterScorePositive"
 QUEUE_FILTERBASIC_SCORENEGATIVE = "filterBasic_scoreNegative"
-EXCHANGE_EOF_FILTER_BASIC = "Exchange_filterBasic"
+EXCHANGE_EOF_FILTER_BASIC_GAMES = "Exchange_filterBasic_games"
+EXCHANGE_EOF_FILTER_BASIC_REVIEWS = "Exchange_filterBasic_reviews"
 
 class FilterBasic:
     def __init__(self):
@@ -26,29 +27,22 @@ class FilterBasic:
         self.total_nodes = int(os.getenv("TOTAL_NODES"))
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, callback =self.callback_filter_basic())
+        self.broker.create_queue(name =QUEUE_GATEWAY_FILTER, callback =self.handler_filter_basic())
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ1)
         self.broker.create_queue(name =QUEUE_FILTER_SELECTQ2345)
         self.broker.create_queue(name =QUEUE_FILTERBASIC_SCOREPOSITIVE)
         self.broker.create_queue(name =QUEUE_FILTERBASIC_SCORENEGATIVE)
 
-        self.broker.create_fanout_and_bind(name_exchange=EXCHANGE_EOF_FILTER_BASIC, callback=self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTER_SELECTQ2345, QUEUE_FILTER_SELECTQ1])
+                                exchange_name =EXCHANGE_EOF_FILTER_BASIC_GAMES, next_queues =[QUEUE_FILTER_SELECTQ2345, QUEUE_FILTER_SELECTQ1])
+        
         self.handler_eof_reviews = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Reviews", total_nodes= self.total_nodes,
-                                exchange_name =EXCHANGE_EOF_FILTER_BASIC, next_queues =[QUEUE_FILTERBASIC_SCOREPOSITIVE, QUEUE_FILTERBASIC_SCORENEGATIVE])
+                                exchange_name =EXCHANGE_EOF_FILTER_BASIC_REVIEWS, next_queues =[QUEUE_FILTERBASIC_SCOREPOSITIVE, QUEUE_FILTERBASIC_SCORENEGATIVE])
 
-    def callback_eof_calculator(self):
-        def handler_message(ch, method, properties, body):
-            result_dto = DetectDTO(body).get_dto()
-            if result_dto.target_type == ALL_GAMES_WAS_SENT:
-                self.handler_eof_games.run(calculatorDTO =result_dto)
-            elif result_dto.target_type == ALL_REVIEWS_WAS_SENT:
-                self.handler_eof_reviews.run(calculatorDTO =result_dto)
-            ch.basic_ack(delivery_tag =method.delivery_tag)
-        return handler_message
-
-    def callback_filter_basic(self):
+        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTER_BASIC_GAMES, callback =eof_calculator(self.handler_eof_games))
+        self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_FILTER_BASIC_REVIEWS, callback =eof_calculator(self.handler_eof_reviews))
+        
+    def handler_filter_basic(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if (result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO and
@@ -64,18 +58,20 @@ class FilterBasic:
 
     def send_batch_data(self, result_dto):
         if result_dto.operation_type == OperationType.OPERATION_TYPE_GAMES_DTO:
+            self.handler_eof_games.add_data_process(len(result_dto.games_dto))
             games_filtered = self.filter_fields_empty_games(result_dto)
             gamesDTO = GamesDTO(client_id =result_dto.client_id, state_games =StateGame.STATE_GAMES_INITIAL.value, games_dto =games_filtered)
             self.broker.public_message(queue_name =QUEUE_FILTER_SELECTQ1, message = gamesDTO.serialize())
             self.broker.public_message(queue_name =QUEUE_FILTER_SELECTQ2345, message = gamesDTO.serialize())
-            self.handler_eof_games.add_new_processing()
+            self.handler_eof_games.add_data_sent(len(gamesDTO.games_dto))
         
         elif result_dto.operation_type == OperationType.OPERATION_TYPE_REVIEWS_DTO:
+            self.handler_eof_reviews.add_data_process(len(result_dto.reviews_dto))
             reviews_filtered = self.filter_field_empty_reviews(result_dto)
             reviewsDTO = ReviewsDTO(client_id= result_dto.client_id, state_reviews=STATE_REVIEW_INITIAL, reviews_dto =reviews_filtered)
             self.broker.public_message(queue_name =QUEUE_FILTERBASIC_SCOREPOSITIVE, message= reviewsDTO.serialize())
             self.broker.public_message(queue_name =QUEUE_FILTERBASIC_SCORENEGATIVE, message= reviewsDTO.serialize())
-            self.handler_eof_reviews.add_new_processing()
+            self.handler_eof_reviews.add_data_sent(len(reviewsDTO.reviews_dto))
     
     def filter_fields_empty_games(self, gamesDTO):
         games_filtered = []

@@ -62,7 +62,7 @@ class FilterScoreNegative:
         reviews_monitorq4, reviews_monitorq5 = self.get_reviewsDTO_with_score_negative(batch_review)
         self.broker.public_message(queue_name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ4, message =reviews_monitorq4.serialize())
         self.broker.public_message(queue_name =QUEUE_SCORENEGATIVE_MONITORSTORAGEQ5, message =reviews_monitorq5.serialize())
-        self.handler_eof_reviews.add_new_processing()
+        self.handler_eof_reviews.add_data_process()
 
     def run(self):
         self.broker.start_consuming()

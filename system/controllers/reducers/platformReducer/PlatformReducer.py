@@ -17,12 +17,11 @@ class PlatformReducer:
         self.broker = Broker()
         self.registered_client = False
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        
         self.total_platform = PlatformDTO()
-        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, callback=self.handler_callback_exchange())
+        self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER, callback=self.handler_platform_reducer())
         self.broker.create_queue(name =QUEUE_RESULTQ1_GATEWAY)
     
-    def handler_callback_exchange(self):
+    def handler_platform_reducer(self):
         def handler_message(ch, method, properties, body):
             result_dto = DetectDTO(body).get_dto()
             if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:

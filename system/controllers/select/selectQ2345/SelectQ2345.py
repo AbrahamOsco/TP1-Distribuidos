@@ -44,7 +44,7 @@ class SelectQ2345:
     def filter_for_q2345(self, batch_game: GamesDTO):
         new_gamesDTO = GamesDTO(client_id =batch_game.client_id, state_games =StateGame.STATE_Q2345.value, games_dto =batch_game.games_dto)
         self.broker.public_message(queue_name =QUEUE_SELECTQ2345_FILTERGENDER, message =new_gamesDTO.serialize())
-        self.handler_eof_games.add_new_processing()
+        self.handler_eof_games.add_data_process()
 
     def run(self):
         self.broker.start_consuming()

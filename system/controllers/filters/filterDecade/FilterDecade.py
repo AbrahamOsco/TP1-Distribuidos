@@ -51,7 +51,7 @@ class FilterDecade:
                 new_games[game.app_id] = [game.name, game.avg_playtime_forever]
         result_query = ResultQueryDTO(client_id =batch_game.client_id, data =new_games)
         self.broker.public_message(queue_name =QUEUE_FILTERDECADE_GROUPERTOPAVGTIME, message =result_query.serialize())
-        self.handler_eof_games.add_new_processing()
+        self.handler_eof_games.add_data_process()
     
     def run(self):
         self.broker.start_consuming()

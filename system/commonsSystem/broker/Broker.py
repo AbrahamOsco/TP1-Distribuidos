@@ -1,6 +1,5 @@
 from system.commonsSystem.broker.Queue import Queue
 from common.utils.utils import initialize_log 
-import threading
 import logging
 import pika
 import sys
@@ -73,8 +72,6 @@ class Broker:
     def close(self):
         if self.was_closed:
             return 
-        if self.thread_consumer:
-            self.thread_consumer.join()
         self.channel.stop_consuming()
         logging.info("action: Stopping consuming from RabbitMQ queues | result: success ✅")
         self.channel.close()
