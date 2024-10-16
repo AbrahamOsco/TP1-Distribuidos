@@ -24,7 +24,23 @@ function solicitar_numero_entero() {
   done
 }
 
-# Función para validar que la entrada sea un número entero
+# Función para validar que la entrada sea un número entero mayor o igual a un valor dado
+function solicitar_numero_entero_con_minimo() {
+  local mensaje=$1
+  local minimo=$2
+  local numero
+  while true; do
+    read -p "$mensaje" numero
+    if [[ "$numero" =~ ^[0-9]+$ ]] && [ "$numero" -ge "$minimo" ]; then
+      echo $numero
+      return
+    else
+      echo "Error: La entrada debe ser un número entero mayor o igual a $minimo."
+    fi
+  done
+}
+
+# Función para validar que la entrada sea S o N
 function solicitar_si_no() {
   local mensaje=$1
   local respuesta
@@ -40,6 +56,13 @@ function solicitar_si_no() {
 }
 
 NUM_CLIENTS=$(solicitar_numero_entero "Ingrese la cantidad de clientes: ")
+
+# Solicitar la cantidad de ejecuciones por cliente
+declare -a ejecuciones_por_cliente
+for ((i = 1; i <= NUM_CLIENTS; i++)); do
+  ejecuciones_por_cliente[$i]=$(solicitar_numero_entero_con_minimo "Ingrese la cantidad de ejecuciones para el cliente $i: " 1)
+done
+
 # Solicitar las cantidades para cada tipo de servicio
 ALL_QUERIES=$(solicitar_si_no "¿Desea ejecutar todas las consultas? (S/N): ")
 QUERIES=""
@@ -59,10 +82,10 @@ if [ "$ESCALATE" == "S" ]; then
     NUM_SELECT_Q2345=$(solicitar_numero_entero "Ingrese la cantidad de SelectQ2345: ")
     NUM_FILTER_GENDER=$(solicitar_numero_entero "Ingrese la cantidad de FilterGender: ")
   fi
-  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"2"* ]] ; then
+  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"2"* ]]; then
     NUM_FILTER_DECADE=$(solicitar_numero_entero "Ingrese la cantidad de FilterDecade: ")
   fi
-  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"3"* ]] ; then
+  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"3"* ]]; then
     NUM_SELECT_ID_NAME_INDIE=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDNameIndie: ")
     NUM_FILTER_SCORE_POSITIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScorePositive: ")
   fi
@@ -70,7 +93,7 @@ if [ "$ESCALATE" == "S" ]; then
     NUM_SELECT_ID_NAME_ACTION=$(solicitar_numero_entero "Ingrese la cantidad de SelectIDNameAction: ")
     NUM_FILTER_SCORE_NEGATIVE=$(solicitar_numero_entero "Ingrese la cantidad de FilterScoreNegative: ")
   fi
-  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"4"* ]] ; then
+  if [ "$QUERIES" == "A" ] || [[ "$QUERIES" == *"4"* ]]; then
     NUM_FILTER_REVIEW_ENGLISH=$(solicitar_numero_entero "Ingrese la cantidad de FilterReviewEnglish: ")
   fi
 else
@@ -87,8 +110,11 @@ else
   NUM_FILTER_REVIEW_ENGLISH=1
 fi
 
+# Modificar la forma en que se pasan las ejecuciones por cliente
+EJECUCIONES_CLIENTES=$(IFS=,; echo "${ejecuciones_por_cliente[*]}")
+
 if [ "$QUERIES" == "A" ]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
@@ -101,33 +127,37 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 elif [[ "$QUERIES" == *"1"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 elif [[ "$QUERIES" == *"2"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_FILTER_DECADE \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 elif [[ "$QUERIES" == *"3"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_INDIE \
       $NUM_FILTER_SCORE_POSITIVE \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 elif [[ "$QUERIES" == *"4"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -135,14 +165,16 @@ elif [[ "$QUERIES" == *"4"* ]]; then
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 elif [[ "$QUERIES" == *"5"* ]]; then
-  python3 generar_docker_compose.py $OUTPUT_FILE \
+  python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
       $NUM_FILTER_GENDER \
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
-      $NUM_CLIENTS
+      $NUM_CLIENTS \
+      "$EJECUCIONES_CLIENTES"
 fi
