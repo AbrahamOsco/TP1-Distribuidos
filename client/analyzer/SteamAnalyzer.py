@@ -11,17 +11,19 @@ from client.protocol.ClientProtocol import ClientProtocol
 
 class SteamAnalyzer:
 
-    def __init__(self, percent_of_file):
+    def __init__(self):
         self.initialize_config()
-        logging.info(f"percent_of_file_for_use: {percent_of_file} 👈")
-        self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=percent_of_file)
-        self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=percent_of_file)
-        self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
-        self.expected_responses = QueriesResponses(self.should_send_reviews, percent_of_file)
         self.actual_responses = {}
         self.threads = []
         self.socket = None
         self.protocol = None
+
+    def init_readers_and_responses(self, percent_of_file):
+        self.percent = percent_of_file
+        self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.percent)
+        self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.percent)
+        self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
+        self.expected_responses = QueriesResponses(self.should_send_reviews, self.percent)
 
     def initialize_config(self):
         self.config_params = {}
@@ -29,21 +31,7 @@ class SteamAnalyzer:
         self.config_params["log_level"] = os.getenv("LOGGING_LEVEL")
         self.config_params["hostname"] = os.getenv("HOSTNAME")
         initialize_log(self.config_params["log_level"])
-    
-    def close_socket(self):
-        if self.socket:
-            self.socket.close()
-            self.socket = None
-            self.protocol = None
-            logging.info("action: socket_closed 🏪 | result: success ✅")
-
-    def stop(self):
-        self.close_socket()
-        self.game_reader.close()
-        self.review_reader.close()
-        for thread in self.threads:
-            thread.join()
-        logging.info("action: analyzer_stopped | result: success ✅")
+        self.percentages = []
 
     def connect_to_server(self):
         self.close_socket() 
@@ -78,13 +66,25 @@ class SteamAnalyzer:
         self.send_reviews()
 
     def run(self):
+        percent_of_file_for_use_by_execution = os.getenv("PERCENT_OF_FILE_FOR_USE_BY_EXECUTION", 1)
+        self.percentages = [float(p.strip()) for p in percent_of_file_for_use_by_execution.split(',')]
+        logging.info(f"Starting executions of Client")
+        for i, percent in enumerate(self.percentages, 1):
+            logging.info(f"Starting execution {i} of {len(self.percentages)} with {percent*100}% of file")
+            self.execute(percent)
+            logging.info(f"Finished execution {i} of {percent}")
+        logging.info("All executions completed")
+    
+    def execute(self, percent):
+        self.init_readers_and_responses(percent)
         self.connect_to_server()
-        self.threads.append(threading.Thread(target=self.send_data))
-        self.threads.append(threading.Thread(target=self.get_result_from_queries))
+        self.threads.append(threading.Thread(target =self.send_data))
+        self.threads.append(threading.Thread(target =self.get_result_from_queries))
         for thread in self.threads:
             thread.start()
         for thread in self.threads:
             thread.join()
+        self.stop()
 
     def get_result_from_queries(self):
         logging.info("action: Waiting for the results 📊 | result: pending ⌚")
@@ -105,4 +105,5 @@ class SteamAnalyzer:
         self.review_reader.close()
         for thread in self.threads:
             thread.join()
+        self.threads = []
         logging.info("action: socket_closed 🏪 | result: success ✅")
