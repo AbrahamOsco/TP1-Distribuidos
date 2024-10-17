@@ -16,7 +16,6 @@ class HandlerEOF:
         self.data_definitive = 0
         self.data_sent = 0
         self.data_sent_accumulated = 0
-        
         self.controllers_recv = 0
         self.total_nodes = total_nodes
         self.node_id = node_id

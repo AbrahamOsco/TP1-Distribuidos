@@ -186,6 +186,142 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  selectq2345_1:
+    container_name: selectq2345_1
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=12
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  selectq2345_2:
+    container_name: selectq2345_2
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=13
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  selectq2345_3:
+    container_name: selectq2345_3
+    image: selectq2345:latest
+    entrypoint: python3 /app/system/controllers/select/selectQ2345/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=14
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filtergender_1:
+    container_name: filtergender_1
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=15
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filtergender_2:
+    container_name: filtergender_2
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=16
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filtergender_3:
+    container_name: filtergender_3
+    image: filtergender:latest
+    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=17
+      - TOTAL_NODES=3 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterdecade_1:
+    container_name: filterdecade_1
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=18
+      - TOTAL_NODES=2 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  filterdecade_2:
+    container_name: filterdecade_2
+    image: filterdecade:latest
+    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=19
+      - TOTAL_NODES=2 
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  groupertopavgplaytime_1:
+    container_name: groupertopavgplaytime_1
+    image: groupertopavgplaytime:latest
+    entrypoint: python3 /app/system/controllers/groupers/grouperTopAvgPlaytime/main.py
+    environment:
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - NODE_ID=20
+      - TOTAL_NODES=1 
+      - TOP_SIZE=10
+    networks:
+      - system_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
 networks:
   system_network:
     ipam:

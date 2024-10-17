@@ -1,11 +1,11 @@
-from system.commonsSystem.DTO.enums.OperationType import OperationType
-from common.utils.utils import initialize_log, ALL_GAMES_WAS_SENT
+from common.utils.utils import initialize_log
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.handlerEOF.HandlerEOF import HandlerEOF
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.utils.utils import handler_sigterm_default
+from system.commonsSystem.utils.MessageHandler import MessageHandler
 import os
 import logging
 import signal 
@@ -23,12 +23,12 @@ class PlatformCounter:
         self.registered_client = False
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
-        self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, callback =self.handler_count_platforms())
         self.broker.create_queue(name =QUEUE_PLATFORMCOUNTER_REDUCER)
 
         self.broker.create_fanout_and_bind(name_exchange =EXCHANGE_EOF_PLATFORM_COUNTER, callback =self.callback_eof_calculator())
         self.handler_eof_games = HandlerEOF(broker =self.broker, node_id =self.id, target_name ="Games", total_nodes= self.total_nodes,
                                 exchange_name =EXCHANGE_EOF_PLATFORM_COUNTER, next_queues =[QUEUE_PLATFORMCOUNTER_REDUCER])
+        self.broker.create_queue(name =QUEUE_SELECTQ1_PLATFORMCOUNTER, callback =MessageHandler.with_eof(self.handler_eof_games, self.count_platforms))
 
     def callback_eof_calculator(self):
         def handler_message(ch, method, properties, body):
@@ -36,16 +36,6 @@ class PlatformCounter:
             self.handler_eof_games.run(calculatorDTO =result_dto, auto_send =False, dto_to_send =self.platform)
             self.handler_eof_games.try_send_partial_data()
             ch.basic_ack(delivery_tag =method.delivery_tag)
-        return handler_message
-
-    def handler_count_platforms(self):
-        def handler_message(ch, method, properties, body):
-            result_dto = DetectDTO(body).get_dto()
-            if result_dto.operation_type == OperationType.OPERATION_TYPE_EOF_DTO:
-                self.handler_eof_games.init_leader_and_push_eof(result_dto)  
-            else:
-                self.count_platforms(result_dto)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
         return handler_message
 
     def count_platforms(self, gamesDTO:GamesDTO):

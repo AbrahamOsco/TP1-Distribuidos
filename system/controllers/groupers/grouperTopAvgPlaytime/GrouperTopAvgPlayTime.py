@@ -27,7 +27,6 @@ class GrouperTopAvgPlaytime:
         self.broker = Broker()
         signal.signal(signal.SIGTERM, handler_sigterm_default(self.broker))
         self.top_games = TopResults(size =self.top_size)
-        
         self.broker.create_queue(name =QUEUE_FILTERDECADE_GROUPERTOPAVGTIME, callback = self.handler_calculate_top_avg_playtime())
         self.broker.create_queue(name =QUEUE_RESULTQ2_GATEWAY)
         
