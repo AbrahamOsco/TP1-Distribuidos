@@ -129,7 +129,7 @@ fi
 PORCENTAJES_CLIENTES=$(IFS=\;; echo "${porcentajes_por_cliente[*]}")
 echo ${PORCENTAJES_CLIENTES}
 if [ "$QUERIES" == "A" ]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
@@ -145,7 +145,7 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_CLIENTS \
       "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"1"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q1 \
@@ -153,7 +153,7 @@ elif [[ "$QUERIES" == *"1"* ]]; then
       $NUM_CLIENTS \
       "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"2"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -162,7 +162,7 @@ elif [[ "$QUERIES" == *"2"* ]]; then
       $NUM_CLIENTS \
       "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"3"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -172,7 +172,7 @@ elif [[ "$QUERIES" == *"3"* ]]; then
       $NUM_CLIENTS \
       "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"4"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
@@ -183,7 +183,7 @@ elif [[ "$QUERIES" == *"4"* ]]; then
       $NUM_CLIENTS \
       "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"5"* ]]; then
-  python generar_docker_compose.py $OUTPUT_FILE \
+  python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
       $NUM_FILTER_BASIC \
       $NUM_SELECT_Q2345 \
