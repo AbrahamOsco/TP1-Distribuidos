@@ -64,8 +64,6 @@ function solicitar_porcentajes() {
     if [[ "$porcentajes" =~ ^(0\.[1-5]|1)(,(0\.[1-5]|1))*$ ]]; then
       echo $porcentajes
       return
-    else
-      echo "Error: Solo se permiten los valores 0.1, 0.2, 0.3, 0.4, 0.5 y 1, separados por comas."
     fi
   done
 }
@@ -127,7 +125,7 @@ fi
 
 # Modificar la forma en que se pasan los porcentajes por cliente
 PORCENTAJES_CLIENTES=$(IFS=\;; echo "${porcentajes_por_cliente[*]}")
-echo ${PORCENTAJES_CLIENTES}
+
 if [ "$QUERIES" == "A" ]; then
   python3 generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
