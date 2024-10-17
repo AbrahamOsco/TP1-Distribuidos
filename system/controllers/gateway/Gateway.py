@@ -11,12 +11,15 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.broker.Broker import Broker
 from system.controllers.gateway.ClientHandler import ClientHandler
 
+PORT_SERVER = 12345
+MAX_CLIENTS = 5
+
 class Gateway(Node):
     def __init__(self):
-        self.socket_accepter = Socket(port=12345)
+        self.socket_accepter = Socket(port =PORT_SERVER)
         self.result_eofs_by_client = {}
         self.running = True
-        self.pool_size = 5
+        self.pool_size = MAX_CLIENTS
         self.amount_of_queries = int(os.getenv("AMOUNT_OF_QUERIES", 5))
         manager = Manager()
         self.shared_namespace = manager.Namespace()
