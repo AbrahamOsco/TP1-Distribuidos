@@ -20,6 +20,8 @@ class SteamAnalyzer:
         self.expected_responses = QueriesResponses(self.should_send_reviews, percent_of_file)
         self.actual_responses = {}
         self.threads = []
+        self.socket = None
+        self.protocol = None
 
     def initialize_config(self):
         self.config_params = {}
@@ -28,7 +30,23 @@ class SteamAnalyzer:
         self.config_params["hostname"] = os.getenv("HOSTNAME")
         initialize_log(self.config_params["log_level"])
     
+    def close_socket(self):
+        if self.socket:
+            self.socket.close()
+            self.socket = None
+            self.protocol = None
+            logging.info("action: socket_closed 🏪 | result: success ✅")
+
+    def stop(self):
+        self.close_socket()
+        self.game_reader.close()
+        self.review_reader.close()
+        for thread in self.threads:
+            thread.join()
+        logging.info("action: analyzer_stopped | result: success ✅")
+
     def connect_to_server(self):
+        self.close_socket() 
         self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
         result, msg =  self.socket.connect()
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
