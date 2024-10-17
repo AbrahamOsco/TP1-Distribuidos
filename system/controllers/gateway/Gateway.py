@@ -77,7 +77,7 @@ class Gateway(Node):
         if self.result_eofs_by_client[client_id] == self.amount_of_queries:
             with self.manager_lock:
                self.shared_namespace.protocols.get(data.get_client()).send_result(None)
-            self.result_eofs_by_client[client_id] = None
+            del self.result_eofs_by_client[client_id]
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
 
     def stop(self):
