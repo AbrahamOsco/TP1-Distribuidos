@@ -34,7 +34,6 @@ class SteamAnalyzer:
         self.percentages = []
 
     def connect_to_server(self):
-        self.close_socket() 
         self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
         result, msg =  self.socket.connect()
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
@@ -106,4 +105,4 @@ class SteamAnalyzer:
         for thread in self.threads:
             thread.join()
         self.threads = []
-        logging.info("action: socket_closed 🏪 | result: success ✅")
+        logging.info("action: Client stop! 🏪 | result: success ✅")
