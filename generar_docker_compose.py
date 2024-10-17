@@ -276,16 +276,11 @@ def get_gateway(queries):
         condition: service_started"""
     return base
 
-def get_percent_of_file_for_use():
-        valores = [0.1, 0.2, 0.3, 0.4, 0.5]
-        return random.choice(valores)
-
-def add_clients(amount, ejecuciones_por_cliente):
+def add_clients(amount, porcentaje_por_ejecucion_para_cliente):
     compose = ""
-    ejecuciones = ejecuciones_por_cliente.split(',')
+    ejecuciones = porcentaje_por_ejecucion_para_cliente.split(';')
     for i in range(1, int(amount)+1):
-        ejecucion = int(ejecuciones[i-1])
-        percent_of_file_for_use = get_percent_of_file_for_use()
+        ejecucion = ejecuciones[i-1]
         compose += f"""
 
   client{i}:
@@ -297,8 +292,7 @@ def add_clients(amount, ejecuciones_por_cliente):
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
     environment:
-      - AMOUNT_EXECUTION={ejecucion}
-      - PERCENT_OF_FILE_FOR_USE={percent_of_file_for_use}
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION={ejecucion}
       - NODE_ID={i}
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -316,7 +310,7 @@ def add_clients(amount, ejecuciones_por_cliente):
 
 def generar_docker_compose(output_file:str, queries=[], filterbasic="0", select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
                            filter_decade="0", select_id_name_indie="0", select_id_name_action="0", filter_score_positive="0",
-                           filter_review_english="0", filter_score_negative="0", clients="1", ejecuciones_por_cliente=""):
+                           filter_review_english="0", filter_score_negative="0", clients="1", porcentaje_por_ejecucion_para_cliente=""):
     node_amounts["filterbasic"] = int(filterbasic)
     node_amounts["selectq1"] = int(select_q1)
     node_amounts["platformcounter"] = int(platform_counter)
@@ -345,7 +339,7 @@ services:
       retries: 10
       start_period: 15s"""
     
-    compose += add_clients(int(clients), ejecuciones_por_cliente)
+    compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente)
 
     compose += get_gateway(queries)
 
@@ -407,37 +401,37 @@ if __name__ == "__main__":
                                select_q2345=sys.argv[6], filter_gender=sys.argv[7], filter_decade=sys.argv[8],
                                  select_id_name_indie=sys.argv[9], filter_score_positive=sys.argv[10],
                                     select_id_name_action=sys.argv[11], filter_score_negative=sys.argv[12],
-                                    filter_review_english=sys.argv[13], clients=sys.argv[14], ejecuciones_por_cliente=sys.argv[15])
+                                    filter_review_english=sys.argv[13], clients=sys.argv[14], porcentaje_por_ejecucion_para_cliente=sys.argv[15])
     elif query_input == "1":
         if len(sys.argv) != 8:
             print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ1] [PlatformCounter] [NumClients] [EjecucionesPorCliente]")
             sys.exit(1)
-        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5], clients=sys.argv[6], ejecuciones_por_cliente=sys.argv[7])
+        generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q1=sys.argv[4], platform_counter=sys.argv[5], clients=sys.argv[6], porcentaje_por_ejecucion_para_cliente=sys.argv[7])
     
     elif query_input == "2":
         if len(sys.argv) != 9:
             print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [FilterDecade] [NumClients] [EjecucionesPorCliente]")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               filter_decade=sys.argv[6], clients=sys.argv[7], ejecuciones_por_cliente=sys.argv[8])
+                               filter_decade=sys.argv[6], clients=sys.argv[7], porcentaje_por_ejecucion_para_cliente=sys.argv[8])
     elif query_input == "3":
         if len(sys.argv) != 10:
             print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameIndie] [FilterScorePositive] [NumClients] [EjecucionesPorCliente]")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_indie=sys.argv[6], filter_score_positive=sys.argv[7], clients=sys.argv[8], ejecuciones_por_cliente=sys.argv[9])
+                               select_id_name_indie=sys.argv[6], filter_score_positive=sys.argv[7], clients=sys.argv[8], porcentaje_por_ejecucion_para_cliente=sys.argv[9])
     elif query_input == "4":
         if len(sys.argv) != 11:
             print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [FilterReviewEnglish] [NumClients] [EjecucionesPorCliente]")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], filter_review_english=sys.argv[8], clients=sys.argv[9], ejecuciones_por_cliente=sys.argv[10])
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], filter_review_english=sys.argv[8], clients=sys.argv[9], porcentaje_por_ejecucion_para_cliente=sys.argv[10])
     elif query_input == "5":
         if len(sys.argv) != 10:
             print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries> [FilterBasic] [SelectQ2345] [FilterGender] [SelectIDNameAction] [FilterScoreNegative] [NumClients] [EjecucionesPorCliente]")
             sys.exit(1)
         generar_docker_compose(output_file=sys.argv[1], queries=queries, filterbasic=sys.argv[3], select_q2345=sys.argv[4], filter_gender=sys.argv[5],
-                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], clients=sys.argv[8], ejecuciones_por_cliente=sys.argv[9])
+                               select_id_name_action=sys.argv[6], filter_score_negative=sys.argv[7], clients=sys.argv[8], porcentaje_por_ejecucion_para_cliente=sys.argv[9])
     else:
         print("Invalid Query")
         sys.exit(1)

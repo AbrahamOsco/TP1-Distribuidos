@@ -55,12 +55,27 @@ function solicitar_si_no() {
   done
 }
 
+# Función para validar que la entrada sea un array de porcentajes permitidos (0.1, 0.2, 0.3, 0.4, 0.5, 1)
+function solicitar_porcentajes() {
+  local mensaje=$1
+  local porcentajes
+  while true; do
+    read -p "$mensaje" porcentajes
+    if [[ "$porcentajes" =~ ^(0\.[1-5]|1)(,(0\.[1-5]|1))*$ ]]; then
+      echo $porcentajes
+      return
+    else
+      echo "Error: Solo se permiten los valores 0.1, 0.2, 0.3, 0.4, 0.5 y 1, separados por comas."
+    fi
+  done
+}
+
 NUM_CLIENTS=$(solicitar_numero_entero "Ingrese la cantidad de clientes: ")
 
-# Solicitar la cantidad de ejecuciones por cliente
-declare -a ejecuciones_por_cliente
+# Solicitar la cantidad de ejecuciones por cliente y los porcentajes correspondientes
+declare -a porcentajes_por_cliente
 for ((i = 1; i <= NUM_CLIENTS; i++)); do
-  ejecuciones_por_cliente[$i]=$(solicitar_numero_entero_con_minimo "Ingrese la cantidad de ejecuciones para el cliente $i: " 1)
+  porcentajes_por_cliente[$i]=$(solicitar_porcentajes "Ingrese los porcentajes para el cliente $i (por ejemplo, 0.1,0.2,0.3): ")
 done
 
 # Solicitar las cantidades para cada tipo de servicio
@@ -110,9 +125,9 @@ else
   NUM_FILTER_REVIEW_ENGLISH=1
 fi
 
-# Modificar la forma en que se pasan las ejecuciones por cliente
-EJECUCIONES_CLIENTES=$(IFS=,; echo "${ejecuciones_por_cliente[*]}")
-
+# Modificar la forma en que se pasan los porcentajes por cliente
+PORCENTAJES_CLIENTES=$(IFS=\;; echo "${porcentajes_por_cliente[*]}")
+echo ${PORCENTAJES_CLIENTES}
 if [ "$QUERIES" == "A" ]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -128,7 +143,7 @@ if [ "$QUERIES" == "A" ]; then
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"1"* ]]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -136,7 +151,7 @@ elif [[ "$QUERIES" == *"1"* ]]; then
       $NUM_SELECT_Q1 \
       $NUM_PLATFORM_COUNTER \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"2"* ]]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -145,7 +160,7 @@ elif [[ "$QUERIES" == *"2"* ]]; then
       $NUM_FILTER_GENDER \
       $NUM_FILTER_DECADE \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"3"* ]]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -155,7 +170,7 @@ elif [[ "$QUERIES" == *"3"* ]]; then
       $NUM_SELECT_ID_NAME_INDIE \
       $NUM_FILTER_SCORE_POSITIVE \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"4"* ]]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -166,7 +181,7 @@ elif [[ "$QUERIES" == *"4"* ]]; then
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_FILTER_REVIEW_ENGLISH \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 elif [[ "$QUERIES" == *"5"* ]]; then
   python generar_docker_compose.py $OUTPUT_FILE \
       $QUERIES \
@@ -176,5 +191,5 @@ elif [[ "$QUERIES" == *"5"* ]]; then
       $NUM_SELECT_ID_NAME_ACTION \
       $NUM_FILTER_SCORE_NEGATIVE \
       $NUM_CLIENTS \
-      "$EJECUCIONES_CLIENTES"
+      "$PORCENTAJES_CLIENTES"
 fi
