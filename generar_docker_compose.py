@@ -276,7 +276,7 @@ def get_gateway(queries):
         condition: service_started"""
     return base
 
-def add_clients(amount, porcentaje_por_ejecucion_para_cliente):
+def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries):
     compose = ""
     ejecuciones = porcentaje_por_ejecucion_para_cliente.split(';')
     for i in range(1, int(amount)+1):
@@ -292,6 +292,7 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente):
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
     environment:
+      - QUERIES_EXECUTED={queries}  
       - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION={ejecucion}
       - NODE_ID={i}
       - LOGGING_LEVEL=INFO
@@ -339,8 +340,9 @@ services:
       retries: 10
       start_period: 15s"""
     
-    compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente)
 
+
+    compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente, queries)
     compose += get_gateway(queries)
 
     compose += generar_servicio_escalable(queries, "filterbasic")

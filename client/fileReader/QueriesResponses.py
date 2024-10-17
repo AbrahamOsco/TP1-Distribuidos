@@ -1,28 +1,40 @@
 import os
 from client.fileReader.FileReader import FileReader
 import logging
-QueriesX = ["Query2", "Query3", "Query4", "Query5"]
 
 class QueriesResponses:
-    def __init__(self, should_send_reviews, percent_of_file_for_use=1):
+    def __init__(self, percent_of_file_for_use=1, queries_executed="1"):
         self.responses = {}
-        self.percent_of_file_for_use =  percent_of_file_for_use
-        self.loadQuery1()
-        if should_send_reviews:
-            for query in QueriesX:
-                self.loadQueryX(query)
+        self.percent_of_file_for_use = percent_of_file_for_use
+        self.queries_executed = self.parse_queries_executed(queries_executed)
+        self.loadQueries()
+
+    def parse_queries_executed(self, queries_executed):
+        if isinstance(queries_executed, str):
+            return [int(q.strip()) for q in queries_executed.strip('[]').split(',')]
+        elif isinstance(queries_executed, int):
+            return [queries_executed]
+        elif isinstance(queries_executed, list):
+            return queries_executed
         else:
-            self.loadQueryX("Query2")
+            raise ValueError(f"Unsupported type for queries_executed: {type(queries_executed)}")
+
+    def loadQueries(self):
+        for query in self.queries_executed:
+            if query == 1:
+                self.loadQuery1()
+            else:
+                self.loadQueryX(f"Query{query}")
 
     def loadQuery1(self):
-        reader = FileReader("Query1", percent_of_file_for_use= self.percent_of_file_for_use)
+        reader = FileReader("Query1", percent_of_file_for_use=self.percent_of_file_for_use)
         windows = reader.get_next_line()[0]
         linux = reader.get_next_line()[0]
         mac = reader.get_next_line()[0]
         self.responses["Query1"] = {"windows": windows, "linux": linux, "mac": mac}
 
     def loadQueryX(self, query):
-        reader = FileReader(query, percent_of_file_for_use= self.percent_of_file_for_use)
+        reader = FileReader(query, percent_of_file_for_use=self.percent_of_file_for_use)
         self.responses[query] = []
         response = reader.get_next_line()
         while response is not None:
