@@ -10,3 +10,8 @@ Al correr dicho comando preguntara cuantos clientes desea correr y luego por cad
 Finalmente se puede correr utilizando 
 
 * **./run.sh**
+
+
+Adicionalmente se puede correr en otra terminal el chaos monkey ejecutando
+
+* **./chaos-monkey.sh**
