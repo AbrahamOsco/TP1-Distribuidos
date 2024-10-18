@@ -21,18 +21,24 @@ class ClientProtocol(Protocol):
     def send_data_raw(self, data_raw_dto):
         self.send_number_n_bytes(1, data_raw_dto.operation_type)
         self.send_number_n_bytes(2, len(data_raw_dto.data_raw))
+        self.send_number_n_bytes(2, data_raw_dto.batch_id)
+        logging.info(f"Sending data_raw with batch_id: {data_raw_dto.batch_id}")
         for item in data_raw_dto.data_raw:
             self.send_number_n_bytes(2, len(item))
             for field in item:
                 self.send_string(field)
 
-    def send_games_eof(self, amount):
+    def send_games_eof(self, amount, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_GAMEEOF)
         self.send_number_n_bytes(4, amount)
+        self.send_number_n_bytes(2, batch_id)
+        logging.info(f"Sending games_eof with batch_id: {batch_id}")
 
-    def send_reviews_eof(self, amount):
+    def send_reviews_eof(self, amount, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_REVIEWEOF)
         self.send_number_n_bytes(4, amount)
+        self.send_number_n_bytes(2, batch_id)
+        logging.info(f"Sending reviews_eof with batch_id: {batch_id}")
 
     def send_auth(self):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
