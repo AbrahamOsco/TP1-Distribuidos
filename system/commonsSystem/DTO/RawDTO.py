@@ -7,11 +7,12 @@ from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
 
 
 class RawDTO(DTO):
-    def __init__(self, client_id:int=0, type:int=0, raw_data=[]):
+    def __init__(self, client_id:int=0, type:int=0, raw_data=[], batch_id=0):
         self.operation_type = OperationType.OPERATION_TYPE_RAW
         self.client_id = client_id
         self.type = type
         self.raw_data = raw_data
+        self.batch_id = batch_id
 
     def serialize(self):
         raw_bytes = bytearray()
@@ -19,6 +20,7 @@ class RawDTO(DTO):
         raw_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
         raw_bytes.extend(self.type.to_bytes(1, byteorder='big'))
         raw_bytes.extend(len(self.raw_data).to_bytes(2, byteorder='big'))
+        raw_bytes.extend(self.batch_id.to_bytes(2, byteorder='big'))
         for element in self.raw_data:
             raw_bytes.extend(len(element).to_bytes(2, byteorder='big'))
             for field in element:
@@ -33,6 +35,8 @@ class RawDTO(DTO):
         raw_data = []
         items_amount = int.from_bytes(data[offset:offset+2], byteorder='big')
         offset += 2
+        batch_id = int.from_bytes(data[offset:offset+2], byteorder='big')
+        offset += 2
         for _ in range(items_amount):
             element = []
             field_amount = int.from_bytes(data[offset:offset+2], byteorder='big')
@@ -41,7 +45,7 @@ class RawDTO(DTO):
                 field, offset = DTO.deserialize_str(data, offset)
                 element.append(field)
             raw_data.append(element)
-        return RawDTO(client_id=client_id, type=type, raw_data=raw_data), offset
+        return RawDTO(client_id=client_id, type=type, raw_data=raw_data, batch_id=batch_id), offset
 
     def is_EOF(self):
         return self.type == OPERATION_TYPE_GAMEEOF or self.type == OPERATION_TYPE_REVIEWEOF

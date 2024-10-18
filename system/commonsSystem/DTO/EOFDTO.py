@@ -7,12 +7,13 @@ STATE_OK = 3 ## Informa sus cantidades
 STATE_FINISH = 4 ## Informa que terminó y que el cliente debe ser eliminado de memoria
 
 class EOFDTO:
-    def __init__(self, type, client:int, state:int, amount_received:int = 0, amount_sent = []):
+    def __init__(self, type, client:int, state:int, amount_received:int = 0, amount_sent = [], batch_id = 0):
         self.operation_type = type
         self.state = state
         self.client = client
         self.amount_sent = amount_sent
         self.amount_received = amount_received
+        self.batch_id = batch_id
     
     def is_ok(self):
         return self.state == STATE_OK
@@ -50,6 +51,7 @@ class EOFDTO:
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.amount_received.to_bytes(4, byteorder='big'))
         eof_bytes.extend(len(self.amount_sent).to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.batch_id.to_bytes(2, byteorder='big'))
         for i in self.amount_sent:
             eof_bytes.extend(DTO.serialize_str(i[0]))
             eof_bytes.extend(i[1].to_bytes(4, byteorder='big'))
@@ -68,8 +70,10 @@ class EOFDTO:
         amount_sent = []
         amount_sent_len = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        batch_id = int.from_bytes(data[offset:offset+2], byteorder='big')
+        offset += 2
         for i in range(amount_sent_len):
             attribute, offset = DTO.deserialize_str(data, offset)
             amount_sent.append((attribute, int.from_bytes(data[offset:offset+4], byteorder='big')))
             offset += 4
-        return EOFDTO(operation_type, client, state, amount_received, amount_sent), offset
+        return EOFDTO(operation_type, client, state, amount_received, amount_sent, batch_id), offset

@@ -1,3 +1,4 @@
+import logging
 from common.protocol.Protocol import Protocol
 from common.DTO.GameEOFDTO import OPERATION_TYPE_GAMEEOF
 from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
@@ -28,12 +29,18 @@ class ServerProtocol(Protocol):
             return client_id
         if operation_type == OPERATION_TYPE_GAMEEOF:
             amount = self.recv_number_n_bytes(4)
-            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default", amount)])
+            batch_id = self.recv_number_n_bytes(2)
+            logging.info(f"Received games_eof with batch_id: {batch_id}")
+            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default", amount)], batch_id=batch_id)
         if operation_type == OPERATION_TYPE_REVIEWEOF:
             amount = self.recv_number_n_bytes(4)
-            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default",amount)])
+            batch_id = self.recv_number_n_bytes(2)
+            logging.info(f"Received reviews_eof with batch_id: {batch_id}")
+            return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, amount_sent=[("default",amount)], batch_id=batch_id)
         list_items_raw = []
         items_amount = self.recv_number_n_bytes(2)
+        batch_id = self.recv_number_n_bytes(2)
+        logging.info(f"Received data_raw with batch_id: {batch_id}")
         for _ in range(items_amount):
             element = []
             field_amount = self.recv_number_n_bytes(2)
@@ -41,7 +48,7 @@ class ServerProtocol(Protocol):
                 field = self.recv_string()
                 element.append(field)
             list_items_raw.append(element)
-        return RawDTO(client_id =client_id, type=operation_type, raw_data =list_items_raw)
+        return RawDTO(client_id =client_id, type=operation_type, raw_data =list_items_raw, batch_id=batch_id)
 
     def send_result(self, result):
         if result is None:

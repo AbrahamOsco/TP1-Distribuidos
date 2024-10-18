@@ -17,6 +17,7 @@ class SteamAnalyzer:
         self.threads = []
         self.socket = None
         self.protocol = None
+        self.batch_id = 1
 
     def init_readers_and_responses(self, percent_of_file):
         self.percent = percent_of_file
@@ -44,9 +45,11 @@ class SteamAnalyzer:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
-            self.protocol.send_data_raw(GamesRawDTO(games_raw =some_games))
+            self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
+            self.batch_id += 1
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-        self.protocol.send_games_eof(self.game_reader.get_lines_read())
+        self.protocol.send_games_eof(self.game_reader.get_lines_read(), self.batch_id)
+        self.batch_id += 1
 
     def send_reviews(self):
         if not self.should_send_reviews:
@@ -55,9 +58,11 @@ class SteamAnalyzer:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break
-            self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw =some_reviews))
+            self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
+            self.batch_id += 1
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        self.protocol.send_reviews_eof(self.review_reader.get_lines_read())
+        self.protocol.send_reviews_eof(self.review_reader.get_lines_read(), self.batch_id)
+        self.batch_id += 1
 
     def send_data(self):
         self.protocol.send_auth()
