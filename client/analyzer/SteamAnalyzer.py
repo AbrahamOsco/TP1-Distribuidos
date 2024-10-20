@@ -48,7 +48,7 @@ class SteamAnalyzer:
             self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
             self.batch_id += 1
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-        self.protocol.send_games_eof(self.game_reader.get_lines_read(), self.batch_id)
+        self.protocol.send_games_eof(self.batch_id)
         self.batch_id += 1
 
     def send_reviews(self):
@@ -61,7 +61,7 @@ class SteamAnalyzer:
             self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
             self.batch_id += 1
         logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        self.protocol.send_reviews_eof(self.review_reader.get_lines_read(), self.batch_id)
+        self.protocol.send_reviews_eof(self.batch_id)
         self.batch_id += 1
 
     def send_data(self):

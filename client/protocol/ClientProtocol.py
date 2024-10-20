@@ -28,15 +28,13 @@ class ClientProtocol(Protocol):
             for field in item:
                 self.send_string(field)
 
-    def send_games_eof(self, amount, batch_id):
+    def send_games_eof(self, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_GAMEEOF)
-        self.send_number_n_bytes(4, amount)
         self.send_number_n_bytes(2, batch_id)
         logging.info(f"Sending games_eof with batch_id: {batch_id}")
 
-    def send_reviews_eof(self, amount, batch_id):
+    def send_reviews_eof(self, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_REVIEWEOF)
-        self.send_number_n_bytes(4, amount)
         self.send_number_n_bytes(2, batch_id)
         logging.info(f"Sending reviews_eof with batch_id: {batch_id}")
 
