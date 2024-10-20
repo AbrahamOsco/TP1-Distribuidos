@@ -30,12 +30,13 @@ stateToClass = {
 }
 
 class GamesDTO(DTO):
-    def __init__(self, client_id:int=0, state_games:int=0, games_dto: list[GameStateDTO] =[], query:int=0):
+    def __init__(self, client_id:int=0, state_games:int=0, games_dto: list[GameStateDTO] =[], query:int=0, global_counter = 0):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
         self.state_games = state_games 
         self.games_dto = games_dto
         self.query = query
+        self.global_counter = global_counter
 
     def get_amount(self):
         return len(self.games_dto)
@@ -44,6 +45,7 @@ class GamesDTO(DTO):
         games_bytes = bytearray()
         games_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
         games_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
+        games_bytes.extend(self.global_counter.to_bytes(6, byteorder='big'))
         games_bytes.extend(self.state_games.to_bytes(1, byteorder='big'))
         games_bytes.extend(self.query.to_bytes(1, byteorder='big'))
         games_bytes.extend(len(self.games_dto).to_bytes(2, byteorder='big'))
@@ -54,6 +56,8 @@ class GamesDTO(DTO):
     def deserialize(data, offset):
         client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        global_counter = int.from_bytes(data[offset:offset+6], byteorder='big')
+        offset += 6
         state_games = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
         query = int.from_bytes(data[offset:offset+1], byteorder='big')
@@ -65,7 +69,7 @@ class GamesDTO(DTO):
         for _ in range(games_dto_length):
             game, offset = stateToClass[state_games].deserialize(data, offset)
             some_games_dto.append(game)
-        gamesDTO = GamesDTO(client_id=client_id, state_games=state_games, query=query, games_dto=some_games_dto)
+        gamesDTO = GamesDTO(client_id=client_id, state_games=state_games, query=query, games_dto=some_games_dto, global_counter=global_counter)
         return gamesDTO, offset
 
     def set_state(self, state_games):
@@ -115,4 +119,4 @@ class GamesDTO(DTO):
             if game is None:
                 continue
             games_dto.append(game)
-        return GamesDTO(client_id=raw_dto.client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto)
+        return GamesDTO(client_id=raw_dto.client_id, state_games=STATE_GAMES_MINIMAL, games_dto=games_dto, global_counter=raw_dto.global_counter)

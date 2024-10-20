@@ -7,13 +7,14 @@ STATE_OK = 3 ## Informa sus cantidades
 STATE_FINISH = 4 ## Informa que terminó y que el cliente debe ser eliminado de memoria
 
 class EOFDTO:
-    def __init__(self, type, client:int, state:int, amount_received:int = 0, amount_sent = [], batch_id = 0):
+    def __init__(self, type, client:int, state:int, amount_received:int = 0, amount_sent = [], batch_id = 0, global_counter = 0):
         self.operation_type = type
         self.state = state
         self.client = client
         self.amount_sent = amount_sent
         self.amount_received = amount_received
         self.batch_id = batch_id
+        self.global_counter = global_counter
     
     def is_ok(self):
         return self.state == STATE_OK
@@ -48,6 +49,7 @@ class EOFDTO:
         eof_bytes = bytearray()
         eof_bytes.extend(self.operation_type.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.client.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.global_counter.to_bytes(6, byteorder='big'))
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.amount_received.to_bytes(4, byteorder='big'))
         eof_bytes.extend(len(self.amount_sent).to_bytes(1, byteorder='big'))
@@ -63,6 +65,8 @@ class EOFDTO:
         offset += 1
         client = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        global_counter = int.from_bytes(data[offset:offset+6], byteorder='big')
+        offset += 6
         state = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
         amount_received = int.from_bytes(data[offset:offset+4], byteorder='big')
@@ -76,4 +80,4 @@ class EOFDTO:
             attribute, offset = DTO.deserialize_str(data, offset)
             amount_sent.append((attribute, int.from_bytes(data[offset:offset+4], byteorder='big')))
             offset += 4
-        return EOFDTO(operation_type, client, state, amount_received, amount_sent, batch_id), offset
+        return EOFDTO(operation_type, client, state, amount_received, amount_sent, batch_id, global_counter), offset

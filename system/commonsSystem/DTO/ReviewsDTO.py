@@ -17,16 +17,18 @@ stateToClass = {
 }
 
 class ReviewsDTO(DTO):
-    def __init__(self, client_id:int=0, state_reviews:int=0, reviews_dto: list[ReviewStateDTO] =[]):
+    def __init__(self, client_id:int=0, state_reviews:int=0, reviews_dto: list[ReviewStateDTO] =[], global_counter=0):
         self.operation_type = OperationType.OPERATION_TYPE_REVIEWS_DTO
         self.client_id = client_id
         self.state_reviews = state_reviews
         self.reviews_dto = reviews_dto
+        self.global_counter = global_counter
 
     def serialize(self):
         reviews_bytes = bytearray()
         reviews_bytes.extend(self.operation_type.value.to_bytes(1, byteorder='big'))
         reviews_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
+        reviews_bytes.extend(self.global_counter.to_bytes(6, byteorder='big'))
         reviews_bytes.extend(self.state_reviews.to_bytes(1, byteorder='big'))
         reviews_bytes.extend(len(self.reviews_dto).to_bytes(2, byteorder='big'))
         for game in self.reviews_dto:
@@ -36,6 +38,8 @@ class ReviewsDTO(DTO):
     def deserialize(data, offset):
         client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
+        global_counter = int.from_bytes(data[offset:offset+6], byteorder='big')
+        offset += 6
         state_reviews = int.from_bytes(data[offset:offset+1], byteorder='big')
         offset += 1
         reviews_dto_length = int.from_bytes(data[offset:offset+2], byteorder='big')
@@ -45,7 +49,7 @@ class ReviewsDTO(DTO):
         for _ in range(reviews_dto_length):
             game, offset = stateToClass[state_reviews].deserialize(data, offset)
             some_reviews_dto.append(game)
-        reviewsDTO = ReviewsDTO(client_id=client_id, state_reviews=state_reviews, reviews_dto=some_reviews_dto)
+        reviewsDTO = ReviewsDTO(client_id=client_id, state_reviews=state_reviews, reviews_dto=some_reviews_dto, global_counter=global_counter)
         return reviewsDTO, offset
 
     def get_amount(self):
@@ -81,4 +85,4 @@ class ReviewsDTO(DTO):
             if review is None:
                 continue
             reviews_dto.append(review)
-        return ReviewsDTO(client_id=raw_dto.client_id, state_reviews=STATE_REVIEW_MINIMAL, reviews_dto=reviews_dto)
+        return ReviewsDTO(client_id=raw_dto.client_id, state_reviews=STATE_REVIEW_MINIMAL, reviews_dto=reviews_dto, global_counter=raw_dto.global_counter)

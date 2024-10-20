@@ -24,6 +24,8 @@ class Gateway(Node):
         manager = Manager()
         self.shared_namespace = manager.Namespace()
         self.shared_namespace.protocols = {}
+        self.global_counter = multiprocessing.Value('i', 1)
+        self.counter_lock = multiprocessing.Lock()
         self.manager_lock = manager.Lock()
         super().__init__()
 
@@ -56,7 +58,7 @@ class Gateway(Node):
                 socket_peer = self.accept_a_connection()
                 if socket_peer is None:
                     break
-                client_handler = ClientHandler(socket_peer)
+                client_handler = ClientHandler(socket_peer, self.global_counter, self.counter_lock)
                 client_id = client_handler.init_client_id()
                 if client_id is None:
                     continue
