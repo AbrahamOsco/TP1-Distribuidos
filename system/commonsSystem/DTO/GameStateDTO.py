@@ -19,3 +19,6 @@ class GameStateDTO(DTO):
 
     def from_state(game):
         return GameStateDTO()
+    
+    def get(self, key):
+        return self.__getattribute__(key)
