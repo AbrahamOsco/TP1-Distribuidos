@@ -23,20 +23,16 @@ class ClientHandler:
         logging.info("action: client disconnected")
 
     def start(self):
-        logging.info("Llegue 6")
         self.broker = Broker(tag=f"client{self.client_id}")
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
-        logging.info("Llegue 7")
         while True:
             try:
                 raw_dto = self.protocol.recv_data_raw(self.client_id)
                 if raw_dto is None:
                     break
-                logging.info("Llegue 8")
                 raw_dto.set_counter(GlobalCounter.get_next())
-                logging.info("Llegue 9")
                 self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
             except Exception as e:
-                logging.info(f"action: client disconnected {e}")
+                logging.info(f"action: client disconnected")
                 break
         self.stop_client()

@@ -29,14 +29,11 @@ class ServerProtocol(Protocol):
             return client_id
         batch_id = self.recv_number_n_bytes(2)
         if operation_type == OPERATION_TYPE_GAMEEOF:
-            logging.info(f"Received games_eof with batch_id: {batch_id}")
             return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value, state=STATE_DEFAULT, batch_id=batch_id)
         if operation_type == OPERATION_TYPE_REVIEWEOF:
-            logging.info(f"Received reviews_eof with batch_id: {batch_id}")
             return EOFDTO(client=client_id, type=OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO.value, state=STATE_DEFAULT, batch_id=batch_id)
         list_items_raw = []
         items_amount = self.recv_number_n_bytes(2)
-        logging.info(f"Received data_raw with batch_id: {batch_id}")
         for _ in range(items_amount):
             element = []
             field_amount = self.recv_number_n_bytes(2)

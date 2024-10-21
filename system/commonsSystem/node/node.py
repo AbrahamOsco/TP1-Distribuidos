@@ -61,7 +61,7 @@ class Node:
         client = data.get_client()
         eofs = self.eof.get_eof_for_next_node(data)
         for message, routing_key in eofs:
-            logging.info(f"action: send_eof | client: {client} | total_amount_sent: {message.amount_sent} | routing_key: {routing_key}")
+            logging.info(f"action: send_eof | client: {client} | routing_key: {routing_key}")
             self.broker.public_message(sink=self.sink, message=message.serialize(), routing_key=routing_key)
 
     def send_eof_confirmation(self, data: EOFDTO):

@@ -45,15 +45,12 @@ class DualInputNode(Node):
             del self.premature_messages[client_id]
 
     def check_amounts(self, data: EOFDTO):
-        if self.eof.ready_to_send_eof(data):
-            tipo = data.get_type()
-            if tipo == "games":
-                return
-            self.send_result(data.get_client())
-            self.send_eof(data)
-            self.reset_list(data.get_client())
+        if data.get_type() == "games":
             return
-        raise PrematureEOFException()
+        client = data.get_client()
+        self.send_result(client)
+        self.send_eof(data)
+        self.reset_list(client)
      
     def send_games(self, client_id, games, state, query=0):
         gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query)
