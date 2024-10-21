@@ -14,8 +14,10 @@ class Counter(Node):
             del self.result[client_id]
 
     def pre_eof_actions(self, client_id):
+        if client_id not in self.result:
+            return
         data = self.result[client_id]
-        result = GamesDTO(client_id=int(client_id), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])])
+        result = GamesDTO(client_id=int(client_id), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])], global_counter=data["counter"])
         self.send_result(result)
         self.reset_counter(client_id)
 
@@ -30,8 +32,6 @@ class Counter(Node):
         self.result[client_id]["windows"] += platform_count["windows"]
         self.result[client_id]["linux"] += platform_count["linux"]
         self.result[client_id]["mac"] += platform_count["mac"]
-        self.eof.update_amount_received_by_node(data.get_client(), data.get_amount())
+        self.result[client_id]["counter"] = data.global_counter
 
-        if client_id not in self.eof.amount_sent_by_node:
-            self.eof.update_amount_sent_by_node(client_id, 1)
 

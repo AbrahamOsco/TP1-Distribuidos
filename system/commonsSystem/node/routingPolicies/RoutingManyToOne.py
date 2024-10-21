@@ -6,7 +6,4 @@ class RoutingManyToOne(RoutingPolicy):
         pass
     
     def get_routing_keys(self, data: EOFDTO):
-        return [("games", "default")]
-    
-    def get_receive_routing_key(self, data: EOFDTO):
-        return data.get_type()
+        return ["default"]

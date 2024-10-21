@@ -9,8 +9,6 @@ class Select(Node):
 
     def send_games(self, data: GamesDTO):
         data.set_state(self.select_state)
-        self.eof.update_amount_received_by_node(data.get_client(), data.get_amount())
-        self.eof.update_amount_sent_by_node(data.get_client(), data.get_amount())
         self.broker.public_message(sink=self.sink, message=data.serialize(), routing_key="default")
 
     def process_data(self, data):

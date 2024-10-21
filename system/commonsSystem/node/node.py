@@ -2,7 +2,7 @@ import logging
 import os
 import signal
 from system.commonsSystem.broker.Broker import Broker
-from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_COMMIT, STATE_FINISH
+from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_COMMIT
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.node.EOFManagement import EOFManagement
 from system.commonsSystem.node.routingPolicies.RoutingPolicy import RoutingPolicy
@@ -22,9 +22,9 @@ class Node:
         self.sink = os.getenv("SINK")
         self.sink_type = os.getenv("SINK_TYPE", "direct")
         self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
-        self.clients = []
         self.clients_pending_confirmations = []
         self.confirmations = {}
+        self.cancels = {}
         self.eof = EOFManagement(routing)
         self.broker = Broker()
         self.initialize_queues()
@@ -68,44 +68,56 @@ class Node:
         message = self.eof.get_eof_confirmation(data)
         self.broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
 
-    def send_eof_finish(self, data: EOFDTO):
-        client = data.get_client()
-        logging.debug(f"action: send_eof_finish | client: {client}")
-        self.broker.public_message(sink=self.node_name + "_eofs", message=EOFDTO(data.operation_type, client,STATE_FINISH).serialize())
+    def send_eof_cancel(self, data: EOFDTO):
+        message = self.eof.get_eof_cancel(data)
+        self.broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
 
     def check_confirmations(self, data: EOFDTO):
-        self.eof.update_totals(data)  
         client = data.get_client() 
         self.confirmations[client] += 1
         logging.debug(f"action: check_confirmations | client: {client} | confirmations: {self.confirmations}")
         if self.confirmations[client] == self.amount_of_nodes:
             self.check_amounts(data)
 
+    def check_cancel(self, data: EOFDTO):
+        client = data.get_client() 
+        self.cancels[client] = True
+        self.check_confirmations(data)
+
     def check_amounts(self, data: EOFDTO):
         client = data.get_client()
-        if self.eof.ready_to_send_eof(data):
-            self.pre_eof_actions(client)
-            self.send_eof(data)
-            if client in self.clients:
-                self.clients.remove(client)
-            self.clients_pending_confirmations.remove(client)
-            self.eof.reset_amounts(data)
-            if self.amount_of_nodes > 1:
-                self.send_eof_finish(data)
-            if client in self.confirmations:
-                del self.confirmations[client]
+        if self.cancels.get(client, False) == True:
+            self.ask_confirmations(data)
             return
-        if self.amount_of_nodes < 2:
-            raise PrematureEOFException()
-        self.eof.init_totals(client)
-        self.ask_confirmations(data)
+        self.pre_eof_actions(client)
+        self.send_eof(data)
+        self.clients_pending_confirmations.remove(client)
+        if client in self.confirmations:
+            del self.confirmations[client]
+            del self.cancels[client]
 
     def ask_confirmations(self, data: EOFDTO):
         client = data.get_client()
         self.confirmations[client] = 1
+        self.cancels[client] = False
         logging.debug(f"action: ask_confirmations | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
         message = EOFDTO(data.operation_type, client, STATE_COMMIT)
         self.broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
+
+    def no_older_message(self, data: EOFDTO):
+        eof_global_counter = data.global_counter
+        message = self.broker.peek(self.node_name)
+        if message is None:
+            return True
+        last_message = DetectDTO(message).get_dto()
+        return last_message.global_counter > eof_global_counter
+
+    def process_commit(self, data: EOFDTO):
+        if self.no_older_message(data):
+            self.pre_eof_actions(data.get_client())
+            self.send_eof_confirmation(data)
+            return
+        self.send_eof_cancel(data)
 
     def process_node_eof(self, data: EOFDTO):
         client = data.get_client()
@@ -113,23 +125,17 @@ class Node:
         if client in self.clients_pending_confirmations:
             if data.is_ok():
                 self.check_confirmations(data)
+            if data.is_cancel():
+                self.check_cancel(data)
             return
         if data.is_ok():
             return
-        if data.is_finish():
-            self.eof.reset_amounts(data)
-            if client in self.clients:
-                self.clients.remove(client)
-            return
         if data.is_commit():
-            self.pre_eof_actions(data.get_client())
-            self.send_eof_confirmation(data)
+            self.process_commit(data)
 
     def inform_eof_to_nodes(self, data: EOFDTO):
         client = data.get_client()
         logging.debug(f"action: inform_eof_to_nodes | client: {client}")
-        self.eof.init_totals(client)
-        self.eof.set_expected_total(client, data)
         self.clients_pending_confirmations.append(client)
         if self.amount_of_nodes < 2:
             self.check_amounts(data)
@@ -143,10 +149,6 @@ class Node:
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logging.error(f"action: error | result: {e}")
-        
-    def check_new_client(self, data):
-        if data.get_client() not in self.clients:
-            self.clients.append(data.get_client())
 
     def process_queue_message(self, ch, method, properties, body):
         try:
@@ -154,7 +156,6 @@ class Node:
             if data.is_EOF():
                 self.inform_eof_to_nodes(data)
             else:
-                self.check_new_client(data)
                 self.process_data(data)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except PrematureEOFException as e:

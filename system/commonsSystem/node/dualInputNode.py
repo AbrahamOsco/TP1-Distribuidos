@@ -30,16 +30,10 @@ class DualInputNode(Node):
     def inform_eof_to_nodes(self, data):
         client_id = data.get_client()
         if self.status[client_id] == STATUS_REVIEWING:
-            self.eof.total_amount_received[data.get_client()] = {}
-            self.eof.total_amount_received[data.get_client()]["reviews"] = self.eof.amount_received_by_node[data.get_client()].get("reviews", 0)
-            self.eof.set_expected_total_amount_received(data.get_client(), "reviews", data.get_amount_sent())
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Finished.")
         else:
             self.status[client_id] = STATUS_REVIEWING
-            self.eof.total_amount_received[data.get_client()] = {}
-            self.eof.total_amount_received[data.get_client()]["games"] = self.eof.amount_received_by_node[data.get_client()].get("games", 0)
-            self.eof.set_expected_total_amount_received(data.get_client(), "games", data.get_amount_sent())
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
             self.check_premature_messages(data.get_client())
@@ -56,16 +50,12 @@ class DualInputNode(Node):
             if tipo == "games":
                 return
             self.send_result(data.get_client())
-            self.eof.total_amount_sent[data.get_client()] = {}
-            self.eof.total_amount_sent[data.get_client()]["games"] = self.eof.amount_sent_by_node[data.get_client()].get("games", 0)
             self.send_eof(data)
             self.reset_list(data.get_client())
-            self.eof.reset_amounts(data)
             return
         raise PrematureEOFException()
      
     def send_games(self, client_id, games, state, query=0):
-        self.eof.update_amount_sent_by_node(client_id, len(games), "games")
         gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query)
         self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
@@ -84,14 +74,12 @@ class DualInputNode(Node):
             logging.error(f"Client {client_id} is still started")
             self.add_premature_message(data)
             return
-        self.eof.update_amount_received_by_node(client_id, data.get_amount(), "reviews")
         for review in data.reviews_dto:
             if review.app_id in self.list[client_id]:
                 self.list[client_id][review.app_id] += 1
 
     def process_games(self, data: GamesDTO):
         client_id = data.client_id
-        self.eof.update_amount_received_by_node(client_id, data.get_amount(), "games")
         for game in data.games_dto:
             self.list[client_id][game.app_id] = 0
             self.games[client_id][game.app_id] = game.name

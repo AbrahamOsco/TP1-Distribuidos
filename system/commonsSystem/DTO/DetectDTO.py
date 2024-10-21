@@ -4,6 +4,7 @@ from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.RawDTO import RawDTO
 import logging
+from typing import Union
 
 class DetectDTO():
     def __init__(self, dto_in_bytes):
@@ -16,7 +17,7 @@ class DetectDTO():
             OperationType.OPERATION_TYPE_REVIEWS_EOF_DTO: EOFDTO,
         }
 
-    def get_dto(self):
+    def get_dto(self) -> Union[RawDTO, GamesDTO, ReviewsDTO, EOFDTO]:
         offset = 0
         operation_type = int.from_bytes(self.dto_in_bytes[offset:offset+1], byteorder='big')
         offset += 1

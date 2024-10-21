@@ -3,7 +3,7 @@ from system.commonsSystem.DTO.enums.OperationType import OperationType
 STATE_DEFAULT = 1
 STATE_COMMIT = 2 ## Informa a los hermanos que llegó un eof y le pide sus cantidades
 STATE_OK = 3 ## Informa sus cantidades
-STATE_FINISH = 4 ## Informa que terminó y que el cliente debe ser eliminado de memoria
+STATE_CANCEL = 4 ## Informa que la operación no está lista aún
 
 class EOFDTO:
     def __init__(self, type, client:int, state:int, batch_id = 0, global_counter = 0):
@@ -15,12 +15,12 @@ class EOFDTO:
     
     def is_ok(self):
         return self.state == STATE_OK
+    
+    def is_cancel(self):
+        return self.state == STATE_CANCEL
 
     def is_commit(self):
         return self.state == STATE_COMMIT
-    
-    def is_finish(self):
-        return self.state == STATE_FINISH
 
     def set_state(self, state):
         self.state = state
@@ -35,6 +35,9 @@ class EOFDTO:
         if self.operation_type == OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value:
             return "games"
         return "reviews"
+    
+    def set_counter(self, counter):
+        self.global_counter = counter
     
     def serialize(self):
         eof_bytes = bytearray()

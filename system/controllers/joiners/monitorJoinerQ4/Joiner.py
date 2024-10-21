@@ -16,15 +16,12 @@ class Joiner(DualInputNode):
             logging.error(f"Client {client_id} is still started")
             self.add_premature_message(data)
             return
-        self.eof.update_amount_received_by_node(client_id, data.get_amount(), "reviews")
         data.filter_data(lambda review: review.app_id in self.list[client_id])
         if len(data.reviews_dto) > 0:
             data.apply_on_reviews(lambda review: review.set_name(self.list[client_id][review.app_id]))
-            self.eof.update_amount_sent_by_node(client_id, data.get_amount(), "games")
             self.send_review(data)
 
     def process_games(self, data: GamesDTO):
         client_id = data.get_client()
-        self.eof.update_amount_received_by_node(client_id, data.get_amount(), "games")
         for game in data.games_dto:
             self.list[client_id][game.app_id] = game.name

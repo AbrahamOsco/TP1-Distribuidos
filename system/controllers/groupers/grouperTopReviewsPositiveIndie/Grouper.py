@@ -12,12 +12,16 @@ class Grouper(Node):
         if client_id is None:
             self.list = {}
             self.min_time = {}
+            self.counters = {}
         else:
             del self.list[client_id]
             del self.min_time[client_id]
+            del self.counters[client_id]
 
     def pre_eof_actions(self, client_id):
-        games = GamesDTO(client_id=client_id, state_games=STATE_REVIEWED, games_dto=self.list[client_id], query=3)
+        if client_id not in self.list:
+            return
+        games = GamesDTO(client_id=client_id, state_games=STATE_REVIEWED, games_dto=self.list[client_id], query=3, global_counter=self.counters[client_id])
         games.set_state(STATE_IDNAME)
         self.send_result(games)
         self.reset_list(client_id)
@@ -30,10 +34,10 @@ class Grouper(Node):
 
     def process_data(self, data: GamesDTO):
         client_id = data.get_client()
-        self.eof.update_amount_received_by_node(client_id, data.get_amount())
         if client_id not in self.list:
             self.list[client_id] = []
             self.min_time[client_id] = 0
+        self.counters[client_id] = data.global_counter
         for game in data.games_dto:
             if self.has_to_be_inserted(game, client_id):
                 inserted = False
@@ -47,6 +51,3 @@ class Grouper(Node):
                 if len(self.list[client_id]) > self.top_size:
                     self.list[client_id].pop()
                 self.min_time[client_id] = self.list[client_id][-1].reviews
-
-                if inserted and len(self.list[client_id]) <= self.top_size:
-                    self.eof.update_amount_sent_by_node(client_id, 1)

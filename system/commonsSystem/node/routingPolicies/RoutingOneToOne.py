@@ -6,7 +6,4 @@ class RoutingOneToOne(RoutingPolicy):
         pass
 
     def get_routing_keys(self, data: EOFDTO):
-        return [(data.get_type(), data.get_type())]
-    
-    def get_receive_routing_key(self, data: EOFDTO):
-        return data.get_type()
+        return [data.get_type()]

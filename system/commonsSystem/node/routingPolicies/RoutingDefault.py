@@ -6,7 +6,4 @@ class RoutingDefault(RoutingPolicy):
         pass
 
     def get_routing_keys(self, data: EOFDTO):
-        return [("default", "default")]
-    
-    def get_receive_routing_key(self, data: EOFDTO):
-        return "default"
+        return ["default"]

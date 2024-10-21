@@ -51,7 +51,7 @@ class RawDTO(DTO):
             raw_data.append(element)
         return RawDTO(client_id=client_id, type=type, raw_data=raw_data, batch_id=batch_id, global_counter=global_counter), offset
     
-    def set_global_counter(self, counter):
+    def set_counter(self, counter):
         self.global_counter = counter
 
     def is_EOF(self):

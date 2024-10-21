@@ -66,6 +66,14 @@ class Broker:
             sys.exit(-1)
         logging.info(f"action: start_consuming {self.tag} | result: finished ✅")
 
+    def peek(self, queue_name):
+        method_frame, header_frame, next_message = self.channel.basic_get(queue_name)
+
+        if method_frame:
+            self.channel.basic_nack(method_frame.delivery_tag, requeue=True)
+            return next_message
+        return None
+
     def close(self):
         try:
             logging.info(f"action: stop consuming {self.tag} | result: pending ⌚")
