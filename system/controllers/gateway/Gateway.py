@@ -70,7 +70,7 @@ class Gateway(Node):
         with self.manager_lock:
             self.shared_namespace.protocols.get(data.get_client()).send_result(result)
 
-    def inform_eof_to_nodes(self, data: EOFDTO):
+    def inform_eof_to_nodes(self, data: EOFDTO, delivery_tag: str):
         client_id = data.get_client()
         if client_id not in self.result_eofs_by_client:
             self.result_eofs_by_client[client_id] = 0
@@ -80,6 +80,7 @@ class Gateway(Node):
                self.shared_namespace.protocols.get(data.get_client()).send_result(None)
             del self.result_eofs_by_client[client_id]
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
+        self.broker.basic_ack(delivery_tag)
 
     def stop(self):
         self.broker.close()

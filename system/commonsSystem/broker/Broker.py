@@ -59,6 +59,12 @@ class Broker:
         self.channel.basic_publish(exchange=sink, routing_key=routing_key, body=message,
                                     properties=pika.BasicProperties(delivery_mode=2))
 
+    def basic_nack(self, delivery_tag):
+        self.channel.basic_nack(delivery_tag=delivery_tag, requeue=True)
+
+    def basic_ack(self, delivery_tag):
+        self.channel.basic_ack(delivery_tag=delivery_tag)
+
     def start_consuming(self):
         try:
             self.channel.start_consuming()
