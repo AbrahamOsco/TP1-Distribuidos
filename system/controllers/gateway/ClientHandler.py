@@ -23,6 +23,7 @@ class ClientHandler:
         logging.info("action: client disconnected")
 
     def send_auth_confirm(self):
+        logging.info(f"action: auth confirm | client_id: {self.client_id}")
         self.protocol.send_auth_result(self.client_id)
 
     def start(self):

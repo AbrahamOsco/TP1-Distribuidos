@@ -32,6 +32,7 @@ class QueriesResponses:
         linux = reader.get_next_line()[0]
         mac = reader.get_next_line()[0]
         self.responses["Query1"] = {"windows": windows, "linux": linux, "mac": mac}
+        reader.close()
 
     def loadQueryX(self, query):
         reader = FileReader(query, percent_of_file_for_use=self.percent_of_file_for_use)
@@ -40,6 +41,7 @@ class QueriesResponses:
         while response is not None:
             self.responses[query].append(",".join(response))
             response = reader.get_next_line()
+        reader.close()
 
     def diffQuery(self, response1, response2):
         # Find strings only in response1

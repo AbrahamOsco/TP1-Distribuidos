@@ -13,17 +13,17 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.actual_responses = {}
         self.threads = []
         self.socket = None
         self.protocol = None
         self.batch_id = 1
+        self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
 
     def init_readers_and_responses(self, percent_of_file):
         self.percent = percent_of_file
+        self.actual_responses = {}
         self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.percent)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.percent)
-        self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
         self.expected_responses = QueriesResponses(self.percent,os.getenv("QUERIES_EXECUTED"))
 
     def initialize_config(self):
@@ -41,6 +41,7 @@ class SteamAnalyzer:
         self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
 
     def send_games(self):
+        logging.info("action: Sending Games | result: pending ⌚")
         while True:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
@@ -54,6 +55,7 @@ class SteamAnalyzer:
     def send_reviews(self):
         if not self.should_send_reviews:
             return
+        logging.info("action: Sending Reviews | result: pending ⌚")
         while True:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
@@ -75,7 +77,7 @@ class SteamAnalyzer:
         for i, percent in enumerate(self.percentages, 1):
             logging.info(f"Starting execution {i} of {len(self.percentages)} with {percent*100}% of file")
             self.execute(percent)
-            logging.info(f"Finished execution {i} of {percent}")
+            logging.info(f"Finished execution {i} with {percent*100}%")
         logging.info("All executions completed")
     
     def auth(self):

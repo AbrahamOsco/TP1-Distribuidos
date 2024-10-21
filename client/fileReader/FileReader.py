@@ -40,7 +40,6 @@ class FileReader:
     def get_next_batch(self):
         games = []
         if(self.is_closed):
-            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
             return None
         try:
             current_size = 0
@@ -72,7 +71,6 @@ class FileReader:
 
     def get_next_line(self):
         if(self.is_closed):
-            logging.info(f"action: get_next_batch | result: sucess | event: There's not more '{self.file_name}' to send! 💯")
             return None
         try:
             return next(self.reader)
@@ -83,4 +81,3 @@ class FileReader:
          if not self.is_closed:
             self.file.close()
             self.is_closed = True
-            logging.info(f"action: 👉file_associated_with_{self.file_name}_is_closed | result: sucess | file closed : {self.is_closed} 🆓")
