@@ -65,7 +65,6 @@ class SteamAnalyzer:
         self.batch_id += 1
 
     def send_data(self):
-        self.protocol.send_auth()
         self.send_games()
         self.send_reviews()
 
@@ -79,9 +78,17 @@ class SteamAnalyzer:
             logging.info(f"Finished execution {i} of {percent}")
         logging.info("All executions completed")
     
+    def auth(self):
+        self.protocol.send_auth()
+        authResult = self.protocol.recv_auth_result()
+        if authResult == False:
+            logging.error("action: auth | result: failed ❌")
+            raise Exception("Auth failed")
+
     def execute(self, percent):
         self.init_readers_and_responses(percent)
         self.connect_to_server()
+        self.auth()
         self.threads.append(threading.Thread(target =self.send_data))
         self.threads.append(threading.Thread(target =self.get_result_from_queries))
         for thread in self.threads:

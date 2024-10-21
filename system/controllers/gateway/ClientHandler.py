@@ -22,9 +22,13 @@ class ClientHandler:
         self.broker.close()
         logging.info("action: client disconnected")
 
+    def send_auth_confirm(self):
+        self.protocol.send_auth_result(self.client_id)
+
     def start(self):
         self.broker = Broker(tag=f"client{self.client_id}")
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
+        self.send_auth_confirm()
         while True:
             try:
                 raw_dto = self.protocol.recv_data_raw(self.client_id)

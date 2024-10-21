@@ -43,6 +43,10 @@ class ServerProtocol(Protocol):
             list_items_raw.append(element)
         return RawDTO(client_id =client_id, type=operation_type, raw_data =list_items_raw, batch_id=batch_id)
 
+    def send_auth_result(self, client_id):
+        self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
+        self.send_number_n_bytes(1, client_id)
+
     def send_result(self, result):
         if result is None:
             self.send_number_n_bytes(1, OPERATION_TYPE_RESULTSEOF)
