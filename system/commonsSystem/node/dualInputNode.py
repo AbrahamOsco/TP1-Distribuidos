@@ -3,7 +3,7 @@ from system.commonsSystem.DTO.GameReviewedDTO import GameReviewedDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_REVIEWED
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.node.routingPolicies.RoutingManyToOne import RoutingManyToOne
+from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 import logging
 
 STATUS_STARTED = 0
@@ -11,7 +11,7 @@ STATUS_REVIEWING = 1
 
 class DualInputNode(Node):
     def __init__(self):
-        super().__init__(RoutingManyToOne())
+        super().__init__(RoutingDefault())
         self.reset_list()
 
     def reset_list(self, client_id=None):
