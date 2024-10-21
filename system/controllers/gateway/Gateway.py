@@ -5,10 +5,8 @@ import multiprocessing
 import os
 import signal
 from multiprocessing import Manager
-from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.broker.Broker import Broker
 from system.controllers.gateway.ClientHandler import ClientHandler
 
 PORT_SERVER = 12345

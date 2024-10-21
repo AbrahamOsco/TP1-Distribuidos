@@ -1,6 +1,6 @@
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
-from system.commonsSystem.node.dualInputNode import DualInputNode, STATUS_STARTED, STATUS_REVIEWING
+from system.commonsSystem.node.dualInputNode import DualInputNode, STATUS_STARTED
 import logging
 
 class Joiner(DualInputNode):
