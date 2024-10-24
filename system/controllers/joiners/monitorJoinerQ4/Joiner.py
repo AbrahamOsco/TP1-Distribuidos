@@ -1,7 +1,6 @@
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.node.dualInputNode import DualInputNode, STATUS_STARTED
-from system.commonsSystem.node.node import PrematureMessage
 import logging
 
 class Joiner(DualInputNode):
@@ -15,7 +14,8 @@ class Joiner(DualInputNode):
         client_id = data.get_client()
         if self.status[client_id] == STATUS_STARTED:
             logging.error(f"Client {client_id} is still started")
-            raise PrematureMessage()
+            self.add_premature_message(data)
+            return
         data.filter_data(lambda review: review.app_id in self.list[client_id])
         if len(data.reviews_dto) > 0:
             data.apply_on_reviews(lambda review: review.set_name(self.list[client_id][review.app_id]))

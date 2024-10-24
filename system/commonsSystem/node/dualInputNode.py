@@ -1,10 +1,10 @@
-from system.commonsSystem.node.node import Node, PrematureMessage
+from system.commonsSystem.node.node import Node, PrematureEOFException
+from system.commonsSystem.DTO.GameReviewedDTO import GameReviewedDTO
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
-from system.commonsSystem.DTO.GamesDTO import GamesDTO
+from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_REVIEWED
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 import logging
-import time
 
 STATUS_STARTED = 0
 STATUS_REVIEWING = 1
@@ -19,14 +19,16 @@ class DualInputNode(Node):
             self.list = {}
             self.games = {}
             self.status = {}
+            self.premature_messages = {}
         else:
             del self.list[client_id]
             del self.games[client_id]
             del self.status[client_id]
+            if client_id in self.premature_messages:
+                del self.premature_messages[client_id]
 
-    def inform_eof_to_nodes(self, data, delivery_tag):
+    def inform_eof_to_nodes(self, data):
         client_id = data.get_client()
-        self.clients_pending_confirmations[client_id] = (time.time(), delivery_tag)
         if self.status[client_id] == STATUS_REVIEWING:
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Finished.")
@@ -34,14 +36,18 @@ class DualInputNode(Node):
             self.status[client_id] = STATUS_REVIEWING
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
+            self.check_premature_messages(data.get_client())
+
+    def check_premature_messages(self, client_id):
+        if client_id in self.premature_messages:
+            for data in self.premature_messages[client_id]:
+                self.process_data(data)
+            del self.premature_messages[client_id]
 
     def check_amounts(self, data: EOFDTO):
-        client = data.get_client()
-        if client in self.clients_pending_confirmations:
-            self.broker.basic_ack(self.clients_pending_confirmations[client][1])
-            del self.clients_pending_confirmations[client]
         if data.get_type() == "games":
             return
+        client = data.get_client()
         self.send_result(client)
         self.send_eof(data)
         self.reset_list(client)
@@ -53,11 +59,18 @@ class DualInputNode(Node):
     def send_result(self, client_id):
         pass
 
+    def add_premature_message(self, data: ReviewsDTO):
+        client_id = data.get_client()
+        if client_id not in self.premature_messages:
+            self.premature_messages[client_id] = []
+        self.premature_messages[client_id].append(data)
+
     def process_reviews(self, data: ReviewsDTO):
         client_id = data.get_client()
         if self.status[client_id] == STATUS_STARTED:
             logging.error(f"Client {client_id} is still started")
-            raise PrematureMessage()
+            self.add_premature_message(data)
+            return
         for review in data.reviews_dto:
             if review.app_id in self.list[client_id]:
                 self.list[client_id][review.app_id] += 1
