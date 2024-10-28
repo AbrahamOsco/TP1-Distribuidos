@@ -17,6 +17,7 @@ class SteamAnalyzer:
         self.socket = None
         self.protocol = None
         self.batch_id = 1
+        self.there_a_signal = False
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
 
     def init_readers_and_responses(self, percent_of_file):
@@ -67,18 +68,26 @@ class SteamAnalyzer:
         self.batch_id += 1
 
     def send_data(self):
-        self.send_games()
-        self.send_reviews()
+        try:
+            self.send_games()
+            self.send_reviews()
+        except Exception as e:
+            logging.info(f"action: Error Catch from thread Sender: {e} | result: success ✅ ")
 
     def run(self):
-        percent_of_file_for_use_by_execution = os.getenv("PERCENT_OF_FILE_FOR_USE_BY_EXECUTION", 1)
-        self.percentages = [float(p.strip()) for p in percent_of_file_for_use_by_execution.split(',')]
-        logging.info(f"Starting executions of Client")
-        for i, percent in enumerate(self.percentages, 1):
-            logging.info(f"Starting execution {i} of {len(self.percentages)} with {percent*100}% of file")
-            self.execute(percent)
-            logging.info(f"Finished execution {i} with {percent*100}%")
-        logging.info("All executions completed")
+        try: 
+            percent_of_file_for_use_by_execution = os.getenv("PERCENT_OF_FILE_FOR_USE_BY_EXECUTION", 1)
+            self.percentages = [float(p.strip()) for p in percent_of_file_for_use_by_execution.split(',')]
+            logging.info(f"Starting executions of Client")
+            for i, percent in enumerate(self.percentages, 1):
+                logging.info(f"Starting execution {i} of {len(self.percentages)} with {percent*100}% of file")
+                self.execute(percent)
+                logging.info(f"Finished execution {i} with {percent*100}%")
+            logging.info("All executions completed")
+        except Exception as e:
+            logging.info(f"action: Error Catcheado: in Run: {e}  | result: success ✅")
+            self.stop()
+
     
     def auth(self):
         self.protocol.send_auth()
@@ -96,21 +105,31 @@ class SteamAnalyzer:
         for thread in self.threads:
             thread.start()
         for thread in self.threads:
+            logging.info("Entro to try a join a thread 🧵 🔥")
             thread.join()
         self.stop()
 
     def get_result_from_queries(self):
-        logging.info("action: Waiting for the results 📊 | result: pending ⌚")
-        while True:
-            resultQuerys = self.protocol.recv_result()
-            if resultQuerys == None:
-                break
-            logging.info(f"action: result_received 📊 | result: success ✅")
-            self.actual_responses = resultQuerys.append_data(self.actual_responses)
-        logging.info("action: All the results 📊 were received! ✅")
-        diff = self.expected_responses.diff(self.actual_responses)
-        for query in diff:
-            logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
+        try:
+            logging.info("action: Waiting for the results 📊 | result: pending ⌚")
+            while not self.there_a_signal:
+                resultQuerys = self.protocol.recv_result()
+                if resultQuerys == None:
+                    break
+                logging.info(f"action: result_received 📊 | result: success ✅")
+                self.actual_responses = resultQuerys.append_data(self.actual_responses)
+            logging.info("action: All the results 📊 were received! ✅")
+            diff = self.expected_responses.diff(self.actual_responses)
+            for query in diff:
+                logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
+        except Exception as e:
+            logging.info(f"action: Error Catch from thread Receiver: {e} | result: success ✅")
+
+    def stop_by_signal(self):
+        self.there_a_signal = True
+        self.socket.close()
+        self.game_reader.close()
+        self.review_reader.close()
 
     def stop(self):
         self.socket.close()
