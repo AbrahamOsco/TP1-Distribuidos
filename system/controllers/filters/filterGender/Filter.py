@@ -22,4 +22,4 @@ class Filter(Node):
                 if self.is_gender(game.genres, gender):
                     games_in_gender.append(game) 
             if len(games_in_gender) > 0:
-                self.send_game(GamesDTO(client_id=data.client_id, state_games=STATE_Q2345, games_dto=games_in_gender), gender)
+                self.send_game(GamesDTO(client_id=data.client_id, state_games=STATE_Q2345, games_dto=games_in_gender, global_counter=data.global_counter), gender)
