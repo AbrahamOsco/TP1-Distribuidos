@@ -20,10 +20,12 @@ class DualInputNode(Node):
             self.games = {}
             self.status = {}
             self.premature_messages = {}
+            self.counter = {}
         else:
             del self.list[client_id]
             del self.games[client_id]
             del self.status[client_id]
+            del self.counter[client_id]
             if client_id in self.premature_messages:
                 del self.premature_messages[client_id]
 
@@ -87,6 +89,7 @@ class DualInputNode(Node):
             self.status[client_id] = STATUS_STARTED
             self.list[client_id] = {}
             self.games[client_id] = {}
+            self.counter[client_id] = data.global_counter
         if data.is_reviews():
             self.process_reviews(data)
         if data.is_games():
