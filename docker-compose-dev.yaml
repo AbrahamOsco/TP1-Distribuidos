@@ -25,7 +25,7 @@ services:
       - ./data/responses:/data/responses
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1,0.2
       - NODE_ID=1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -50,7 +50,7 @@ services:
       - ./data/responses:/data/responses
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2,0.1
       - NODE_ID=2
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app

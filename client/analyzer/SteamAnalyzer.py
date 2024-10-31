@@ -105,7 +105,6 @@ class SteamAnalyzer:
         for thread in self.threads:
             thread.start()
         for thread in self.threads:
-            logging.info("Entro to try a join a thread 🧵 🔥")
             thread.join()
         self.stop()
 
