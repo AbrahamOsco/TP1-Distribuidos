@@ -13,13 +13,13 @@ class SteamAnalyzer:
 
     def __init__(self):
         self.initialize_config()
-        self.actual_responses = {}
         self.threads = []
         self.socket = None
         self.protocol = None
 
     def init_readers_and_responses(self, percent_of_file):
         self.percent = percent_of_file
+        self.actual_responses = {}
         self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.percent)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.percent)
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
