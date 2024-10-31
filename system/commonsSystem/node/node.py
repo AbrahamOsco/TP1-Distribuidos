@@ -1,6 +1,7 @@
 import logging
 import os
 import signal
+import sys
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_COMMIT
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
@@ -170,6 +171,7 @@ class Node:
     
     def stop(self):
         self.broker.close()
+        sys.exit(0)
     
     def pre_eof_actions(self, client_id):
         """ This method can be implemented by the child class 

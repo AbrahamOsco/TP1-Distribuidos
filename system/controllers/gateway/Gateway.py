@@ -4,6 +4,7 @@ import logging
 import multiprocessing
 import os
 import signal
+import sys
 from multiprocessing import Manager
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
@@ -41,8 +42,7 @@ class Gateway(Node):
         self.listener_proc.join()
 
     def stop_server(self):
-        self.pool.close()
-        self.pool.join()
+        self.pool.terminate()
         if self.socket_accepter is not None:
             self.socket_accepter.close()
         logging.info("action: server stopped | result: success ✅")
@@ -86,3 +86,4 @@ class Gateway(Node):
         self.listener_proc.terminate()
         self.listener_proc.join()
         logging.info("Gateway abort | result: success ✅")
+        sys.exit(0)

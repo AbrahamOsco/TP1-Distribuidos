@@ -43,7 +43,7 @@ class SteamAnalyzer:
 
     def send_games(self):
         logging.info("action: Sending Games | result: pending ⌚")
-        while True:
+        while self.there_a_signal == False:
             some_games = self.game_reader.get_next_batch()
             if(some_games == None):
                 break
@@ -57,7 +57,7 @@ class SteamAnalyzer:
         if not self.should_send_reviews:
             return
         logging.info("action: Sending Reviews | result: pending ⌚")
-        while True:
+        while self.there_a_signal == False:
             some_reviews = self.review_reader.get_next_batch()
             if(some_reviews == None):
                 break

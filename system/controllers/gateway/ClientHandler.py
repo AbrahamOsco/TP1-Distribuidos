@@ -1,6 +1,7 @@
 import logging
 import signal
 import os
+import sys
 from common.socket.Socket import Socket
 from system.commonsSystem.protocol.ServerProtocol import ServerProtocol
 from system.commonsSystem.broker.Broker import Broker
@@ -21,6 +22,7 @@ class ClientHandler:
         self.socket_peer.close()
         self.broker.close()
         logging.info("action: client disconnected")
+        sys.exit(0)
 
     def send_auth_confirm(self):
         logging.info(f"action: auth confirm | client_id: {self.client_id}")
