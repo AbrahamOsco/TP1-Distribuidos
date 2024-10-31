@@ -51,6 +51,14 @@ class QueriesResponses:
         
         # Combine and return
         return only_in_arr1 + only_in_arr2
+    
+    def diffQueryOrder(self, response1, response2):
+        diff = []
+        for i in range(len(response1)):
+            if response1[i] != response2[i]:
+                logging.info(f"Pos#{i+1} Expected: {response1[i]} | Actual: {response2[i]}")
+                diff.append(response1[i])
+        return diff
 
     def diff(self, responses):
         diff = {}
@@ -63,6 +71,8 @@ class QueriesResponses:
                     if int(self.responses[query][os]) != int(responses[query][os]):
                         logging.info(f"OS:{os} Expected: {self.responses[query][os]} | Actual: {responses[query][os]}")
                         diff[query].append(os)
+            elif query == "Query2" or query == "Query3":
+                diff[query] = self.diffQueryOrder(self.responses[query], responses[query])
             else:
                 diff[query] = self.diffQuery(self.responses[query], responses[query])
         return diff
