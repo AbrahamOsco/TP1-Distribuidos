@@ -55,7 +55,7 @@ class DualInputNode(Node):
         self.reset_list(client)
      
     def send_games(self, client_id, games, state, query=0):
-        gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query)
+        gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query, global_counter=self.counter[client_id])
         self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
     def send_result(self, client_id):

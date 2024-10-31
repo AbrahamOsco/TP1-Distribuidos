@@ -101,7 +101,7 @@ class Node:
         self.confirmations[client] = 1
         self.cancels[client] = False
         logging.debug(f"action: ask_confirmations | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        message = EOFDTO(data.operation_type, client, STATE_COMMIT)
+        message = EOFDTO(data.operation_type, client, STATE_COMMIT, global_counter=data.global_counter)
         self.broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
 
     def no_older_message(self, data: EOFDTO):
