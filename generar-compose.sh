@@ -73,7 +73,7 @@ NUM_CLIENTS=$(solicitar_numero_entero "Ingrese la cantidad de clientes: ")
 # Solicitar la cantidad de ejecuciones por cliente y los porcentajes correspondientes
 declare -a porcentajes_por_cliente
 for ((i = 1; i <= NUM_CLIENTS; i++)); do
-  porcentajes_por_cliente[$i]=$(solicitar_porcentajes "Ingrese los porcentajes para el cliente $i (por ejemplo, 0.1,0.2,0.3): ")
+  porcentajes_por_cliente[$i]=$(solicitar_porcentajes "Ingrese los porcentajes para el cliente $i (por ejemplo, 0.1,0.2,0.3 o todo el archivo: 1): ")
 done
 
 # Solicitar las cantidades para cada tipo de servicio
