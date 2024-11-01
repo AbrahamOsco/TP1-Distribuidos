@@ -1,0 +1,47 @@
+services:
+  node1:
+    image: "leader:latest"
+    container_name: node1
+    entrypoint: python3 /app/leader/main.py
+    environment:
+      - NODE_ID = 100
+      - RING_SIZE = 3
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      system_network:
+        ipv4_address: 172.25.125.100
+
+  node2:
+    image: "leader:latest"
+    container_name: node2
+    entrypoint: python3 /app/leader/main.py
+    environment:
+      - NODE_ID = 101
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE = 3
+      - PYTHONPATH=/app
+    networks:
+      system_network:
+        ipv4_address: 172.25.125.101
+
+  node3:
+    image: "leader:latest"
+    container_name: node3
+    entrypoint: python3 /app/leader/main.py
+    environment:
+      - NODE_ID = 102
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE = 3
+      - PYTHONPATH=/app
+    networks:
+      system_network:
+        ipv4_address: 172.25.125.102
+
+
+networks:
+  system_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24
