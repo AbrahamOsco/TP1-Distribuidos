@@ -1,7 +1,6 @@
-from system.commonsSystem.node.node import Node, PrematureEOFException
-from system.commonsSystem.DTO.GameReviewedDTO import GameReviewedDTO
+from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
-from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_REVIEWED
+from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 import logging
@@ -29,7 +28,7 @@ class DualInputNode(Node):
             if client_id in self.premature_messages:
                 del self.premature_messages[client_id]
 
-    def inform_eof_to_nodes(self, data):
+    def inform_eof_to_nodes(self, data, delivery_tag: str):
         client_id = data.get_client()
         if self.status[client_id] == STATUS_REVIEWING:
             self.check_amounts(data)
@@ -39,6 +38,7 @@ class DualInputNode(Node):
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
             self.check_premature_messages(data.get_client())
+        self.broker.basic_ack(delivery_tag)
 
     def check_premature_messages(self, client_id):
         if client_id in self.premature_messages:
