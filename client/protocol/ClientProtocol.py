@@ -9,8 +9,7 @@ import logging
 
 class ClientProtocol(Protocol):
     
-    def __init__(self, a_id, socket):
-        self.id = a_id
+    def __init__(self, socket):
         super().__init__(socket)  #uso super para invocar al constructor del padre. 
         self.getResult = {
             OPERATION_TYPE_QUERY1: self.get_query1,
@@ -37,14 +36,13 @@ class ClientProtocol(Protocol):
 
     def send_auth(self):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
-        self.send_number_n_bytes(1, self.id)
 
     def recv_auth_result(self):
         operation_type = self.recv_number_n_bytes(1)
         if operation_type != OPERATION_TYPE_AUTH:
             return False
         client_id = self.recv_number_n_bytes(1)
-        return client_id == self.id
+        return client_id
     
     def recv_result(self):
         operation_type = self.recv_number_n_bytes(1)

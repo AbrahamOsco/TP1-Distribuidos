@@ -9,6 +9,7 @@ from multiprocessing import Manager
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.controllers.gateway.ClientHandler import ClientHandler
+from multiprocessing import Array
 
 PORT_SERVER = 12345
 MAX_CLIENTS = 5
@@ -24,6 +25,7 @@ class Gateway(Node):
         self.shared_namespace = manager.Namespace()
         self.shared_namespace.protocols = {}
         self.manager_lock = manager.Lock()
+        self.clients_allow = Array('b', [True] * MAX_CLIENTS)
         super().__init__()
 
     def accept_a_connection(self):
@@ -55,9 +57,10 @@ class Gateway(Node):
                 if socket_peer is None:
                     break
                 client_handler = ClientHandler(socket_peer)
-                client_id = client_handler.init_client_id()
-                if client_id is None:
-                    continue
+                client_handler.recv_auth()
+                client_id = self.get_first_available_client()
+                self.set_client_availability(client_id, False)
+                client_handler.set_client_id(client_id)
                 with self.manager_lock:
                     protocols = self.shared_namespace.protocols
                     protocols[client_id] = client_handler.protocol
@@ -70,6 +73,7 @@ class Gateway(Node):
         with self.manager_lock:
             self.shared_namespace.protocols.get(data.get_client()).send_result(result)
 
+
     def inform_eof_to_nodes(self, data: EOFDTO):
         client_id = data.get_client()
         if client_id not in self.result_eofs_by_client:
@@ -77,9 +81,11 @@ class Gateway(Node):
         self.result_eofs_by_client[client_id] += 1
         if self.result_eofs_by_client[client_id] == self.amount_of_queries:
             with self.manager_lock:
-               self.shared_namespace.protocols.get(data.get_client()).send_result(None)
+                self.shared_namespace.protocols.get(data.get_client()).send_result(None)
             del self.result_eofs_by_client[client_id]
+            self.set_client_availability(client_id, True)
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
+
 
     def stop(self):
         self.broker.close()
@@ -87,3 +93,22 @@ class Gateway(Node):
         self.listener_proc.join()
         logging.info("Gateway abort | result: success ✅")
         sys.exit(0)
+
+    def set_client_availability(self, client_id, is_available):
+        if 1 <= client_id <= MAX_CLIENTS:
+            with self.manager_lock:
+                logging.info(f"Setting client {client_id} availability to {is_available}")
+                self.clients_allow[client_id - 1] = is_available
+                logging.info(f"Current clients_allow status: {list(self.clients_allow)}")
+        else:
+            logging.warning(f"action: set_client_availability | client_id: {client_id} | result: invalid client ID ❌")
+
+    def get_first_available_client(self):
+        with self.manager_lock:
+            logging.info(f"Checking for available client. Current availability: {list(self.clients_allow)}")
+            for index, is_available in enumerate(self.clients_allow):
+                if is_available:
+                    logging.info(f"Found available client: {index + 1}")
+                    return index + 1
+            logging.info("No available clients found.")
+        return None

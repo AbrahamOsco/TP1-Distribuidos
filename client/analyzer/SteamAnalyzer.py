@@ -29,7 +29,7 @@ class SteamAnalyzer:
 
     def initialize_config(self):
         self.config_params = {}
-        self.config_params["id"] = int(os.getenv("NODE_ID"))
+        self.config_params["id"] = None
         self.config_params["log_level"] = os.getenv("LOGGING_LEVEL")
         self.config_params["hostname"] = os.getenv("HOSTNAME")
         initialize_log(self.config_params["log_level"])
@@ -39,7 +39,7 @@ class SteamAnalyzer:
         self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
         result, msg =  self.socket.connect()
         logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
-        self.protocol = ClientProtocol(a_id =self.config_params['id'], socket =self.socket)
+        self.protocol = ClientProtocol(socket =self.socket)
 
     def send_games(self):
         logging.info("action: Sending Games | result: pending ⌚")
@@ -92,9 +92,10 @@ class SteamAnalyzer:
     def auth(self):
         self.protocol.send_auth()
         authResult = self.protocol.recv_auth_result()
-        if authResult == False:
+        if authResult == None:
             logging.error("action: auth | result: failed ❌")
             raise Exception("Auth failed")
+        self.config_params["id"] = authResult
 
     def execute(self, percent):
         self.init_readers_and_responses(percent)

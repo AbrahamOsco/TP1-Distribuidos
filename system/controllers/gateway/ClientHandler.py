@@ -13,10 +13,11 @@ class ClientHandler:
         self.protocol = ServerProtocol(self.socket_peer)
         self.sink = os.getenv("SINK")
 
-    def init_client_id(self):
-        client_id = self.protocol.recv_auth()
+    def recv_auth(self):
+        self.protocol.recv_auth()
+
+    def set_client_id(self, client_id):
         self.client_id = client_id
-        return client_id
 
     def stop_client(self):
         self.socket_peer.close()

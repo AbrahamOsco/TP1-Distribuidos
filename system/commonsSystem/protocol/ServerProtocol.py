@@ -17,9 +17,6 @@ class ServerProtocol(Protocol):
 
     def recv_auth(self):
         operation_type = self.recv_number_n_bytes_timeout(1)
-        if operation_type == OPERATION_TYPE_AUTH:
-            client_id = self.recv_number_n_bytes_timeout(1)
-            return client_id
         return None
 
     def recv_data_raw(self, client_id):
