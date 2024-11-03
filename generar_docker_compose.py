@@ -294,7 +294,6 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries):
     environment:
       - QUERIES_EXECUTED={queries}  
       - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION={ejecucion}
-      - NODE_ID={i}
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
