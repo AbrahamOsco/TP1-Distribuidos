@@ -6,12 +6,13 @@ STATE_OK = 3 ## Informa sus cantidades
 STATE_CANCEL = 4 ## Informa que la operación no está lista aún
 
 class EOFDTO:
-    def __init__(self, type, client:int, state:int, batch_id = 0, global_counter = 0):
+    def __init__(self, type, client:int, state:int, batch_id = 0, global_counter = 0, retry=0):
         self.operation_type = type
         self.state = state
         self.client = client
         self.batch_id = batch_id
         self.global_counter = global_counter
+        self.retry = retry
     
     def is_ok(self):
         return self.state == STATE_OK
@@ -46,6 +47,7 @@ class EOFDTO:
         eof_bytes.extend(self.global_counter.to_bytes(6, byteorder='big'))
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.batch_id.to_bytes(2, byteorder='big'))
+        eof_bytes.extend(self.retry.to_bytes(1, byteorder='big'))
         return bytes(eof_bytes)
     
     def deserialize(data, offset):
@@ -60,4 +62,6 @@ class EOFDTO:
         offset += 1
         batch_id = int.from_bytes(data[offset:offset+2], byteorder='big')
         offset += 2
-        return EOFDTO(operation_type, client, state, batch_id, global_counter), offset
+        retry = int.from_bytes(data[offset:offset+1], byteorder='big')
+        offset += 1
+        return EOFDTO(operation_type, client, state, batch_id, global_counter, retry), offset

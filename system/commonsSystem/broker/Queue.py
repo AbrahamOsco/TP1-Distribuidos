@@ -13,6 +13,8 @@ class Queue:
         self.durable = durable
         self.properties = pika.BasicProperties(delivery_mode= pika.DeliveryMode.Persistent,)  # make message persistent (quiero persistir el mensaje)
         self.routing_key = ''
+        self.sink = ''
+        self.routing_key = ''
 
     def set_name(self, name):
         self.name = name
@@ -39,3 +41,6 @@ class Queue:
     def get_exclusive(self):
         return self.exclusive
 
+    def set_sink(self, sink, routing_key):
+        self.sink = sink
+        self.routing_key = routing_key

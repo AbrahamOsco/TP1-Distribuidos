@@ -16,8 +16,8 @@ class EOFManagement:
 
     def get_eof_confirmation(self, data: EOFDTO):
         client = data.get_client()
-        return EOFDTO(data.operation_type,client,STATE_OK, global_counter=data.global_counter)
+        return EOFDTO(data.operation_type,client,STATE_OK, global_counter=data.global_counter, retry=data.retry)
     
     def get_eof_cancel(self, data: EOFDTO):
         client = data.get_client()
-        return EOFDTO(data.operation_type,client,STATE_CANCEL, global_counter=data.global_counter)
+        return EOFDTO(data.operation_type,client,STATE_CANCEL, global_counter=data.global_counter, retry=data.retry)

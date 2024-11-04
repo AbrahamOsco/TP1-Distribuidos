@@ -59,14 +59,26 @@ class Node:
             level=self.config_params["log_level"],
             datefmt='%Y-%m-%d %H:%M:%S',
         )
+
+    def resend_eof_to_brothers(self, data: EOFDTO):
+        temporal_broker = Broker("temporal")
+        self.ask_confirmations(temporal_broker, data, 1)
+        temporal_broker.close()
+
     def check_eofs(self):
         while self.running:
             time.sleep(0.5)
             with self.confirmations_lock:
                 for client in list(self.clients_pending_confirmations.keys()):
                     information = self.clients_pending_confirmations[client]
-                    if time.time() - information[0] > 4:
+                    if information[3] == 1 and time.time() - information[0] > 7:
+                        logging.error("action: check_eofs | result: timeout")
                         del self.clients_pending_confirmations[client]
+                        continue
+                    if information[3] == 0 and time.time() - information[0] > 4:
+                        logging.error("action: check_eofs | result: resend")
+                        self.clients_pending_confirmations[client] = (time.time(), information[1], information[2], 1)
+                        self.resend_eof_to_brothers(information[2])
 
     def send_eof(self, data: EOFDTO):
         client = data.get_client()
@@ -106,12 +118,12 @@ class Node:
         if client in self.confirmations:
             del self.confirmations[client]
 
-    def ask_confirmations(self, data: EOFDTO):
+    def ask_confirmations(self, broker: Broker, data: EOFDTO, retry:int = 0):
         client = data.get_client()
         self.confirmations[client] = 1
         logging.debug(f"action: ask_confirmations | client: {client} | pending_confirmations: {self.clients_pending_confirmations}")
-        message = EOFDTO(data.operation_type, client, STATE_COMMIT, global_counter=data.global_counter)
-        self.broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
+        message = EOFDTO(data.operation_type, client, STATE_COMMIT, global_counter=data.global_counter, retry=retry)
+        broker.public_message(sink=self.node_name + "_eofs", message=message.serialize())
 
     def no_older_message(self, data: EOFDTO):
         eof_global_counter = data.global_counter
@@ -130,13 +142,15 @@ class Node:
 
     def process_node_eof(self, data: EOFDTO):
         client = data.get_client()
-        logging.debug(f"action: process_node_eof | client: {client}")
+        logging.info(f"action: process_node_eof | client: {client}")
         with self.confirmations_lock:
             if client in self.clients_pending_confirmations:
-                if data.is_ok():
-                    self.check_confirmations(data)
                 if data.is_cancel():
                     self.check_cancel(data)
+                if data.retry != self.clients_pending_confirmations[client][3]:
+                    return
+                if data.is_ok():
+                    self.check_confirmations(data)
                 return
         if data.is_ok():
             return
@@ -145,13 +159,13 @@ class Node:
 
     def inform_eof_to_nodes(self, data: EOFDTO, delivery_tag: str):
         client = data.get_client()
-        logging.debug(f"action: inform_eof_to_nodes | client: {client}")
-        self.clients_pending_confirmations[client] = (time.time(), delivery_tag)
+        logging.info(f"action: inform_eof_to_nodes | client: {client}")
+        self.clients_pending_confirmations[client] = (time.time(), delivery_tag, data, 0)
         if self.amount_of_nodes < 2:
             self.check_amounts(data)
             return
         with self.confirmations_lock:
-            self.ask_confirmations(data)
+            self.ask_confirmations(self.broker, data)
 
     def read_nodes_eofs(self, ch, method, properties, body):
         try:

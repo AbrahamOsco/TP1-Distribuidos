@@ -37,6 +37,17 @@ class Broker:
                 delay *= 2
         raise Exception("Failed to establish connection after multiple retries.")
 
+    def restablish_channel(self):
+        self.channel = self.connection.channel()
+        for queue in self.queues.values():
+            name = queue.name
+            if not queue.durable:
+                name = ""
+            result = self.channel.queue_declare(queue =name, durable =queue.durable, exclusive=queue.get_exclusive())
+            queue.set_name(result.method.queue)
+            self.channel.basic_consume(queue=queue.name, auto_ack=False, on_message_callback=queue.callback)
+            self.channel.queue_bind(exchange=queue.sink, queue=queue.name, routing_key=queue.routing_key)
+
     def create_source(self, name ='', callback =None):
         durable = name != ''
         a_queue = Queue(name =name, durable =durable, callback =callback)
@@ -53,6 +64,7 @@ class Broker:
         self.channel.exchange_declare(exchange=name, exchange_type=type)
 
     def bind_queue(self, queue_name='', sink='', routing_key='default'):
+        self.queues[queue_name].set_sink(sink, routing_key)
         self.channel.queue_bind(exchange=sink, queue=queue_name, routing_key=routing_key)
 
     def public_message(self, sink='', routing_key='default', message=''):
@@ -68,7 +80,12 @@ class Broker:
     def start_consuming(self):
         try:
             self.channel.start_consuming()
+        except pika.exceptions.ChannelClosedByBroker as e:
+            logging.warning(f"Channel closed by broker: {e}. Attempting to recreate channel.")
+            self.restablish_channel()
+            self.start_consuming()
         except Exception as e:
+            logging.error(f"Irrecuperable error: {e}")
             sys.exit(-1)
         logging.info(f"action: start_consuming {self.tag} | result: finished ✅")
 
