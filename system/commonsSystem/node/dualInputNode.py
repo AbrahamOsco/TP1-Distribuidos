@@ -3,6 +3,7 @@ from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
+from system.commonsSystem.node.IDList import IDList
 import logging
 
 STATUS_STARTED = 0
@@ -12,6 +13,8 @@ class DualInputNode(Node):
     def __init__(self):
         super().__init__(RoutingDefault())
         self.reset_list()
+        self.review_id_list = IDList()
+        self.games_id_list = IDList()
 
     def reset_list(self, client_id=None):
         if client_id is None:
@@ -68,6 +71,9 @@ class DualInputNode(Node):
         self.premature_messages[client_id].append(data)
 
     def process_reviews(self, data: ReviewsDTO):
+        if self.review_id_list.already_processed(data.global_counter):
+            return
+        self.review_id_list.insert(data.global_counter)
         client_id = data.get_client()
         if self.status[client_id] == STATUS_STARTED:
             logging.error(f"Client {client_id} is still started")
@@ -78,6 +84,9 @@ class DualInputNode(Node):
                 self.list[client_id][review.app_id] += 1
 
     def process_games(self, data: GamesDTO):
+        if self.games_id_list.already_processed(data.global_counter):
+            return
+        self.games_id_list.insert(data.global_counter)
         client_id = data.client_id
         for game in data.games_dto:
             self.list[client_id][game.app_id] = 0
