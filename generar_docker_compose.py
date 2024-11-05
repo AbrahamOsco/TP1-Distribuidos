@@ -245,6 +245,8 @@ def generar_servicio_no_escalable(queries, service_name):
     entrypoint: python3 {entrypoints[service_name]}
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure{get_depends_and_envs(queries, service_name)}"""
     return base
 
@@ -259,6 +261,8 @@ def get_gateway(queries):
     networks:
         - system_network
     restart: on-failure
+    volumes:
+      - ./persistent:/persistent
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
@@ -291,6 +295,7 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries):
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
+      - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED={queries}  
       - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION={ejecucion}
