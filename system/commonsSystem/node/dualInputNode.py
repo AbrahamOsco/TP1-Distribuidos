@@ -58,7 +58,8 @@ class DualInputNode(Node):
         self.reset_list(client)
      
     def send_games(self, client_id, games, state, query=0):
-        gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query, global_counter=self.counter[client_id])
+        global_counter = self.counter[client_id].pop()
+        gamesDTO = GamesDTO(client_id=client_id, state_games=state, games_dto=games, query=query, global_counter=global_counter)
         self.broker.public_message(sink=self.sink, message=gamesDTO.serialize(), routing_key="default")
 
     def send_result(self, client_id):
@@ -73,12 +74,12 @@ class DualInputNode(Node):
     def process_reviews(self, data: ReviewsDTO):
         if self.review_id_list.already_processed(data.global_counter):
             return
-        self.review_id_list.insert(data.global_counter)
         client_id = data.get_client()
         if self.status[client_id] == STATUS_STARTED:
             logging.error(f"Client {client_id} is still started")
             self.add_premature_message(data)
             return
+        self.review_id_list.insert(data.global_counter)
         for review in data.reviews_dto:
             if review.app_id in self.list[client_id]:
                 self.list[client_id][review.app_id] += 1
@@ -88,6 +89,7 @@ class DualInputNode(Node):
             return
         self.games_id_list.insert(data.global_counter)
         client_id = data.client_id
+        self.counter[client_id].append(data.global_counter)
         for game in data.games_dto:
             self.list[client_id][game.app_id] = 0
             self.games[client_id][game.app_id] = game.name
@@ -98,7 +100,7 @@ class DualInputNode(Node):
             self.status[client_id] = STATUS_STARTED
             self.list[client_id] = {}
             self.games[client_id] = {}
-            self.counter[client_id] = data.global_counter
+            self.counter[client_id] = []
         if data.is_reviews():
             self.process_reviews(data)
         if data.is_games():

@@ -1,4 +1,5 @@
 import os
+import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
 from system.commonsSystem.node.IDList import IDList
@@ -43,6 +44,7 @@ class GrouperNode(Node):
             self.list[current_client] = []
             self.min_time[current_client] = 0
         if self.id_list.already_processed(data.global_counter):
+            logging.info(f"Already processed {data.global_counter}")
             return
         self.id_list.insert(data.global_counter)
         self.counters[current_client] = data.global_counter
