@@ -3,6 +3,7 @@ import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
 from system.commonsSystem.node.IDList import IDList
+from common.tolerance.logFile import LogFile
 
 class GrouperNode(Node):
     def __init__(self, incoming_state, query, comparing_field):
@@ -13,6 +14,7 @@ class GrouperNode(Node):
         self.query = query
         self.comparing_field = comparing_field
         self.id_list = IDList()
+        self.logs = LogFile()
 
     def reset_list(self, client_id=None):
         if client_id is None:
@@ -39,14 +41,15 @@ class GrouperNode(Node):
         self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="default")
 
     def process_data(self, data: GamesDTO):
+        if self.id_list.already_processed(data.global_counter):
+            logging.info(f"Already processed {data.global_counter}")
+            return
         current_client = data.get_client()
         if current_client not in self.list:
             self.list[current_client] = []
             self.min_time[current_client] = 0
-        if self.id_list.already_processed(data.global_counter):
-            logging.info(f"Already processed {data.global_counter}")
-            return
         self.id_list.insert(data.global_counter)
+        self.logs.add_log(data.serialize())
         self.counters[current_client] = data.global_counter
         for game in data.games_dto:
             if self.has_to_be_inserted(game, current_client):
