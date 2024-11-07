@@ -85,3 +85,4 @@ class LogFile:
     def add_log(self, content: bytes):
         self.file.write(content + b"\nUNCORRUPTED\n")
         self.file.flush()
+        os.fsync(self.file.fileno())

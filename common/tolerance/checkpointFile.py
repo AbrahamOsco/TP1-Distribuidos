@@ -11,6 +11,8 @@ class TolerantFile:
         file = open(PERSISTENT_VOLUME + self.identifier + "STG", "wb")
         file.write(data)
         file.write("UNCORRUPTED END".encode())
+        file.flush()
+        os.fsync(file.fileno())
         file.close()
 
     def _delete_dependant_files(self):
