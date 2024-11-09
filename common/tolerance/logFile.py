@@ -17,6 +17,7 @@ class LogFile:
             data = file.read()
             file.close()
             self.logs = self._parse_logs(data)
+            self._truncate_to_last_uncorrupted(FILE_PATH)
         except FileNotFoundError:
             self.logs = b""
 
@@ -81,6 +82,12 @@ class LogFile:
         if len(self.logs) == 0:
             return None
         return self.logs.pop(0)
+    
+    def reset(self):
+        self.file.close()
+        self.logs = []
+        self._remove_file()
+        self._init_file_write()
     
     def add_log(self, content: bytes):
         self.file.write(content + b"\nUNCORRUPTED\n")

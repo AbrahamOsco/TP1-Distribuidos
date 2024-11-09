@@ -2,7 +2,7 @@ import os
 
 PERSISTENT_VOLUME = "/persistent/"
 
-class TolerantFile:
+class CheckpointFile:
     def __init__(self, identifier: str="default", dependant_files: list=[]):
         self.identifier = identifier
         self.dependant_files = dependant_files

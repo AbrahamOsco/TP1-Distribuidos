@@ -2,9 +2,11 @@ import os
 import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
+from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.node.IDList import IDList
 from common.tolerance.logFile import LogFile
 from system.commonsSystem.node.structures.grouperStructure import GrouperStructure
+from common.tolerance.checkpointFile import CheckpointFile
 
 class GrouperNode(Node):
     def __init__(self, incoming_state, query, comparing_field):
@@ -15,6 +17,7 @@ class GrouperNode(Node):
         self.comparing_field = comparing_field
         self.id_list = IDList()
         self.logs = LogFile()
+        self.checkpoint = CheckpointFile()
         self.data = GrouperStructure(self.incoming_state)
         self.recover()
 
@@ -58,4 +61,11 @@ class GrouperNode(Node):
                 self.data.min_time[current_client] = self.data.list[current_client][-1].get(self.comparing_field)
 
     def recover(self):
-        pass
+        checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
+        self.data.from_bytes(checkpoint)
+        if must_reprocess:
+            for log in self.logs.logs:
+                data = DetectDTO(log).get_dto()
+                self.process_data(data)
+        else:
+            self.logs.reset()
