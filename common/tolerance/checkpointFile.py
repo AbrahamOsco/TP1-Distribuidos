@@ -1,38 +1,36 @@
 import os
+from common.tolerance.logFile import LogFile
+from common.tolerance.IDList import IDList
 
 PERSISTENT_VOLUME = "/persistent/"
 
 class CheckpointFile:
-    def __init__(self, identifier: str="default", dependant_files: list=[]):
+    def __init__(self, identifier: str="default", log_file: LogFile=None, id_lists: list[IDList]=[]):
         self.identifier = identifier
-        self.dependant_files = dependant_files
+        self.log_file = log_file
+        self.id_lists = id_lists
 
     def _save_stg_checkpoint(self, data: bytes):
         file = open(PERSISTENT_VOLUME + self.identifier + "STG", "wb")
+        self._serialize_id_lists(file)
         file.write(data)
         file.write("UNCORRUPTED END".encode())
         file.flush()
         os.fsync(file.fileno())
         file.close()
 
-    def _delete_dependant_files(self):
-        for file in self.dependant_files:
-            try:
-                os.remove(PERSISTENT_VOLUME + file)
-            except FileNotFoundError:
-                pass
+    def _serialize_id_lists(self, file):
+        for id_list in self.id_lists:
+            file.write(id_list.to_bytes())
 
-    def _delete_prd_checkpoint(self):
-        try:
-            os.remove(PERSISTENT_VOLUME + self.identifier + "PRD")
-        except FileNotFoundError:
-            pass
+    def _delete_dependant_files(self):
+        if self.log_file is not None:
+            self.log_file.reset()
 
     def _promote_stg_checkpoint(self):
-        os.rename(PERSISTENT_VOLUME + self.identifier + "STG", PERSISTENT_VOLUME + self.identifier + "PRD")
+        os.replace(PERSISTENT_VOLUME + self.identifier + "STG", PERSISTENT_VOLUME + self.identifier + "PRD")
 
     def _promote_staging_cleanup(self):
-        self._delete_prd_checkpoint()
         self._delete_dependant_files()
         self._promote_stg_checkpoint()
 
@@ -62,7 +60,10 @@ class CheckpointFile:
         file.close()
         if not self._verify_checkpoint_integrity(data):
             return None
-        return data.replace(b"UNCORRUPTED END", b"")
+        offset = 0
+        for id_list in self.id_lists:
+            offset = id_list.from_bytes(data, offset)
+        return data[offset:].replace(b"UNCORRUPTED END", b"")
 
     def load_checkpoint(self) -> tuple[bytes, bool]:
         state = None

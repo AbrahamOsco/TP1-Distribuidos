@@ -3,7 +3,7 @@ import logging
 from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
-from system.commonsSystem.node.IDList import IDList
+from common.tolerance.IDList import IDList
 from common.tolerance.logFile import LogFile
 from system.commonsSystem.node.structures.grouperStructure import GrouperStructure
 from common.tolerance.checkpointFile import CheckpointFile
@@ -17,13 +17,14 @@ class GrouperNode(Node):
         self.comparing_field = comparing_field
         self.id_list = IDList()
         self.logs = LogFile()
-        self.checkpoint = CheckpointFile()
+        self.checkpoint = CheckpointFile(dependant_files=self.logs, id_lists=[self.id_list])
         self.data = GrouperStructure(self.incoming_state)
         self.recover()
 
     def pre_eof_actions(self, client_id):
         if client_id not in self.data.list:
             return
+        self.checkpoint.save_checkpoint(self.data.to_bytes())
         games = GamesDTO(client_id=client_id, state_games=self.incoming_state, games_dto=self.data.list[client_id], query=self.query, global_counter=self.data.counters[client_id])
         games.set_state(STATE_IDNAME)
         self.send_result(games)
@@ -67,5 +68,5 @@ class GrouperNode(Node):
             for log in self.logs.logs:
                 data = DetectDTO(log).get_dto()
                 self.process_data(data)
-        else:
-            self.logs.reset()
+        self.logs.reset()
+        self.checkpoint.save_checkpoint(self.data.to_bytes())
