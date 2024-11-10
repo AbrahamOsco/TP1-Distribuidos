@@ -21,6 +21,8 @@ class IDList:
         return bytes(ids_bytes)
     
     def from_bytes(self, data: bytes, offset: int):
+        if len(data) < offset + 2:
+            return offset
         size = int.from_bytes(data[offset:offset+2], byteorder='big')
         offset += 2
         for _ in range(size):

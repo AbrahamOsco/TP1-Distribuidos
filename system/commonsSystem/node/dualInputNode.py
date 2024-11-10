@@ -3,7 +3,7 @@ from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
-from system.commonsSystem.node.IDList import IDList
+from common.tolerance.IDList import IDList
 from common.tolerance.logFile import LogFile
 import logging
 

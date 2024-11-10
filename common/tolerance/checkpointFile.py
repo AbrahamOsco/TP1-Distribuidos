@@ -1,11 +1,12 @@
 import os
 from common.tolerance.logFile import LogFile
 from common.tolerance.IDList import IDList
+import logging
 
 PERSISTENT_VOLUME = "/persistent/"
 
 class CheckpointFile:
-    def __init__(self, identifier: str="default", log_file: LogFile=None, id_lists: list[IDList]=[]):
+    def __init__(self, identifier: str, log_file: LogFile=None, id_lists: list[IDList]=[]):
         self.identifier = identifier
         self.log_file = log_file
         self.id_lists = id_lists
@@ -37,6 +38,7 @@ class CheckpointFile:
     def save_checkpoint(self, data: bytes):
         self._save_stg_checkpoint(data)
         self._promote_staging_cleanup()
+        logging.info("Checkpoint saved")
 
     def _verify_checkpoint_integrity(self, data: bytes) -> bool:
         return b"UNCORRUPTED END" in data
@@ -59,6 +61,7 @@ class CheckpointFile:
         data = file.read()
         file.close()
         if not self._verify_checkpoint_integrity(data):
+            logging.error("PRD checkpoint is corrupted")
             return None
         offset = 0
         for id_list in self.id_lists:
@@ -66,12 +69,12 @@ class CheckpointFile:
         return data[offset:].replace(b"UNCORRUPTED END", b"")
 
     def load_checkpoint(self) -> tuple[bytes, bool]:
-        state = None
+        state = b""
         prd_checkpoint_exists = os.path.exists(PERSISTENT_VOLUME + self.identifier + "PRD")
         stg_checkpoint_exists = os.path.exists(PERSISTENT_VOLUME + self.identifier + "STG")
         if not prd_checkpoint_exists and not stg_checkpoint_exists:
             return state, True
-        if stg_checkpoint_exists: 
+        if stg_checkpoint_exists:
             if self._verify_file_checkpoint_integrity("STG"):
                 self._promote_staging_cleanup()
                 state = self._load_prd_checkpoint()
@@ -83,4 +86,4 @@ class CheckpointFile:
         if not stg_checkpoint_exists:
             state = self._load_prd_checkpoint()
             return state, True
-        return None, True
+        return state, True

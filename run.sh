@@ -1,3 +1,4 @@
+rm -r ./persistent
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker build -f ./base_images/Dockerfile -t "common:latest" .

@@ -15,9 +15,10 @@ class GrouperNode(Node):
         self.incoming_state = incoming_state
         self.query = query
         self.comparing_field = comparing_field
+        prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
         self.id_list = IDList()
-        self.logs = LogFile()
-        self.checkpoint = CheckpointFile(dependant_files=self.logs, id_lists=[self.id_list])
+        self.logs = LogFile(prefix)
+        self.checkpoint = CheckpointFile(prefix, log_file=self.logs, id_lists=[self.id_list])
         self.data = GrouperStructure(self.incoming_state)
         self.recover()
 
@@ -50,7 +51,7 @@ class GrouperNode(Node):
         for game in data.games_dto:
             if self.has_to_be_inserted(game, current_client):
                 inserted = False
-                for i in range(len(self.list[current_client])):
+                for i in range(len(self.data.list[current_client])):
                     if game.get(self.comparing_field) > self.data.list[current_client][i].get(self.comparing_field):
                         self.data.list[current_client].insert(i, game)
                         inserted = True
@@ -60,6 +61,8 @@ class GrouperNode(Node):
                 if len(self.data.list[current_client]) > self.top_size:
                     self.data.list[current_client].pop()
                 self.data.min_time[current_client] = self.data.list[current_client][-1].get(self.comparing_field)
+        if self.logs.is_full():
+            self.checkpoint.save_checkpoint(self.data.to_bytes())
 
     def recover(self):
         checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
@@ -68,5 +71,5 @@ class GrouperNode(Node):
             for log in self.logs.logs:
                 data = DetectDTO(log).get_dto()
                 self.process_data(data)
-        self.logs.reset()
+        self.data.print_state()
         self.checkpoint.save_checkpoint(self.data.to_bytes())

@@ -24,6 +24,7 @@ class Node:
         self.amount_of_nodes = int(os.getenv("AMOUNT_OF_NODES", 1))
         self.clients_pending_confirmations = {}
         self.running = True
+        self.eof_controller = None
         self.confirmations_lock = threading.Lock()
         self.confirmations = {}
         self.eof = EOFManagement(routing)
