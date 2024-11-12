@@ -6,6 +6,7 @@ from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefa
 from common.tolerance.IDList import IDList
 from common.tolerance.logFile import LogFile
 import logging
+import os
 
 STATUS_STARTED = 0
 STATUS_REVIEWING = 1
@@ -14,9 +15,10 @@ class DualInputNode(Node):
     def __init__(self):
         super().__init__(RoutingDefault())
         self.reset_list()
+        prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
+        self.logs = LogFile(prefix)
         self.review_id_list = IDList()
         self.games_id_list = IDList()
-        self.logs = LogFile()
 
     def reset_list(self, client_id=None):
         if client_id is None:
