@@ -17,7 +17,8 @@ class ServerProtocol(Protocol):
 
     def recv_auth(self):
         operation_type = self.recv_number_n_bytes_timeout(1)
-        return None
+        id_client = self.recv_number_n_bytes(1)
+        return id_client
 
     def recv_data_raw(self, client_id):
         operation_type = self.recv_number_n_bytes(1)
@@ -40,9 +41,10 @@ class ServerProtocol(Protocol):
             list_items_raw.append(element)
         return RawDTO(client_id =client_id, type=operation_type, raw_data =list_items_raw, batch_id=batch_id)
 
-    def send_auth_result(self, client_id):
+    def send_auth_result(self, client_id, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
         self.send_number_n_bytes(1, client_id)
+        self.send_number_n_bytes(2, batch_id)
 
     def send_result(self, result):
         if result is None:
