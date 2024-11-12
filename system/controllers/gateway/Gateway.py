@@ -142,8 +142,19 @@ class Gateway(Node):
                 self.shared_namespace.protocols.get(data.get_client()).send_result(None)
             del self.result_eofs_by_client[client_id]
             self.set_client_availability(client_id, True)
+            self.remove_client_from_log(client_id)
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
         self.broker.basic_ack(delivery_tag)
+
+    def remove_client_from_log(self, client_id):
+        if os.path.exists(CLIENTS_LOG_PATH):
+            with self.manager_lock:
+                with open(CLIENTS_LOG_PATH, "r") as file:
+                    lines = file.readlines()
+                with open(CLIENTS_LOG_PATH, "w") as file:
+                    for line in lines:
+                        if not re.match(rf"Client ID: {client_id}, Batch ID: \d+", line):
+                            file.write(line)
 
 
     def stop(self):
