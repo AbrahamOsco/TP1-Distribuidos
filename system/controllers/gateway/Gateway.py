@@ -40,9 +40,6 @@ class Gateway(Node):
                         client_id = int(match.group(1))
                         if 1 <= client_id <= MAX_CLIENTS:
                             self.clients_allow[client_id - 1] = False
-                            logging.info(f"Client {client_id} marked as unavailable based on log file.")
-        else:
-            logging.warning(f"All clients are marked as available by default.")
 
 
     def accept_a_connection(self):
