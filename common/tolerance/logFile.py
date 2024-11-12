@@ -15,7 +15,10 @@ class LogFile:
         return self.log_count >= 100
 
     def _init_file_write(self):
-        self.file = open(self.file_name, "ab")
+        if os.path.exists(self.file_name):
+            self.file = open(self.file_name, "ab")
+        else:
+            self.file = open(self.file_name, "wb")
 
     def _load_file(self):
         try:

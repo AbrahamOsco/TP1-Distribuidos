@@ -1,3 +1,4 @@
+
 services:
   rabbitmq:
     container_name: rabbitmq
@@ -22,35 +23,10 @@ services:
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
       - ./data/responses:/data/responses
+      - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1,0.2
-      - NODE_ID=1
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-      - HOSTNAME=gateway
-      - SEND_REVIEWS=1
-    networks:
-      - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      gateway:
-        condition: service_started
-
-  client2:
-    container_name: client2
-    image: client:latest
-    entrypoint: python3 /app/client/main.py
-    volumes:
-      - ./data/games.csv:/data/games.csv
-      - ./data/dataset.csv:/data/dataset.csv
-      - ./data/responses:/data/responses
-    environment:
-      - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2,0.1
-      - NODE_ID=2
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
@@ -71,6 +47,8 @@ services:
     networks:
         - system_network
     restart: on-failure
+    volumes:
+      - ./persistent:/persistent
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
@@ -170,6 +148,8 @@ services:
     entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -271,6 +251,8 @@ services:
     entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -344,6 +326,8 @@ services:
     entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -368,6 +352,8 @@ services:
     entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -445,6 +431,8 @@ services:
     entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -493,6 +481,8 @@ services:
     entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
@@ -516,6 +506,8 @@ services:
     entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
     networks:
         - system_network
+    volumes:
+      - ./persistent:/persistent
     restart: on-failure
     depends_on:
         rabbitmq:
