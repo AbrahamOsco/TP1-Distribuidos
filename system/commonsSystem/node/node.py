@@ -4,6 +4,7 @@ import signal
 import sys
 import threading
 import time
+from system.commonsSystem.node.healthcheck import HealthcheckServer, start_healthcheck_server, shutdown_server
 from system.commonsSystem.broker.Broker import Broker
 from system.commonsSystem.DTO.EOFDTO import EOFDTO, STATE_COMMIT
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
@@ -30,6 +31,12 @@ class Node:
         self.eof = EOFManagement(routing)
         self.broker = Broker()
         self.initialize_queues()
+        self.initialize_healthcheck()
+
+    def initialize_healthcheck(self):
+        self.healthcheck_server = HealthcheckServer()
+        self.healthcheck_thread = threading.Thread(target=start_healthcheck_server, args=(self.healthcheck_server,))
+        self.healthcheck_thread.start()
 
     def initialize_queues(self):
         ## Source and destination for all workers
@@ -197,6 +204,8 @@ class Node:
         self.broker.close()
         if self.eof_controller is not None:
             self.eof_controller.join()
+        shutdown_server(self.healthcheck_server)
+        self.healthcheck_thread.join()
         sys.exit(0)
     
     def pre_eof_actions(self, client_id):
