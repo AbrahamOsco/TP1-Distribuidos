@@ -33,13 +33,14 @@ class Gateway(Node):
         self.clients_allow = Array('b', [True] * MAX_CLIENTS)
 
         if os.path.exists(CLIENTS_LOG_PATH):
-            with open(CLIENTS_LOG_PATH, "r") as file:
-                for line in file:
-                    match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
-                    if match:
-                        client_id = int(match.group(1))
-                        if 1 <= client_id <= MAX_CLIENTS:
-                            self.clients_allow[client_id - 1] = False
+            with self.manager_lock:
+                with open(CLIENTS_LOG_PATH, "r") as file:
+                    for line in file:
+                        match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
+                        if match:
+                            client_id = int(match.group(1))
+                            if 1 <= client_id <= MAX_CLIENTS:
+                                self.clients_allow[client_id - 1] = False
 
 
     def accept_a_connection(self):
@@ -71,6 +72,7 @@ class Gateway(Node):
                 if socket_peer is None:
                     break
                 client_handler = ClientHandler(socket_peer)
+                client_handler.set_manager_lock(self.manager_lock)
                 client_id = client_handler.recv_auth()
                 if client_id == CLIENT_NOT_FOUND:
                     logging.info("action: auth without client_id")
@@ -89,16 +91,17 @@ class Gateway(Node):
 
 
     def get_batch_id(self, client_handler: ClientHandler, client_id: int):
-        if os.path.exists(CLIENTS_LOG_PATH):
-            with open(CLIENTS_LOG_PATH, "r") as file:
-                for line in file:
-                    match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
-                    if match is not None and int(match.group(1)) == client_id:
-                        logging.info(f"action: retrieve_batch_id_from_log | client_id: {client_id} | result: batch_id found ✅")
-                        client_handler.set_batch_id(int(match.group(2)))
-                        return
-        logging.warning(f"action: retrieve_batch_id_from_log | client_id: {client_id} | result: batch_id not found")
-        client_handler.set_batch_id(1)
+         with self.manager_lock:
+            if os.path.exists(CLIENTS_LOG_PATH):
+                with open(CLIENTS_LOG_PATH, "r") as file:
+                    for line in file:
+                        match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
+                        if match is not None and int(match.group(1)) == client_id:
+                            logging.info(f"action: retrieve_batch_id_from_log | client_id: {client_id} | result: batch_id found ✅")
+                            client_handler.set_batch_id(int(match.group(2)))
+                            return
+            logging.warning(f"action: retrieve_batch_id_from_log | client_id: {client_id} | result: batch_id not found")
+            client_handler.set_batch_id(1)
 
 
     def get_client_id(self, client_handler: ClientHandler):
@@ -112,10 +115,10 @@ class Gateway(Node):
             self.set_client_availability(client_id, False)
             client_handler.set_client_id(client_id)
             batch_id = 1
-            
-            with open(CLIENTS_LOG_PATH, "a") as file:
-                file.write(f"Client ID: {client_id}, Batch ID: {batch_id}\n")
-            logging.info(f"action: save_new_id | client_id: {client_id} | batch_id: {batch_id}")
+            with self.manager_lock:
+                with open(CLIENTS_LOG_PATH, "a") as file:
+                    file.write(f"Client ID: {client_id}, Batch ID: {batch_id}\n")
+                logging.info(f"action: save_new_id | client_id: {client_id} | batch_id: {batch_id}")
             
             return client_id
         else:

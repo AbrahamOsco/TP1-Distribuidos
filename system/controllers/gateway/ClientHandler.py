@@ -24,6 +24,9 @@ class ClientHandler:
     def set_batch_id(self, batch_id):
         self.batch_id = batch_id
 
+    def set_manager_lock(self, manager_lock):
+        self.manager_lock = manager_lock
+
     def stop_client(self):
         self.socket_peer.close()
         self.broker.close()
@@ -35,28 +38,29 @@ class ClientHandler:
         self.protocol.send_auth_result(self.client_id, self.batch_id)
 
     def update_client_batch_log(self):
-        if os.path.exists(CLIENTS_LOG_PATH):
-            with open(CLIENTS_LOG_PATH, "r") as file:
-                lines = file.readlines()
+        with self.manager_lock:
+            if os.path.exists(CLIENTS_LOG_PATH):
+                with open(CLIENTS_LOG_PATH, "r") as file:
+                    lines = file.readlines()
 
-            updated_lines = []
-            for line in lines:
-                if f"Client ID: {self.client_id}," in line:
-                    match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
-                    if match and int(match.group(1)) == self.client_id:
-                        current_batch_id = int(match.group(2))
-                        new_batch_id = current_batch_id + 1
-                        updated_line = f"Client ID: {self.client_id}, Batch ID: {new_batch_id}\n"
-                        updated_lines.append(updated_line)
+                updated_lines = []
+                for line in lines:
+                    if f"Client ID: {self.client_id}," in line:
+                        match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
+                        if match and int(match.group(1)) == self.client_id:
+                            current_batch_id = int(match.group(2))
+                            new_batch_id = current_batch_id + 1
+                            updated_line = f"Client ID: {self.client_id}, Batch ID: {new_batch_id}\n"
+                            updated_lines.append(updated_line)
+                        else:
+                            updated_lines.append(line)
                     else:
                         updated_lines.append(line)
-                else:
-                    updated_lines.append(line)
 
-            with open(CLIENTS_LOG_PATH, "w") as file:
-                file.writelines(updated_lines)
-        else:
-            logging.warning(f"action: batch update failed | reason: {CLIENTS_LOG_PATH} not found")
+                with open(CLIENTS_LOG_PATH, "w") as file:
+                    file.writelines(updated_lines)
+            else:
+                logging.warning(f"action: batch update failed | reason: {CLIENTS_LOG_PATH} not found")
 
 
     def start(self):
