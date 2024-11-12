@@ -1,4 +1,4 @@
-docker stop $(docker ps -aq)
+docker kill $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker build -f ./system/leader/Dockerfile -t "leader:latest" .
 

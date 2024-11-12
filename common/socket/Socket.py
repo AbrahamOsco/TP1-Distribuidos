@@ -17,6 +17,18 @@ class Socket:
             self.socket.bind(("", port))
             self.socket.listen(MAX_LISTEN_BACKLOG)
     
+    def accept_simple(self):
+        if (self.ip != ""):
+            msg = "action: accept | result: fail | error: Socket is not a server socket"
+            logging.error(msg)
+            raise RuntimeError(msg)
+        try:
+            skt_peer, addr = self.socket.accept()
+            return Socket(socket_peer=skt_peer, port =self.port), addr
+        except OSError as e:
+            return None, e
+
+
     def accept(self):
         if (self.ip != ""):
             msg = "action: accept | result: fail | error: Socket is not a server socket"
