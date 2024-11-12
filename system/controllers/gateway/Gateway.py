@@ -30,12 +30,20 @@ class Gateway(Node):
         super().__init__()
 
     def load_clients_allow(self):
+        self.clients_allow = Array('b', [True] * MAX_CLIENTS)
+
         if os.path.exists(CLIENTS_LOG_PATH):
             with open(CLIENTS_LOG_PATH, "r") as file:
-                clients_allow = file.read().strip()
-                self.clients_allow = Array('b', [bool(int(x)) for x in clients_allow])
+                for line in file:
+                    match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
+                    if match:
+                        client_id = int(match.group(1))
+                        if 1 <= client_id <= MAX_CLIENTS:
+                            self.clients_allow[client_id - 1] = False
+                            logging.info(f"Client {client_id} marked as unavailable based on log file.")
         else:
-            self.clients_allow = Array('b', [True] * MAX_CLIENTS)
+            logging.warning(f"All clients are marked as available by default.")
+
 
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -69,11 +77,12 @@ class Gateway(Node):
                 client_id = client_handler.recv_auth()
                 if client_id == CLIENT_NOT_FOUND:
                     logging.info("action: auth without client_id")
-                    self.get_client_id(client_handler)
+                    client_id = self.get_client_id(client_handler)
                     client_handler.set_batch_id(1)
                 else:
                     client_handler.set_client_id(client_id)
                     self.get_batch_id(client_handler,client_id)
+
                 with self.manager_lock:
                     protocols = self.shared_namespace.protocols
                     protocols[client_id] = client_handler.protocol
