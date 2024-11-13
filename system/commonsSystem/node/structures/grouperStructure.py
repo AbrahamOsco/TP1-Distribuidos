@@ -1,6 +1,7 @@
 from system.commonsSystem.DTO.GamesDTO import STATE_PLAYTIME, STATE_REVIEWED
 from system.commonsSystem.DTO.PlaytimeDTO import PlaytimeDTO
 from system.commonsSystem.DTO.GameReviewedDTO import GameReviewedDTO
+from system.commonsSystem.node.structures.structure import Structure
 import logging
 
 IncomingToClass = {
@@ -8,7 +9,7 @@ IncomingToClass = {
     STATE_REVIEWED: GameReviewedDTO
 }
 
-class GrouperStructure:
+class GrouperStructure(Structure):
     def __init__(self, incoming_state):
         self.incoming_state = incoming_state
         self.list = {}

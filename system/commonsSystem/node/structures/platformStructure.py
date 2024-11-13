@@ -1,6 +1,7 @@
 import logging
+from system.commonsSystem.node.structures.structure import Structure
 
-class PlatformStructure:
+class PlatformStructure(Structure):
     def __init__(self):
         self.result = {}
 

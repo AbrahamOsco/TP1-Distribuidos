@@ -1,8 +1,9 @@
 from system.commonsSystem.DTO.ReviewsDTO import STATE_IDNAME
+from system.commonsSystem.node.structures.structure import Structure
 import logging
 import math
 
-class StorageQ4Structure:
+class StorageQ4Structure(Structure):
     def __init__(self, counter_size):
         self.incoming_state = STATE_IDNAME
         self.list = {}

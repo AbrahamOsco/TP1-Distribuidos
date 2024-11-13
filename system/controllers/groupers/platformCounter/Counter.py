@@ -1,23 +1,16 @@
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_PLATFORM
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
-from system.commonsSystem.node.node import Node
+from system.commonsSystem.node.statefullNode import StatefullNode
 from common.tolerance.IDList import IDList
-from common.tolerance.logFile import LogFile
-from common.tolerance.checkpointFile import CheckpointFile
 from system.commonsSystem.node.structures.platformStructure import PlatformStructure
-import os
 import logging
 
-class Counter(Node):
+class Counter(StatefullNode):
     def __init__(self):
-        super().__init__()
-        prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
         self.id_list = IDList()
-        self.logs = LogFile(prefix)
-        self.checkpoint = CheckpointFile(prefix, log_file=self.logs, id_lists=[self.id_list])
         self.data = PlatformStructure()
-        self.recover()
+        super().__init__(self.data, [self.id_list])
 
     def pre_eof_actions(self, client_id):
         if client_id not in self.result:
@@ -47,13 +40,3 @@ class Counter(Node):
         self.data.result[client_id]["counter"] = data.global_counter
         if self.logs.is_full():
             self.checkpoint.save_checkpoint(self.data.to_bytes())
-
-    def recover(self):
-        checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
-        self.data.from_bytes(checkpoint)
-        if must_reprocess:
-            for log in self.logs.logs:
-                data = DetectDTO(log).get_dto()
-                self.process_data(data)
-        self.data.print_state()
-        self.checkpoint.save_checkpoint(self.data.to_bytes())

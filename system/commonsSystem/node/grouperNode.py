@@ -1,26 +1,19 @@
 import os
 import logging
-from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.GamesDTO import GamesDTO, STATE_IDNAME
-from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from common.tolerance.IDList import IDList
-from common.tolerance.logFile import LogFile
 from system.commonsSystem.node.structures.grouperStructure import GrouperStructure
-from common.tolerance.checkpointFile import CheckpointFile
+from system.commonsSystem.node.statefullNode import StatefullNode
 
-class GrouperNode(Node):
+class GrouperNode(StatefullNode):
     def __init__(self, incoming_state, query, comparing_field):
-        super().__init__()
         self.top_size = int(os.getenv("TOP_SIZE"))
         self.incoming_state = incoming_state
         self.query = query
         self.comparing_field = comparing_field
-        prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
         self.id_list = IDList()
-        self.logs = LogFile(prefix)
-        self.checkpoint = CheckpointFile(prefix, log_file=self.logs, id_lists=[self.id_list])
         self.data = GrouperStructure(self.incoming_state)
-        self.recover()
+        super().__init__(self.data, [self.id_list])
 
     def pre_eof_actions(self, client_id):
         if client_id not in self.data.list:
@@ -63,13 +56,3 @@ class GrouperNode(Node):
                 self.data.min_time[current_client] = self.data.list[current_client][-1].get(self.comparing_field)
         if self.logs.is_full():
             self.checkpoint.save_checkpoint(self.data.to_bytes())
-
-    def recover(self):
-        checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
-        self.data.from_bytes(checkpoint)
-        if must_reprocess:
-            for log in self.logs.logs:
-                data = DetectDTO(log).get_dto()
-                self.process_data(data)
-        self.data.print_state()
-        self.checkpoint.save_checkpoint(self.data.to_bytes())

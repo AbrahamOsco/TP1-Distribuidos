@@ -1,12 +1,13 @@
 from system.commonsSystem.DTO.ReviewsDTO import STATE_TEXT, ReviewsDTO
 from system.commonsSystem.DTO.DTO import DTO
+from system.commonsSystem.node.structures.structure import Structure
 import logging
 import math
 
 STATUS_STARTED = 0
 STATUS_REVIEWING = 1
 
-class DualInputStructure:
+class DualInputStructure(Structure):
     def __init__(self, counter_size):
         self.incoming_state = STATE_TEXT
         self.list = {}

@@ -1,26 +1,17 @@
-from system.commonsSystem.node.node import Node
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
-from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 from common.tolerance.IDList import IDList
-from common.tolerance.logFile import LogFile
-from common.tolerance.checkpointFile import CheckpointFile
 from system.commonsSystem.node.structures.dualInputStructure import DualInputStructure, STATUS_STARTED, STATUS_REVIEWING
-from system.commonsSystem.DTO.DetectDTO import DetectDTO
+from system.commonsSystem.node.statefullNode import StatefullNode
 import logging
-import os
 
-class DualInputNode(Node):
+class DualInputNode(StatefullNode):
     def __init__(self, counter_size):
-        super().__init__(RoutingDefault())
-        prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
-        self.logs = LogFile(prefix)
         self.review_id_list = IDList()
         self.games_id_list = IDList()
-        self.checkpoint = CheckpointFile(prefix, log_file=self.logs, id_lists=[self.games_id_list, self.review_id_list])
         self.data = DualInputStructure(counter_size)
-        self.recover()
+        super().__init__(self.data, [self.review_id_list, self.games_id_list])
 
     def inform_eof_to_nodes(self, data, delivery_tag: str):
         client_id = data.get_client()
@@ -98,13 +89,3 @@ class DualInputNode(Node):
             self.process_games(data)
         if self.logs.is_full():
             self.checkpoint.save_checkpoint(self.data.to_bytes())
-
-    def recover(self):
-        checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
-        self.data.from_bytes(checkpoint)
-        if must_reprocess:
-            for log in self.logs.logs:
-                data = DetectDTO(log).get_dto()
-                self.process_data(data)
-        self.data.print_state()
-        self.checkpoint.save_checkpoint(self.data.to_bytes())
