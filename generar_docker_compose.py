@@ -148,7 +148,7 @@ depends = {
     "filterreviewenglish": ["monitorstorageq4"],
 }
 
-def special_envs(service_name):
+def special_envs(service_name, id):
     if service_name == "filtergender":
         return """
         - GENDERS=Indie,Action"""
@@ -177,12 +177,21 @@ def special_envs(service_name):
         return """
         - SELECT=6"""
     if service_name == "selectq1":
-        return """
-        - SELECT=2"""
+        return f"""
+        - SELECT=2
+        - SEND_MODULO={node_amounts.get("platformcounter", 1)}"""
     if service_name == "selectq2345":
         return """
         - SELECT=3"""
+    if service_name == "platformcounter":
+        return f"""
+        - SOURCE_NAME=platformcounter{id}"""
     return ""
+
+def get_source_key(service_name, i):
+    if service_name == "platformcounter":
+        return f"{i}"
+    return source_keys.get(service_name, "default")
 
 def get_depends_and_envs(queries, service_name:str, i:int=0):
     base = f"""
@@ -210,11 +219,11 @@ def get_depends_and_envs(queries, service_name:str, i:int=0):
         - NODE_ID={i}
         - AMOUNT_OF_NODES={node_amounts.get(service_name, 1)}
         - SOURCE={sources[service_name]}
-        - SOURCE_KEY={source_keys.get(service_name, "default")}
+        - SOURCE_KEY={get_source_key(service_name, i)}
         - SOURCE_TYPE={source_types.get(service_name, "direct")}
         - SINK={sinks[service_name]}
         - SINK_TYPE={sink_types.get(service_name, "direct")}"""
-    base += special_envs(service_name)
+    base += special_envs(service_name, i)
     return base
 
 def generar_servicio_escalable(queries, service_name):

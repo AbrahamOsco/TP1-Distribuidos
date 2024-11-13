@@ -18,6 +18,7 @@ class Node:
         self.node_name = os.getenv("NODE_NAME")
         self.node_id = os.getenv("NODE_ID")
         self.source = os.getenv("SOURCE").split(',')
+        self.source_name = os.getenv("SOURCE_NAME", self.node_name)
         self.source_key = os.getenv("SOURCE_KEY", "default").split(',')
         self.source_type = os.getenv("SOURCE_TYPE", "direct").split(',')
         self.sink = os.getenv("SINK")
@@ -43,9 +44,9 @@ class Node:
         for i, source in enumerate(self.source):
             if i >= len(self.source_key) or i >= len(self.source_type):
                 raise ValueError("Mismatched list sizes: source, source_key, and source_type must have the same length")
-            self.broker.create_source(name=self.node_name, callback=self.process_queue_message)
+            self.broker.create_source(name=self.source_name, callback=self.process_queue_message)
             self.broker.create_sink(type=self.source_type[i], name=source)
-            self.broker.bind_queue(queue_name=self.node_name, sink=source, routing_key=self.source_key[i])
+            self.broker.bind_queue(queue_name=self.source_name, sink=source, routing_key=self.source_key[i])
         self.broker.create_sink(type=self.sink_type, name=self.sink)
         if self.amount_of_nodes < 2:
             return
@@ -135,7 +136,7 @@ class Node:
 
     def no_older_message(self, data: EOFDTO):
         eof_global_counter = data.global_counter
-        message = self.broker.peek(self.node_name)
+        message = self.broker.peek(self.source_name)
         if message is None:
             return True
         last_message = DetectDTO(message).get_dto()
