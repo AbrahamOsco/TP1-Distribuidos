@@ -1,6 +1,8 @@
 import socket
+import socket
 import logging
-
+import threading
+import time
 MAX_LISTEN_BACKLOG = 30
 
 class Socket:
@@ -17,13 +19,6 @@ class Socket:
             self.socket.bind(("", port))
             self.socket.listen(MAX_LISTEN_BACKLOG)
     
-    def get_addr(self):
-        return self.socket.getsockname()
-    
-    def get_addr_from_connect(self):
-        return self.socket.getpeername()
-
-
     def accept_simple(self):
         if (self.ip != ""):
             msg = "action: accept | result: fail | error: Socket is not a server socket"
@@ -111,3 +106,32 @@ class Socket:
     def get_peer_name(self):
         return self.socket.getpeername()
         
+def aceptarClientes():
+    listaPeer = []
+    sktAceptador = Socket(port=10108)
+    while True:
+        sktPeer, addr = sktAceptador.accept_simple()
+        print(f"Skt Aceptador  getPeerName: {sktAceptador.socket} addrclient {addr} and port: {sktAceptador.port}")
+        print(f"Skt Peer 🔥 My addr: {sktPeer.socket.getsockname()} addr Connect to: {sktPeer.socket.getpeername()}  and port: {sktPeer.port}")
+        listaPeer.append(sktPeer)
+
+def client_connect(a_ip):
+    sktClient= Socket(ip=a_ip, port=10108)
+    result, mssg = sktClient.connect()
+    if result:
+        print(f"Skt Client ⚡ My addr: {sktClient.socket.getsockname()} addr Connect to: {sktClient.socket.getpeername()}  and port: {sktClient.port}")
+    else: 
+        print(f"msg: {mssg}")
+
+def server():
+    threading.Thread(target=aceptarClientes).start()
+    time.sleep(2)
+    threading.Thread(target=client_connect, args=("127.0.0.1",)).start()
+    threading.Thread(target=client_connect, args=("127.0.0.1",)).start()
+
+
+def main():
+    server()
+
+
+main()
