@@ -2,7 +2,7 @@ services:
   node0:
     image: "leader:latest"
     container_name: node0
-    entrypoint: python3 /app/leader/main.py
+    entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=100
       - RING_SIZE=3
@@ -17,7 +17,7 @@ services:
   node1:
     image: "leader:latest"
     container_name: node1
-    entrypoint: python3 /app/leader/main.py
+    entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=101
       - LOGGING_LEVEL=INFO
@@ -32,7 +32,7 @@ services:
   node2:
     image: "leader:latest"
     container_name: node2
-    entrypoint: python3 /app/leader/main.py
+    entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=102
       - LOGGING_LEVEL=INFO
