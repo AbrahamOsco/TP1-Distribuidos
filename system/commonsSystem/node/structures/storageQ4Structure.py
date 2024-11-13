@@ -1,18 +1,11 @@
-from system.commonsSystem.DTO.ReviewsDTO import STATE_TEXT, ReviewsDTO
-from system.commonsSystem.DTO.DTO import DTO
+from system.commonsSystem.DTO.ReviewsDTO import STATE_IDNAME
 import logging
 import math
 
-STATUS_STARTED = 0
-STATUS_REVIEWING = 1
-
-class DualInputStructure:
+class StorageQ4Structure:
     def __init__(self, counter_size):
-        self.incoming_state = STATE_TEXT
+        self.incoming_state = STATE_IDNAME
         self.list = {}
-        self.games = {}
-        self.status = {}
-        self.premature_messages = {}
         self.counter = {}
         self.counter_size = counter_size
         self.max_counter_size = 2 ** ((8 * counter_size) - 1) - 1
@@ -21,33 +14,17 @@ class DualInputStructure:
         if client_id not in self.list:
             return
         del self.list[client_id]
-        del self.games[client_id]
-        del self.status[client_id]
         del self.counter[client_id]
-        del self.premature_messages[client_id]
-
-    def init(self, client_id):
-        if client_id not in self.list:
-            self.list[client_id] = {}
-            self.games[client_id] = {}
-            self.status[client_id] = STATUS_STARTED
-            self.counter[client_id] = []
-            self.premature_messages[client_id] = []
 
     def to_bytes(self):
         structure_bytes = bytearray()
         structure_bytes.extend(len(self.list).to_bytes(1, byteorder='big'))
         for key, value in self.list.items():
             structure_bytes.extend(key.to_bytes(1, byteorder='big'))
-            structure_bytes.extend(self.status[key].to_bytes(1, byteorder='big'))
             structure_bytes.extend(len(value).to_bytes(4, byteorder='big'))
             for id, amount in value.items():
                 structure_bytes.extend(id.to_bytes(4, byteorder='big'))
                 structure_bytes.extend(amount.to_bytes(4, byteorder='big'))
-                structure_bytes.extend(DTO.serialize_str(self.games[key][id]))
-            structure_bytes.extend(len(self.premature_messages[key]).to_bytes(2, byteorder='big'))
-            for message in self.premature_messages[key]:
-                structure_bytes.extend(message.serialize())
             if (self.counter_size == 0):
                 continue
             structure_bytes.extend(len(self.counter[key]).to_bytes(self.counter_size, byteorder='big'))
@@ -69,31 +46,18 @@ class DualInputStructure:
         for i in range(list_size):
             client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
-            self.status[client_id] = int.from_bytes(data[offset:offset+1], byteorder='big')
-            offset += 1
             game_size = int.from_bytes(data[offset:offset+4], byteorder='big')
             offset += 1
             self.list[client_id] = {}
-            self.games[client_id] = {}
             for j in range(game_size):
                 app_id = int.from_bytes(data[offset:offset+4], byteorder='big')
                 offset += 4
                 amount = int.from_bytes(data[offset:offset+4], byteorder='big')
                 offset += 4
-                game, offset = DTO.deserialize_str(data, offset)
                 self.list[client_id][app_id] = amount
-                self.games[client_id][app_id] = game
-            premature_size = int.from_bytes(data[offset:offset+2], byteorder='big')
-            offset += 2
-            self.premature_messages[client_id] = []
-            for j in range(premature_size):
-                message, offset = ReviewsDTO.deserialize(data, offset)
-                self.premature_messages[client_id].append(message)
-            self.counter[client_id] = []
-            if (self.counter_size == 0):
-                continue
             counter_size = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
+            self.counter[client_id] = []
             for j in range(counter_size):
                 counter = int.from_bytes(data[offset:offset+6], byteorder='big')
                 offset += 6
@@ -102,8 +66,5 @@ class DualInputStructure:
     
     def print_state(self):
         logging.info(f"List: {self.list}")
-        logging.info(f"Games: {self.games}")
-        logging.info(f"Status: {self.status}")
         logging.info(f"Counter: {self.counter}")
-        logging.info(f"Premature messages: {self.premature_messages}")
         
