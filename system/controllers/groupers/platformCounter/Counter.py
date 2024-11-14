@@ -13,7 +13,7 @@ class Counter(StatefullNode):
         super().__init__(self.data, [self.id_list])
 
     def pre_eof_actions(self, client_id):
-        if client_id not in self.result:
+        if client_id not in self.data.result:
             return
         self.checkpoint.save_checkpoint(self.data.to_bytes())
         data = self.data.result[client_id]

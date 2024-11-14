@@ -226,6 +226,13 @@ def get_depends_and_envs(queries, service_name:str, i:int=0):
     base += special_envs(service_name, i)
     return base
 
+def add_persistence_to_pc(service_name):
+    if service_name != "platformcounter":
+        return ""
+    return f"""
+    volumes:
+      - ./persistent:/persistent"""
+
 def generar_servicio_escalable(queries, service_name):
     if not service_should_be_included[service_name](queries):
         return ""
@@ -239,7 +246,7 @@ def generar_servicio_escalable(queries, service_name):
     image: {images.get(service_name, service_name)}:latest
     entrypoint: python3 {entrypoints[service_name]}
     networks:
-        - system_network
+        - system_network{add_persistence_to_pc(service_name)}
     restart: on-failure{get_depends_and_envs(queries, service_name, i)}"""
     return base
         
