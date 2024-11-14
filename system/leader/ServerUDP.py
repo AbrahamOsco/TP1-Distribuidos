@@ -30,4 +30,3 @@ class ServerUDP:
                 break
     def     stop(self):
         self.skt_udp.close()
-        logging.info(f"[{self.node_id}] action: Closed the socket UDP ⏩🆓🎊 | result: succes ✅")

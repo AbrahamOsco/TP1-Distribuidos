@@ -67,7 +67,6 @@ class Socket:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
             self.was_closed = self.socket._closed
-            logging.info(f"action: Closed the socket {self.was_closed} 🆓🎊 | result: succes ✅")
     
     def is_closed(self) -> bool:
         return self.was_closed

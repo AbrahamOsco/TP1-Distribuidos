@@ -41,7 +41,6 @@ class LeaderElection:
         while True:
             skt_peer, addr = self.skt_accept.accept_simple()
             if not skt_peer:
-                logging.info(f"action: accept socket was closed! ✅ ")
                 break
             else:
                 thr_client = threading.Thread(target =self.thread_client, args=(skt_peer, ))
@@ -64,7 +63,7 @@ class LeaderElection:
                 result_leader = self.leader_id.condition.wait_for(
                     lambda: not self.leader_id.is_this_value(None), TIME_OUT_TO_FIND_LEADER)
                 if result_leader:
-                    logging.info(f"[{self.id}] Leader found!: {self.leader_id.value}")
+                    break
                 elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER:
                     logging.info(f"[{self.id}] Timeout to find a leader!")
                 break
@@ -76,9 +75,9 @@ class LeaderElection:
         with self.send_connect_control:
             self.protocol_connect.send_string(message)
             if (next_id != -1):
-                logging.info(f"[{self.id}] Connect Send: {message} to: {next_id} ⌚")
+                logging.info(f"[{self.id}-Connect] Send: {message} to: {next_id}")
             else:
-                logging.info(f"[{self.id}] Connect Send: {message}")
+                logging.info(f"[{self.id}-Connect] Send: {message}")
 
     def election_message_handler(self, ids_recv: list[int]):
         if self.id in ids_recv:
@@ -107,20 +106,16 @@ class LeaderElection:
         self.send_message_proto_peer_with_lock(message_to_send)
 
     def thread_receiver_connect(self):
-        logging.info(f"[{self.id}] Receiver Connect is ready 💯")
         while True:
             try:
                 message_recv = self.protocol_connect.recv_string()
-                logging.info(f"[{self.id} Skt Connect] Recv: {message_recv} 🎃")
+                logging.info(f"[{self.id}-Connect] Recv: {message_recv} 🎃")
                 message_type, ids_recv = self.parse_message(message_recv)
                 if (message_type == MESSG_ACK):
                     self.ack_message_handler(ids_recv[0])
-                else:
-                    logging.info(f"[{self.id}] Connect Another messages!! {message_recv} ")
             except Exception as e :
                 if self.skt_connect and self.skt_connect.is_closed():
                     break
-                logging.info(f"action: We catch the error Recv Connect: {e} ✅")
                 break
         
     def send_message_and_wait_for_ack(self, message: str, next_id: int, ):
@@ -130,7 +125,6 @@ class LeaderElection:
             with self.got_ack.condition:
                 result = self.got_ack.condition.wait_for(lambda: self.condition_to_get_ack(next_id), TIME_OUT_TO_GET_ACK)
                 if result:
-                    logging.info(f"[{self.id}] Connect We got a ack! good from {next_id} ✅")
                     break
                 elif (time.time() - start_time) >= TIME_OUT_TO_GET_ACK:
                     logging.info(f"[{self.id}] Connect Timeout to get a ack! from {next_id} We try with the next!")
@@ -148,7 +142,6 @@ class LeaderElection:
         self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
         can_connect, msg = self.skt_connect.connect() 
         if can_connect:
-            logging.info(f"[{self.id}] We connect to {next_id}  ✅ 💯")
             self.protocol_connect = Protocol(self.skt_connect)
             self.queue_proto_connect.put("ProtoConnect Created successfully ✅ 🌟")
             thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect)
@@ -158,6 +151,8 @@ class LeaderElection:
         return can_connect        
 
     def safe_send_next(self, message: str, a_id: int):
+        if not self.leader_id.is_this_value(None): # Si encontre un lider ya no enviemos mensajes. 
+            return
         next_id = self.getNextId(a_id)
         if a_id == next_id:
             logging.info(f"action: safe_send_next | message: mssg dio toda la vuelta! | result: success  ❌")
@@ -180,7 +175,7 @@ class LeaderElection:
         
     def get_message(self):
         message_recv = self.protocol_peer.recv_string()
-        logging.info(f"[{self.id}- Skt Peer] Recv: {message_recv} 🎃")
+        logging.info(f"[{self.id}-Peer] Recv: {message_recv} 🎃")
         return self.parse_message(message_recv)
 
     def thread_receiver_peer(self):
@@ -196,15 +191,11 @@ class LeaderElection:
                     self.election_message_handler(ids_recv)
                 elif (message_type == MESSG_COORD):
                     self.coordinator_message_handler(ids_recv)
-                else:
-                    logging.info(f"action: Recv a strager message??: {message_recv} | result: success 🦸")
             except Exception as e:
                 if self.skt_peer and self.skt_peer.is_closed():
                     break
-                logging.info(f"action: We catch the error Recv Peer: {e}")
                 #traceback.print_exc()  # Imprime la traza completa del error
                 break
-        logging.info(f"action: thread_receiver_peer, stopping control | result: success 🦸")
         self.stop_value.change_value(False)
         self.stop_value.notify_all()
 
@@ -227,7 +218,7 @@ class LeaderElection:
     def send_message_proto_peer_with_lock(self, message: str):
         with self.send_peer_control:
             self.protocol_peer.send_string(message)
-            logging.info(f"[{self.id}] Peer Send: {message}")
+            logging.info(f"[{self.id}-Peer]  Send: {message}")
 
     def condition_to_get_ack(self, next_id :int):
         return self.got_ack.is_this_value(next_id)
