@@ -1,4 +1,4 @@
-from system.commonsSystem.DTO.DTO import DTO
+from system.commonsSystem.DTO.BatchDTO import BatchDTO
 from system.commonsSystem.DTO.ReviewMinimalDTO import ReviewMinimalDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
 from system.commonsSystem.DTO.ReviewStateDTO import ReviewStateDTO
@@ -16,7 +16,7 @@ stateToClass = {
     STATE_IDNAME: ReviewIDNameDTO,
 }
 
-class ReviewsDTO(DTO):
+class ReviewsDTO(BatchDTO):
     def __init__(self, client_id:int=0, state_reviews:int=0, reviews_dto: list[ReviewStateDTO] =[], global_counter=0):
         self.operation_type = OperationType.OPERATION_TYPE_REVIEWS_DTO
         self.client_id = client_id
@@ -58,18 +58,9 @@ class ReviewsDTO(DTO):
     def set_state(self, state_reviews):
         self.state_reviews = state_reviews
         self.reviews_dto = list(map(lambda game: stateToClass[state_reviews].from_state(game), self.reviews_dto))
-
-    def is_EOF(self):
-        return False
     
     def is_reviews(self):
         return True
-    
-    def is_games(self):
-        return False
-    
-    def get_client(self):
-        return self.client_id
 
     def filter_data(self, filter_func):
         self.reviews_dto = list(filter(filter_func, self.reviews_dto))

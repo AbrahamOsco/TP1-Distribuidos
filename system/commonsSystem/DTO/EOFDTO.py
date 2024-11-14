@@ -1,18 +1,18 @@
 from system.commonsSystem.DTO.enums.OperationType import OperationType
+from system.commonsSystem.DTO.BatchDTO import BatchDTO
 
 STATE_DEFAULT = 1
 STATE_COMMIT = 2 ## Informa a los hermanos que llegó un eof y le pide sus cantidades
 STATE_OK = 3 ## Informa sus cantidades
 STATE_CANCEL = 4 ## Informa que la operación no está lista aún
 
-class EOFDTO:
+class EOFDTO(BatchDTO):
     def __init__(self, type, client:int, state:int, batch_id = 0, global_counter = 0, retry=0):
         self.operation_type = type
         self.state = state
-        self.client = client
         self.batch_id = batch_id
-        self.global_counter = global_counter
         self.retry = retry
+        super().__init__(client, global_counter)
     
     def is_ok(self):
         return self.state == STATE_OK
@@ -22,15 +22,12 @@ class EOFDTO:
 
     def is_commit(self):
         return self.state == STATE_COMMIT
-
-    def set_state(self, state):
-        self.state = state
-
-    def get_client(self):
-        return self.client
     
     def is_EOF(self):
         return True
+    
+    def set_state(self, state):
+        self.state = state
 
     def get_type(self):
         if self.operation_type == OperationType.OPERATION_TYPE_GAMES_EOF_DTO.value:
@@ -43,7 +40,7 @@ class EOFDTO:
     def serialize(self):
         eof_bytes = bytearray()
         eof_bytes.extend(self.operation_type.to_bytes(1, byteorder='big'))
-        eof_bytes.extend(self.client.to_bytes(1, byteorder='big'))
+        eof_bytes.extend(self.client_id.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.global_counter.to_bytes(6, byteorder='big'))
         eof_bytes.extend(self.state.to_bytes(1, byteorder='big'))
         eof_bytes.extend(self.batch_id.to_bytes(2, byteorder='big'))

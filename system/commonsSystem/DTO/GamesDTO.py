@@ -1,4 +1,4 @@
-from system.commonsSystem.DTO.DTO import DTO
+from system.commonsSystem.DTO.BatchDTO import BatchDTO
 from system.commonsSystem.DTO.GameMinimalDTO import GameMinimalDTO
 from system.commonsSystem.DTO.PlatformDTO import PlatformDTO
 from system.commonsSystem.DTO.enums.OperationType import OperationType
@@ -29,7 +29,7 @@ stateToClass = {
     STATE_REVIEWED: GameReviewedDTO
 }
 
-class GamesDTO(DTO):
+class GamesDTO(BatchDTO):
     def __init__(self, client_id:int=0, state_games:int=0, games_dto: list[GameStateDTO] =[], query:int=0, global_counter = 0):
         self.operation_type = OperationType.OPERATION_TYPE_GAMES_DTO
         self.client_id = client_id
@@ -75,12 +75,6 @@ class GamesDTO(DTO):
     def set_state(self, state_games):
         self.state_games = state_games
         self.games_dto = list(map(lambda game: stateToClass[state_games].from_state(game), self.games_dto))
-
-    def is_EOF(self):
-        return False
-    
-    def get_client(self):
-        return self.client_id
     
     def get_platform_count(self):
         count = {
@@ -94,9 +88,6 @@ class GamesDTO(DTO):
             count["mac"] += platform["mac"]
             count["linux"] += platform["linux"]
         return count
-
-    def is_reviews(self):
-        return False
     
     def is_games(self):
         return True

@@ -1,6 +1,7 @@
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
+from system.commonsSystem.DTO.BatchDTO import BatchDTO
 from common.tolerance.IDList import IDList
 from system.commonsSystem.node.structures.dualInputStructure import DualInputStructure, STATUS_STARTED, STATUS_REVIEWING
 from system.commonsSystem.node.statefullNode import StatefullNode
@@ -73,13 +74,13 @@ class DualInputNode(StatefullNode):
         if self.games_id_list.already_processed(data.global_counter):
             return
         self.games_id_list.insert(data.global_counter)
-        client_id = data.client_id
+        client_id = data.get_client()
         self.data.add_counter(client_id, data.global_counter)
         for game in data.games_dto:
             self.data.list[client_id][game.app_id] = 0
             self.data.games[client_id][game.app_id] = game.name
 
-    def process_data(self, data):
+    def process_data(self, data: BatchDTO):
         client_id = data.get_client()
         self.data.init(client_id)
         self.logs.add_log(data.serialize())
