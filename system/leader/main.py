@@ -21,7 +21,6 @@ def main():
     if not leader_election.am_i_leader():
         logging.info(f"[{leader_election.id}] Starting new leader election after failure...")
         leader_election.find_new_leader()
-
     thr_leader.join()
     leader_election.release_resources()    
 

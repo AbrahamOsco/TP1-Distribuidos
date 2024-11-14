@@ -37,7 +37,7 @@ class LeaderElection:
         self.reset_skts_and_protocols()
 
     def start_server_udp(self):
-        self.server_udp = ServerUDP(self.id, get_service_name(self.id))
+        self.server_udp = ServerUDP(self.id, get_service_name(self.id+100))
         thr_server_udp = threading.Thread(target=self.server_udp.run)
         thr_server_udp.start()
         self.joins.append(thr_server_udp)
@@ -98,6 +98,7 @@ class LeaderElection:
                 break
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
         
+
     def condition_to_get_ack(self, next_id :int):
         return self.got_ack.is_this_value(next_id)
 
@@ -151,6 +152,7 @@ class LeaderElection:
         self.leader_id.change_value(ids_recv[0])
         self.leader_id.notify_all()
         if self.id not in ids_recv:
+            logging.info(f"[{self.id}] {ids_recv} WTF {self.id not in ids_recv}")
             ids_recv.append(self.id)
             message_to_send = ids_to_msg(MESSG_COORD, ids_recv)
             thr_continue_coord = threading.Thread(target= self.safe_send_next, args=(message_to_send, self.id, ))
@@ -214,6 +216,7 @@ class LeaderElection:
                     logging.info(f"[{self.id}] We connect to {next_id}  ✅")
                     self.queue_proto_connect.put("Socket Created successfully ✅ 🌟🌟")
                     self.send_message_and_wait_for_ack(message, next_id)
+                    break
                 else:
                     logging.info(f"[{self.id}] We can't connect to {next_id}  ❌")
                     next_id = self.getNextId(next_id)
