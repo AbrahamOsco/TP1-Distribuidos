@@ -1,5 +1,6 @@
 import socket
 import logging
+import select
 
 MAX_LISTEN_BACKLOG = 30
 
@@ -13,6 +14,7 @@ class Socket:
             self.socket = socket_peer
             return
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if (ip == ""):
             self.socket.bind(("", port))
             self.socket.listen(MAX_LISTEN_BACKLOG)
@@ -53,7 +55,7 @@ class Socket:
             logging.error(msg)
             return False, msg
         try:
-            self.socket.settimeout(1)
+            self.socket.settimeout(2)
             self.socket.connect((self.ip, self.port))
             self.socket.settimeout(None)
         except (OSError, ConnectionRefusedError) as e:
