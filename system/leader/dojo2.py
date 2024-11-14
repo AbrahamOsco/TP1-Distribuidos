@@ -6,7 +6,6 @@ import logging
 import threading
 
 TIME_OUT_HEALTH_CHECK = 1  # en segundos
-
 FAIL = 0
 SUCCESS = 1
 
@@ -35,10 +34,44 @@ class HealthCheck:
             logging.error(f"[{my_id}] -> Node: [{node_id_to_check}] is falling Error: {e}  👈")
             return False
         except Exception as e:
-            # Imprime la traza completa del error
             traceback.print_exc()
             logging.info(f"[{node_id_to_check}] Other type of Error in healtcheck {e} 👈")
             return False
         finally:
             skt_udp.close()
         return False
+
+def main():
+    start_time = time.time()
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%H:%M:%S')
+    HealthCheck.is_alive("127.0.0.1", 9010, 1, 2)
+    logging.info(f"final time: { time.time() - start_time}")
+main()
+
+
+""" 
+import socket
+
+server_address = ('127.0.0.1', 9010)
+
+def socket_udp():
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket.connect(server_address)
+    client_socket.send(b"ping")
+    client_socket.settimeout(3)
+    try: 
+        message = client_socket.recv(1024)
+        print(message)
+    except socket.timeout:
+        print("Timeout ⌚⌚⌚⌚")
+    except ConnectionRefusedError as e:
+        print(f"Node is fall! 👉👉{e}")
+    finally:
+        client_socket.close()
+
+def main():
+    socket_udp()
+
+main()
+
+"""

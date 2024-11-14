@@ -1,48 +1,64 @@
 services:
-  node0:
+  medic0:
     image: "leader:latest"
-    container_name: node0
+    container_name: medic0
     entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=100
-      - RING_SIZE=3
+      - RING_SIZE=4
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
       - system_network
     depends_on:
-      node1:
+      medic1:
         condition: service_started
 
-  node1:
+  medic1:
     image: "leader:latest"
-    container_name: node1
+    container_name: medic1
     entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=101
       - LOGGING_LEVEL=INFO
-      - RING_SIZE=3
+      - RING_SIZE=4
       - PYTHONPATH=/app
     networks:
       - system_network
     depends_on:
-      node2:
+      medic2:
         condition: service_started
 
-  node2:
+  medic2:
     image: "leader:latest"
-    container_name: node2
+    container_name: medic2
     entrypoint: python3 /app/system/leader/main.py
     environment:
       - NODE_ID=102
       - LOGGING_LEVEL=INFO
-      - RING_SIZE=3
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    depends_on:
+      medic3:
+        condition: service_started
+
+  medic3:
+    image: "leader:latest"
+    container_name: medic3
+    entrypoint: python3 /app/system/leader/main.py
+    environment:
+      - NODE_ID=103
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
       - PYTHONPATH=/app
     networks:
       - system_network
 
 networks:
   system_network:
+    driver: bridge
     ipam:
       driver: default
       config:

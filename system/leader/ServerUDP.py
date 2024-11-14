@@ -1,7 +1,7 @@
 import socket
 import logging
 
-TIMEOUT_FOR_CHECK_PING = 1.0
+TIMEOUT_FOR_CHECK_PING = 1
 
 class ServerUDP:
     def __init__(self, node_id: int, port: str):
@@ -17,7 +17,6 @@ class ServerUDP:
                 message, addr = self.skt_udp.recvfrom(1024)
                 if message == b"ping":
                     self.skt_udp.sendto(b"ping", addr)
-                    logging.info(f"[{self.node_id}] message is : {message}")
                 elif message == b'':
                     logging.info(f"[{self.node_id}] Received empty message, ignoring")
                     continue
@@ -29,6 +28,6 @@ class ServerUDP:
                 if not self.skt_udp._closed:
                     logging.info(f"[{self.node_id}] Error in serverUDP 🗡️ ⚡")
                 break
-    def stop(self):
+    def     stop(self):
         self.skt_udp.close()
         logging.info(f"[{self.node_id}] action: Closed the socket UDP ⏩🆓🎊 | result: succes ✅")
