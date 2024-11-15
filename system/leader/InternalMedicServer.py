@@ -4,7 +4,7 @@ import logging
 
 TIMEOUT_FOR_CHECK_PING = 1
 
-class InternalServerMedic:
+class InternalMedicServer:
     def __init__(self, node_id: int):
         self.port = get_service_name(node_id + OFF_SET_INTERNAL_MEDICS)
         self.node_id = node_id
@@ -29,5 +29,6 @@ class InternalServerMedic:
                 if not self.skt_udp._closed:
                     logging.info(f"[{self.node_id}] Error in serverUDP 🗡️ ⚡")
                 break
-    def     stop(self):
+    
+    def stop(self):
         self.skt_udp.close()

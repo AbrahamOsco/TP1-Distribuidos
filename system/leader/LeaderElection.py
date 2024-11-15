@@ -3,8 +3,8 @@ from system.leader.common_leader import get_host_name_medic, get_service_name, i
 from common.socket.Socket import Socket
 from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
-from system.leader.InternalServerMedic import InternalServerMedic 
-from system.leader.InternalHealthCheck import InternalHealthCheck 
+from system.leader.InternalMedicServer import InternalMedicServer 
+from system.leader.InternalMedicCheck import InternalMedicCheck 
 from system.leader.Heartbeat import Heartbeat
 
 import traceback
@@ -169,16 +169,14 @@ class LeaderElection:
         if self.skt_connect and self.protocol_connect:
             self.send_message_and_wait_for_ack(message, next_id)
         else:
-            i = 0
             while True:
-                logging.info(f"[{self.id}] Trying to connect to {next_id} i={i}  🔄")
-                if InternalHealthCheck.is_alive(self.id, next_id):
+                logging.info(f"[{self.id}] Trying to connect to {next_id} 🔄")
+                if InternalMedicCheck.is_alive(self.id, next_id):
                     self.connect_and_send_message(next_id, message)
                     break
                 else:
                     logging.info(f"[{self.id}] We can't connect to {next_id}  ❌")
                     next_id = self.getNextId(next_id)
-                i += 1
         
     def get_message(self):
         message_recv = self.protocol_peer.recv_string()
@@ -244,7 +242,7 @@ class LeaderElection:
         return (fields[0], [int(x) for x in fields[1:]])
 
     def start_server_udp(self):
-        self.server_udp = InternalServerMedic(self.id)
+        self.server_udp = InternalMedicServer(self.id)
         thr_server_udp = threading.Thread(target=self.server_udp.run)
         thr_server_udp.start()
         self.joins.append(thr_server_udp)

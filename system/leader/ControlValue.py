@@ -1,6 +1,6 @@
 import threading
 
-class ControlValue():
+class ControlValue:
     def __init__(self, value):
         self.value = value
         self.lock = threading.Lock()
