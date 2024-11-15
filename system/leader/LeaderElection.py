@@ -1,5 +1,5 @@
 from system.commonsSystem.utils.log import initialize_config_log
-from system.leader.common_leader import get_host_name_medic, get_service_name, ids_to_msg
+from system.leader.common_leader import get_host_name_medic, get_service_name, ids_to_msg, OFF_SET_MEDIC
 from common.socket.Socket import Socket
 from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
@@ -56,7 +56,7 @@ class LeaderElection:
     
     def find_new_leader(self):
         self.release_resources()
-        #self.start_hearbeat()
+        self.start_hearbeat()
         self.start_server_udp()
         self.start_accept()
         if self.stop_value.is_this_value(True):
@@ -218,7 +218,7 @@ class LeaderElection:
         self.release_resources()
 
     def getNextId(self, aId: int):
-        return ((aId - 100 + 1) % self.ring_size) + 100
+        return ((aId - OFF_SET_MEDIC + 1) % self.ring_size) + OFF_SET_MEDIC
 
     def send_message_proto_peer_with_lock(self, message: str):
         with self.send_peer_control:

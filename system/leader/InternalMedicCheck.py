@@ -1,4 +1,4 @@
-from system.leader.common_leader import get_host_name_medic, get_service_name, OFF_SET_INTERNAL_MEDICS
+from system.leader.common_leader import get_host_name_medic, get_service_name, OFF_SET_MEDIC
 import logging
 import traceback
 import time
@@ -18,7 +18,7 @@ class InternalMedicCheck:
     def is_alive(cls, my_id, node_id_to_check) -> bool:
         try:
             ip = get_host_name_medic(node_id_to_check)
-            port = get_service_name(node_id_to_check + OFF_SET_INTERNAL_MEDICS)
+            port = get_service_name(node_id_to_check + OFF_SET_MEDIC)
             skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             message = b"ping"
             skt_udp.sendto(message, (ip, port))

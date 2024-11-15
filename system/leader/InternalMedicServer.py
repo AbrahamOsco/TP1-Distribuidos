@@ -1,4 +1,4 @@
-from system.leader.common_leader import get_service_name, OFF_SET_INTERNAL_MEDICS
+from system.leader.common_leader import get_service_name, OFF_SET_MEDIC
 import socket
 import logging
 
@@ -6,7 +6,7 @@ TIMEOUT_FOR_CHECK_PING = 1
 
 class InternalMedicServer:
     def __init__(self, node_id: int):
-        self.port = get_service_name(node_id + OFF_SET_INTERNAL_MEDICS)
+        self.port = get_service_name(node_id + OFF_SET_MEDIC)
         self.node_id = node_id
         self.skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.skt_udp.bind(("", self.port))
@@ -24,6 +24,7 @@ class InternalMedicServer:
                 else:
                     logging.info(f"msg recv: {message} ❌")
             except socket.timeout:
+                logging.info("TImeout it doesn't matter")
                 continue
             except Exception as e:
                 if not self.skt_udp._closed:
