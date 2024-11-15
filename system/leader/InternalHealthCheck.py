@@ -10,7 +10,7 @@ TIME_OUT_HEALTH_CHECK = 1  # en segundos
 FAIL = 0
 SUCCESS = 1
 
-class HealthCheck: 
+class InternalHealthCheck: 
     def __init__(self, ip, port, node_id):
         pass
 

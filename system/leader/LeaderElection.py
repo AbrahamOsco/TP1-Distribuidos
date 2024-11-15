@@ -1,9 +1,11 @@
-from system.commonsSystem.utils.log import initialize_config_log, get_host_name, get_service_name, ids_to_msg
+from system.commonsSystem.utils.log import initialize_config_log, get_host_name_medic, get_service_name, ids_to_msg
 from common.socket.Socket import Socket
 from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
 from system.leader.ServerUDP import ServerUDP 
-from system.leader.HealthCheck import HealthCheck 
+from system.leader.InternalHealthCheck import InternalHealthCheck 
+from system.leader.Heartbeat import Heartbeat
+
 import traceback
 import threading
 import os
@@ -18,13 +20,14 @@ MESSG_ELEC = "ELECTION"
 TIME_OUT_TO_FIND_LEADER = 5
 TIME_OUT_TO_GET_ACK = 5
 MAX_SIZE_QUEUE_PROTO_CONNECT = 5
-OFFSET_PORT_UDP = 100
+OFF_SET_HEATBEAT = 100
 
 class LeaderElection:
     def __init__(self):
         signal.signal(signal.SIGTERM, self.sign_term_handler)
         self.config_params = initialize_config_log()
         self.joins = []
+        self.hearbeat = None
         self.id = int(os.getenv("NODE_ID"))
         self.ring_size = int(os.getenv("RING_SIZE"))
         self.queue_proto_connect = queue.Queue(maxsize =MAX_SIZE_QUEUE_PROTO_CONNECT)
@@ -46,9 +49,14 @@ class LeaderElection:
                 thr_client = threading.Thread(target =self.thread_client, args=(skt_peer, ))
                 thr_client.start()
                 self.joins.append(thr_client)
-
+    
+    def start_hearbeat(self):
+        self.hearbeat = Heartbeat(get_host_name_medic(self.id), get_service_name(self.id))
+        self.hearbeat.run()
+    
     def find_new_leader(self):
         self.release_resources()
+        #self.start_hearbeat()
         self.start_server_udp()
         self.start_accept()
         if self.stop_value.is_this_value(True):
@@ -139,7 +147,7 @@ class LeaderElection:
                     self.safe_send_next(message, next_id)
 
     def connect_and_send_message(self, next_id: int, message: str):
-        self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
+        self.skt_connect = Socket(ip= get_host_name_medic(next_id), port= get_service_name(next_id))
         can_connect, msg = self.skt_connect.connect() 
         if can_connect:
             self.protocol_connect = Protocol(self.skt_connect)
@@ -164,7 +172,7 @@ class LeaderElection:
             i = 0
             while True:
                 logging.info(f"[{self.id}] Trying to connect to {next_id} i={i}  🔄")
-                if HealthCheck.is_alive(get_host_name(next_id), get_service_name(next_id), self.id, next_id):
+                if InternalHealthCheck.is_alive(get_host_name_medic(next_id), get_service_name(next_id), self.id, next_id):
                     self.connect_and_send_message(next_id, message)
                 #if self.connect_to_next(next_id, message):
                     break
@@ -268,14 +276,17 @@ class LeaderElection:
 
     def release_resources(self):
         with self.resource_control:
-            if self.server_udp:
-                self.server_udp.stop()
-            if self.skt_accept:
-                self.skt_accept.close()
             if self.skt_connect:
                 self.skt_connect.close()
-            if self.skt_peer:
-                self.skt_peer.close()
-            self.reset_skts_and_protocols()
-            self.release_threads()
-            logging.info(f"All resource are free 💯")
+        if self.server_udp:
+            self.server_udp.stop()
+        if self.skt_accept:
+            self.skt_accept.close()
+        if self.skt_peer:
+            self.skt_peer.close()
+        if self.hearbeat:
+            self.hearbeat.release_resources()
+            self.hearbeat = None
+        self.reset_skts_and_protocols()
+        self.release_threads()
+        logging.info(f"All resource are free 💯")

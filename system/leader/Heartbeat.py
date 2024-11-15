@@ -9,11 +9,11 @@ INTERVAL_HEARTBEAT = 3.0
 TIMEOUT_LEADER_RESPONSE = 6.0
 
 class Heartbeat:
-
-    def __init__(self, my_port: int):
+    def __init__(self, my_hostname:str,  my_port: int):
         self.my_port = my_port
+        self.my_hostname = my_hostname
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(("",self.my_port))
+        self.socket.bind((self.my_hostname, self.my_port))
         self.joins = []
         self.queue = queue.Queue(maxsize =MAX_SIZE_QUEUE_HEARTBEAT)
         self.leader_hostname = None
@@ -65,40 +65,4 @@ class Heartbeat:
         self.socket.close()
         for a_join in self.joins:
             a_join.join()   
-        logging.info("All resources released 💯")
-
-
-def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%H:%M:%S')
-    heartbeat = Heartbeat(20015)
-    heartbeat.run()
-
-main()
-
-
-""" 
-import socket
-
-server_address = ('127.0.0.1', 9010)
-
-def socket_udp():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.connect(server_address)
-    client_socket.send(b"ping")
-    client_socket.settimeout(3)
-    try: 
-        message = client_socket.recv(1024)
-        print(message)
-    except socket.timeout:
-        print("Timeout ⌚⌚⌚⌚")
-    except ConnectionRefusedError as e:
-        print(f"Node is fall! 👉👉{e}")
-    finally:
-        client_socket.close()
-
-def main():
-    socket_udp()
-
-main()
-
-"""
+        logging.info(f"[Hearbeat] All resources released 💯")
