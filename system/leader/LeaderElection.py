@@ -1,8 +1,9 @@
-from system.commonsSystem.utils.log import initialize_config_log, get_host_name_medic, get_service_name, ids_to_msg
+from system.commonsSystem.utils.log import initialize_config_log
+from system.leader.common_leader import get_host_name_medic, get_service_name, ids_to_msg
 from common.socket.Socket import Socket
 from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
-from system.leader.ServerUDP import ServerUDP 
+from system.leader.InternalServerMedic import InternalServerMedic 
 from system.leader.InternalHealthCheck import InternalHealthCheck 
 from system.leader.Heartbeat import Heartbeat
 
@@ -20,7 +21,6 @@ MESSG_ELEC = "ELECTION"
 TIME_OUT_TO_FIND_LEADER = 5
 TIME_OUT_TO_GET_ACK = 5
 MAX_SIZE_QUEUE_PROTO_CONNECT = 5
-OFF_SET_HEATBEAT = 100
 
 class LeaderElection:
     def __init__(self):
@@ -172,9 +172,8 @@ class LeaderElection:
             i = 0
             while True:
                 logging.info(f"[{self.id}] Trying to connect to {next_id} i={i}  🔄")
-                if InternalHealthCheck.is_alive(get_host_name_medic(next_id), get_service_name(next_id), self.id, next_id):
+                if InternalHealthCheck.is_alive(self.id, next_id):
                     self.connect_and_send_message(next_id, message)
-                #if self.connect_to_next(next_id, message):
                     break
                 else:
                     logging.info(f"[{self.id}] We can't connect to {next_id}  ❌")
@@ -245,7 +244,7 @@ class LeaderElection:
         return (fields[0], [int(x) for x in fields[1:]])
 
     def start_server_udp(self):
-        self.server_udp = ServerUDP(self.id, get_service_name(self.id))
+        self.server_udp = InternalServerMedic(self.id)
         thr_server_udp = threading.Thread(target=self.server_udp.run)
         thr_server_udp.start()
         self.joins.append(thr_server_udp)

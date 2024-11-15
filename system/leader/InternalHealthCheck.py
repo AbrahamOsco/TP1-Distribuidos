@@ -1,3 +1,4 @@
+from system.leader.common_leader import get_host_name_medic, get_service_name, OFF_SET_INTERNAL_MEDICS
 import logging
 import traceback
 import time
@@ -6,7 +7,6 @@ import logging
 import threading
 
 TIME_OUT_HEALTH_CHECK = 1  # en segundos
-
 FAIL = 0
 SUCCESS = 1
 
@@ -15,10 +15,11 @@ class InternalHealthCheck:
         pass
 
     @classmethod
-    def is_alive(cls, ip, port, my_id, node_id_to_check) -> bool:
+    def is_alive(cls, my_id, node_id_to_check) -> bool:
         try:
+            ip = get_host_name_medic(node_id_to_check)
+            port = get_service_name(node_id_to_check + OFF_SET_INTERNAL_MEDICS)
             skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            #skt_udp.connect((ip, port))
             message = b"ping"
             skt_udp.sendto(message, (ip, port))
             skt_udp.settimeout(TIME_OUT_HEALTH_CHECK)
