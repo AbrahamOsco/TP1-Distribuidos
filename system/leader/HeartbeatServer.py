@@ -16,6 +16,7 @@ class NodeInfo:
         self.numeric_ip = None
         self.service_name = service_name
         self.last_time = None
+        self.active = True
     
     def update_lastime(self, time_received):
         self.last_time = time_received
@@ -37,15 +38,18 @@ class HeartbeatServer:
         self.nodes.append(NodeInfo("medic2", 20102))        
         self.nodes.append(NodeInfo("medic3", 20103))        
 
-    def broadcast(self, message:str):
+    def broadcast(self, message: bytes):
         for node in self.nodes:
-            if self.my_hostname != node.hostname:
-                self.socket.sendto(message, (node.hostname, node.service_name))
+            if self.my_hostname != node.hostname and node.active:
+                try:
+                    self.socket.sendto(message, (node.hostname, node.service_name))
+                except socket.gaierror as e:
+                    node.active = False
+                    logging.info(f"We try to send a message a {node.hostname} but is dead ⚰️ 🫥")
 
     def send_hi(self):
         first_message = f"hi|{self.my_hostname}".encode('utf-8')
         self.broadcast(first_message)
-        logging.info(f"[⛑️] Sent Hi to all nodes connects! 🚀")
 
     def sender(self):
         self.send_hi()
@@ -53,6 +57,7 @@ class HeartbeatServer:
             try:
                 message = "ping".encode('utf-8')
                 self.broadcast(message)
+                logging.info(f"Sent ping to all Nodes! 💯🎯🎯🎯🎯")
                 time.sleep(TIME_FOR_SEND_PING)
             except OSError as e:
                 logging.info("Sender closed by socket was closed")
@@ -78,7 +83,7 @@ class HeartbeatServer:
                 message, addr = self.socket.recvfrom(1024)
                 time_received = time.time()
                 message = message.decode('utf-8')
-                logging.info(f"[⛑️] Received message: {message} from {addr}")
+                #logging.info(f"[⛑️ ] Received message: {message} from {addr}")
                 if "|" in message:
                     self.add_real_ip(addr, message, time_received)
                 elif "ping" in message:
@@ -96,11 +101,11 @@ class HeartbeatServer:
                 if node.hostname == self.my_hostname:
                     continue
                 elif node.last_time is None:
-                    logging.info(f"[⛑️] Node {node.hostname} is Loading ⏳")
+                    logging.info(f"[⛑️ ] Node {node.hostname} is Loading ⏳")
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING:
-                    logging.info(f"[⛑️] Node {node.hostname} is dead! 💀 Now to Revive!")
+                    logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
-                    logging.info(f"[⛑️] 🫀 From: {node.hostname} ✅ ")
+                    logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
 
     def run(self):

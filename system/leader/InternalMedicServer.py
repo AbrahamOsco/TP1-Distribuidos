@@ -1,4 +1,5 @@
 from system.leader.common_leader import get_service_name, OFF_SET_MEDIC
+import threading
 import socket
 import logging
 
@@ -11,8 +12,9 @@ class InternalMedicServer:
         self.skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.skt_udp.bind(("", self.port))
         self.skt_udp.settimeout(TIMEOUT_FOR_CHECK_PING)
-
-    def run(self):
+        self.joins = []
+    
+    def start(self):
         while not self.skt_udp._closed:
             try:
                 message, addr = self.skt_udp.recvfrom(1024)
@@ -29,7 +31,17 @@ class InternalMedicServer:
                 if not self.skt_udp._closed:
                     logging.info(f"[{self.node_id}] Error in serverUDP 🗡️ ⚡")
                 break
+
+    def run(self):
+        thr_medic_server = threading.Thread(target=self.start)
+        self.joins.append(thr_medic_server)
+        thr_medic_server.start()
+
     
     def release_resources(self):
         self.skt_udp.close()
+        for thr in self.joins:
+            thr.join()
+        logging.info("[Internal Medic-Server] All resources are free 💯")
+
 

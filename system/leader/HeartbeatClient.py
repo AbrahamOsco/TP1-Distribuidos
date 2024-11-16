@@ -6,7 +6,7 @@ import queue
 
 MAX_SIZE_QUEUE_HEARTBEAT = 5
 TIME_FOR_SEND_PING = 3.0
-TIMEOUT_LEADER_RESPONSE = 7.5
+TIMEOUT_LEADER_RESPONSE = 8
 TIMEOUT_SOCKET = 2
 EXIT = "Exit"
 SPECIAL_PING ="special_ping"
@@ -26,9 +26,14 @@ class HeartbeatClient:
         self.leader_service_name = None
         self.last_hearbeat_time = time.time()
 
+    def get_time(self, a_time):
+        local_time = time.localtime(a_time)
+        formatted_time = time.strftime("%H:%M:%S", local_time)
+        return formatted_time
+
     def leader_had_timeout(self):
         if time.time() - self.last_hearbeat_time > TIMEOUT_LEADER_RESPONSE:
-            logging.info(f"[{self.my_service_name}] Leader is fall! 😢")
+            logging.info(f"[{self.my_service_name}] Leader is dead! 💀")
             self.leader_hostname = None
             self.leader_service_name = None
             return True
@@ -43,9 +48,7 @@ class HeartbeatClient:
                     if result == SPECIAL_PING:
                         message = f"ping|{self.numeric_ip}".encode('utf-8')
                         self.socket.sendto(message, (self.leader_hostname, self.leader_service_name))
-                        logging.info(f"Send special ping: ping|-{self.numeric_ip}-")
                     if result == EXIT:
-                        logging.info("Sender finish by queue")
                         return
                     self.last_hearbeat_time = time.time()
                 if self.leader_had_timeout():
@@ -54,7 +57,6 @@ class HeartbeatClient:
                 self.socket.sendto(message, (self.leader_hostname, self.leader_service_name))
                 time.sleep(TIME_FOR_SEND_PING)
             except OSError as e:
-                logging.info("Sender closed by socket was closed")
                 return
 
     def handler_message(self, message: bytes, addr: list[str]):
@@ -86,7 +88,6 @@ class HeartbeatClient:
         thread_receiver.start()
         
     def release_resources(self):
-        logging.info("[HeartClient] Tryting to release resource! ")
         self.socket.close()
         self.close_receiver = True
         self.close_sender = True
