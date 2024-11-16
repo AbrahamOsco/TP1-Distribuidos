@@ -5,11 +5,12 @@ import time
 import queue
 
 MAX_SIZE_QUEUE_HEARTBEAT = 5
-INTERVAL_HEARTBEAT = 3.0
-TIMEOUT_LEADER_RESPONSE = 5.0
+TIME_FOR_SEND_PING = 3.0
+TIMEOUT_LEADER_RESPONSE = 7.5
 TIMEOUT_SOCKET = 2
 EXIT = "Exit"
 SPECIAL_PING ="special_ping"
+
 class HeartbeatClient:
 
     def __init__(self, my_hostname: str,  my_service_name: int):
@@ -24,8 +25,6 @@ class HeartbeatClient:
         self.leader_hostname = None
         self.leader_service_name = None
         self.last_hearbeat_time = time.time()
-        self.close_receiver = False
-        self.close_sender = False
 
     def leader_had_timeout(self):
         if time.time() - self.last_hearbeat_time > TIMEOUT_LEADER_RESPONSE:
@@ -36,7 +35,7 @@ class HeartbeatClient:
         return False
 
     def sender(self):
-        while True:
+        while not self.socket._closed:
             try:
                 if not self.leader_hostname or not self.leader_service_name:
                     logging.info(f"[{self.my_service_name}] Waiting for the leader! ⌚")
@@ -53,7 +52,7 @@ class HeartbeatClient:
                     continue
                 message = "ping".encode('utf-8')
                 self.socket.sendto(message, (self.leader_hostname, self.leader_service_name))
-                time.sleep(INTERVAL_HEARTBEAT)
+                time.sleep(TIME_FOR_SEND_PING)
             except OSError as e:
                 logging.info("Sender closed by socket was closed")
                 return
@@ -68,15 +67,12 @@ class HeartbeatClient:
             self.last_hearbeat_time = time.time()
 
     def receiver(self):
-        while True:
+        while not self.socket._closed:
             try: 
                 data, addr = self.socket.recvfrom(1024)
                 data = data.decode('utf-8')
                 self.handler_message(data, addr)
             except socket.timeout:
-                logging.info("Socket timeout! ⌚ in receiver")
-                if self.close_receiver:
-                    return
                 continue
             except OSError as e:
                 return
@@ -90,12 +86,12 @@ class HeartbeatClient:
         thread_receiver.start()
         
     def release_resources(self):
-        logging.info("Tryting to release resource! ")
+        logging.info("[HeartClient] Tryting to release resource! ")
+        self.socket.close()
         self.close_receiver = True
         self.close_sender = True
         self.queue.put(EXIT)
-        self.socket.close()
         for a_join in self.joins:
             a_join.join()   
-        logging.info("All resources are free 💯")
+        logging.info("[HeartClient]All resources are free 💯")
 

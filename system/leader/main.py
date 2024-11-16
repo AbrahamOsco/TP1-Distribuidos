@@ -7,7 +7,7 @@ def main():
     leader_election :LeaderElection = LeaderElection()
     thr_leader = threading.Thread(target= lambda: leader_election.find_new_leader())
     thr_leader.start()
-    time.sleep(40)
+    
     #time.sleep(4)
     #logging.info(f"[{leader_election.id}] Current Leader: {leader_election.get_leader_id()}")
     #if leader_election.am_i_leader():

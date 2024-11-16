@@ -24,7 +24,6 @@ class InternalMedicServer:
                 else:
                     logging.info(f"msg recv: {message} ❌")
             except socket.timeout:
-                logging.info("TImeout it doesn't matter")
                 continue
             except Exception as e:
                 if not self.skt_udp._closed:

@@ -59,7 +59,7 @@ class LeaderElection:
     def find_new_leader(self):
         self.release_resources()
         self.start_hearbeat()
-        self.start_server_udp()
+        self.start_medic_server()
         self.start_accept()
         if self.stop_value.is_this_value(True):
             return
@@ -79,8 +79,8 @@ class LeaderElection:
                 break
         if self.leader_id.is_this_value(self.id):
             logging.info(f"[{self.id}⛑️] I'm the leader medic! 🎉 ")
-            heartbeat_server = HeartbeatServer(get_host_name_medic(self.id), get_service_name(self.id))
-            heartbeat_server.run()
+            self.heartbeat_server = HeartbeatServer(get_host_name_medic(self.id), get_service_name(self.id))
+            self.heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
         
 
@@ -247,14 +247,14 @@ class LeaderElection:
         fields = message.split("|")
         return (fields[0], [int(x) for x in fields[1:]])
 
-    def start_server_udp(self):
-        self.server_udp = InternalMedicServer(self.id)
-        thr_server_udp = threading.Thread(target=self.server_udp.run)
-        thr_server_udp.start()
-        self.joins.append(thr_server_udp)
+    def start_medic_server(self):
+        self.medic_server = InternalMedicServer(self.id)
+        thr_medic_server = threading.Thread(target=self.medic_server.run)
+        thr_medic_server.start()
+        self.joins.append(thr_medic_server)
 
     def reset_skts_and_protocols(self):
-        self.server_udp = None
+        self.medic_server = None
         self.skt_accept = None # ej: puerto 20100 para el nodo 100
         self.skt_peer = None #socket Anterior
         self.skt_connect = None # socket sgt
@@ -283,8 +283,9 @@ class LeaderElection:
                 self.skt_connect.close()
         if self.heartbeat_server:
             self.heartbeat_server.release_resources()
-        if self.server_udp:
-            self.server_udp.release_resources()
+            self.heartbeat_server = None
+        if self.medic_server:
+            self.medic_server.release_resources()
         if self.skt_accept:
             self.skt_accept.close()
         if self.skt_peer:
@@ -294,4 +295,4 @@ class LeaderElection:
             self.heartbeat_client = None
         self.reset_skts_and_protocols()
         self.release_threads()
-        logging.info(f"All resource are free 💯")
+        logging.info(f"All resource are free in LeaderElection 💯")
