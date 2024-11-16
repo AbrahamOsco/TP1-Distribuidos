@@ -60,7 +60,7 @@ class LeaderElection:
         self.heartbeat_client.run()
 
     def find_new_leader(self):
-        self.release_resources()
+        self.free_resources()
         self.start_resources()
         if self.stop_value.is_this_value(True):
             return
@@ -221,7 +221,7 @@ class LeaderElection:
     def stop(self):
         self.stop_value.change_value(True)
         self.stop_value.notify_all()
-        self.release_resources()
+        self.free_resources()
 
     def getNextId(self, aId: int):
         return ((aId - OFF_SET_MEDIC + 1) % self.ring_size) + OFF_SET_MEDIC
@@ -257,7 +257,7 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
-        self.release_resources()
+        self.free_resources()
 
     def am_i_leader(self):
         return self.leader_id.is_this_value(self.id)
@@ -271,23 +271,23 @@ class LeaderElection:
                 thr.join()
         self.joins.clear()
 
-    def release_resources(self):
+    def free_resources(self):
         with self.resource_control:
             if self.skt_connect:
                 self.skt_connect.close()
         if self.heartbeat_server:
-            self.heartbeat_server.release_resources()
+            self.heartbeat_server.free_resources()
             self.heartbeat_server = None
         if self.medic_server:
-            self.medic_server.release_resources()
+            self.medic_server.free_resources()
         if self.skt_accept:
             self.skt_accept.close()
         if self.skt_peer:
             self.skt_peer.close()
         if self.heartbeat_client:
-            self.heartbeat_client.release_resources()
+            self.heartbeat_client.free_resources()
             self.heartbeat_client = None
         self.reset_skts_and_protocols()
         self.release_threads()
-        logging.info(f"[LeaderElection] All resource are free in LeaderElection 💯")
+        logging.info(f"[LeaderElection] All resource are free 💯")
 

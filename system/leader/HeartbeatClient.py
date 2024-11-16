@@ -87,12 +87,12 @@ class HeartbeatClient:
         thread_sender.start()
         thread_receiver.start()
         
-    def release_resources(self):
+    def free_resources(self):
         self.socket.close()
         self.close_receiver = True
         self.close_sender = True
         self.queue.put(EXIT)
         for a_join in self.joins:
             a_join.join()   
-        logging.info("[HeartClient]All resources are free 💯")
+        logging.info("[Heartbeat Client] All resources are free 💯")
 

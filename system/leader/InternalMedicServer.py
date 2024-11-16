@@ -38,10 +38,10 @@ class InternalMedicServer:
         thr_medic_server.start()
 
     
-    def release_resources(self):
+    def free_resources(self):
         self.skt_udp.close()
         for thr in self.joins:
             thr.join()
-        logging.info("[Internal Medic-Server] All resources are free 💯")
+        logging.info("[Internal MedicServer] All resources are free 💯")
 
 

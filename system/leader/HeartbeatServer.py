@@ -38,6 +38,8 @@ class HeartbeatServer:
         self.nodes.append(NodeInfo("medic2", 20102))        
         self.nodes.append(NodeInfo("medic3", 20103))        
 
+    # Es raro si el nodo muere y lo detectamos ya sea en el excepcion o al monitorearlo hay q setearlo q no esta activo. 
+    # porque si tratamos de enviar otro mensaje a un nodo muerto, tarda mucho mas el docker.   
     def broadcast(self, message: bytes):
         for node in self.nodes:
             if self.my_hostname != node.hostname and node.active:
@@ -50,14 +52,14 @@ class HeartbeatServer:
     def send_hi(self):
         first_message = f"hi|{self.my_hostname}".encode('utf-8')
         self.broadcast(first_message)
-
+    
     def sender(self):
         self.send_hi()
         while not self.socket._closed:
             try:
                 message = "ping".encode('utf-8')
                 self.broadcast(message)
-                logging.info(f"Sent ping to all Nodes! 💯🎯🎯🎯🎯")
+                logging.info(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
                 time.sleep(TIME_FOR_SEND_PING)
             except OSError as e:
                 logging.info("Sender closed by socket was closed")
@@ -104,6 +106,7 @@ class HeartbeatServer:
                     logging.info(f"[⛑️ ] Node {node.hostname} is Loading ⏳")
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
+                    node.active = False
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
@@ -119,9 +122,8 @@ class HeartbeatServer:
         thr_receiver.start()
         thr_monitor.start()
 
-    def release_resources(self):
+    def free_resources(self):
         self.socket.close()
-        logging.info("[Hearbet Server] Closing socket! 🍡")
         for thr in self.joins:
             thr.join()
         logging.info("[Hearbet Server] All resources are free 💯")
