@@ -1,4 +1,5 @@
 services:
+  
   medic0:
     image: "leader:latest"
     container_name: medic0
@@ -8,6 +9,8 @@ services:
       - RING_SIZE=4
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
     depends_on:
@@ -23,6 +26,8 @@ services:
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
     depends_on:
@@ -38,6 +43,8 @@ services:
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
     depends_on:
@@ -53,6 +60,8 @@ services:
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
 
@@ -63,3 +72,4 @@ networks:
       driver: default
       config:
         - subnet: 172.25.125.0/24
+

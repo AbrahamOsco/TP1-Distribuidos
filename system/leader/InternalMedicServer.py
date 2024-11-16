@@ -31,5 +31,6 @@ class InternalMedicServer:
                     logging.info(f"[{self.node_id}] Error in serverUDP 🗡️ ⚡")
                 break
     
-    def stop(self):
+    def release_resources(self):
         self.skt_udp.close()
+

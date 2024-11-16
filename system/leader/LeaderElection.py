@@ -5,7 +5,8 @@ from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
 from system.leader.InternalMedicServer import InternalMedicServer 
 from system.leader.InternalMedicCheck import InternalMedicCheck 
-from system.leader.Heartbeat import Heartbeat
+from system.leader.HeartbeatClient import HeartbeatClient
+from system.leader.HeartbeatServer import HeartbeatServer
 
 import traceback
 import threading
@@ -27,7 +28,8 @@ class LeaderElection:
         signal.signal(signal.SIGTERM, self.sign_term_handler)
         self.config_params = initialize_config_log()
         self.joins = []
-        self.hearbeat = None
+        self.heartbeat_client = None
+        self.heartbeat_server = None
         self.id = int(os.getenv("NODE_ID"))
         self.ring_size = int(os.getenv("RING_SIZE"))
         self.queue_proto_connect = queue.Queue(maxsize =MAX_SIZE_QUEUE_PROTO_CONNECT)
@@ -51,8 +53,8 @@ class LeaderElection:
                 self.joins.append(thr_client)
     
     def start_hearbeat(self):
-        self.hearbeat = Heartbeat(get_host_name_medic(self.id), get_service_name(self.id))
-        self.hearbeat.run()
+        self.heartbeat_client = HeartbeatClient(get_host_name_medic(self.id), get_service_name(self.id))
+        self.heartbeat_client.run()
     
     def find_new_leader(self):
         self.release_resources()
@@ -75,6 +77,10 @@ class LeaderElection:
                 elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER:
                     logging.info(f"[{self.id}] Timeout to find a leader!")
                 break
+        if self.leader_id.is_this_value(self.id):
+            logging.info(f"[{self.id}⛑️] I'm the leader medic! 🎉 ")
+            heartbeat_server = HeartbeatServer(get_host_name_medic(self.id), get_service_name(self.id))
+            heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
         
 
@@ -275,15 +281,17 @@ class LeaderElection:
         with self.resource_control:
             if self.skt_connect:
                 self.skt_connect.close()
+        if self.heartbeat_server:
+            self.heartbeat_server.release_resources()
         if self.server_udp:
-            self.server_udp.stop()
+            self.server_udp.release_resources()
         if self.skt_accept:
             self.skt_accept.close()
         if self.skt_peer:
             self.skt_peer.close()
-        if self.hearbeat:
-            self.hearbeat.release_resources()
-            self.hearbeat = None
+        if self.heartbeat_client:
+            self.heartbeat_client.release_resources()
+            self.heartbeat_client = None
         self.reset_skts_and_protocols()
         self.release_threads()
         logging.info(f"All resource are free 💯")
