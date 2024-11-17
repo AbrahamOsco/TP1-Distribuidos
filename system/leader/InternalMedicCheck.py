@@ -1,4 +1,5 @@
-from system.leader.common_leader import get_service_name, get_host_name_medic, get_service_name, OFF_SET_MEDIC
+from system.commonsSystem.utils.connectionLeader import get_host_name, get_service_name
+from system.leader.common_leader import OFFSET_MEDIC_SERVER_INTERN
 import logging
 import traceback
 import time
@@ -27,8 +28,8 @@ class InternalMedicCheck:
 
     @classmethod
     def is_alive(cls, my_id, node_id_to_check) -> bool:
-        cls.hostname = get_host_name_medic(node_id_to_check)
-        cls.service_name = get_service_name(node_id_to_check + OFF_SET_MEDIC)
+        cls.hostname = get_host_name(node_id_to_check)
+        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.socket.settimeout(TIME_OUT_HEALTH_CHECK)
         try:

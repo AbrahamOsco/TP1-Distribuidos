@@ -1,5 +1,6 @@
 from system.commonsSystem.utils.log import initialize_config_log
-from system.leader.common_leader import get_host_name_medic, get_service_name, ids_to_msg, OFF_SET_MEDIC
+from system.commonsSystem.utils.connectionLeader import get_host_name, get_service_name, OFFSET_MEDIC_HOSTNAME
+from system.leader.common_leader import ids_to_msg
 from common.socket.Socket import Socket
 from common.protocol.Protocol import Protocol
 from system.leader.ControlValue import ControlValue 
@@ -56,7 +57,7 @@ class LeaderElection:
         self.medic_server = InternalMedicServer(self.id)
         self.medic_server.run()
         self.start_accept()
-        self.heartbeat_client = HeartbeatClient(get_host_name_medic(self.id), get_service_name(self.id))
+        self.heartbeat_client = HeartbeatClient(get_host_name(self.id), get_service_name(self.id))
         self.heartbeat_client.run()
 
     def find_new_leader(self):
@@ -80,7 +81,7 @@ class LeaderElection:
                 break
         if self.leader_id.is_this_value(self.id) and self.heartbeat_server is None:
             logging.info(f"[{self.id}] I'm the leader medic! ⛑️")
-            self.heartbeat_server = HeartbeatServer(get_host_name_medic(self.id), get_service_name(self.id))
+            self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
         
@@ -154,7 +155,7 @@ class LeaderElection:
                     self.safe_send_next(message, next_id)
 
     def connect_and_send_message(self, next_id: int, message: str):
-        self.skt_connect = Socket(ip= get_host_name_medic(next_id), port= get_service_name(next_id))
+        self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
         can_connect, msg = self.skt_connect.connect() 
         if can_connect:
             self.protocol_connect = Protocol(self.skt_connect)
@@ -224,7 +225,7 @@ class LeaderElection:
         self.free_resources()
 
     def getNextId(self, aId: int):
-        return ((aId - OFF_SET_MEDIC + 1) % self.ring_size) + OFF_SET_MEDIC
+        return ((aId - OFFSET_MEDIC_HOSTNAME + 1) % self.ring_size) + OFFSET_MEDIC_HOSTNAME
 
     def send_message_proto_peer_with_lock(self, message: str):
         with self.send_peer_control:

@@ -1,10 +1,11 @@
+from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
 import logging
 import socket
 import logging
 import time
 import threading
 
-OFFSET_PORT_LEADER= 300
+OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 5
 TIME_FOR_SEND_PING = 6.0 
 TIMEOUT_FOR_RECV_PING = 4 # INTERVAL_HEARBEAT + 1
@@ -25,7 +26,7 @@ class HeartbeatServer:
     def __init__(self, my_hostname, my_service_name):
         self.joins = []
         self.my_hostname = my_hostname
-        self.my_service_name = my_service_name + OFFSET_PORT_LEADER
+        self.my_service_name = my_service_name + OFFSET_PORT_LEADER_MEDIC
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.settimeout(TIMEOUT_FOR_RECV_PING)
         self.socket.bind((self.my_hostname, self.my_service_name))
@@ -33,10 +34,10 @@ class HeartbeatServer:
         self.load_nodes()
     
     def load_nodes(self):
-        self.nodes.append(NodeInfo("medic0", 20100))
-        self.nodes.append(NodeInfo("medic1", 20101))        
-        self.nodes.append(NodeInfo("medic2", 20102))        
-        self.nodes.append(NodeInfo("medic3", 20103))        
+        self.nodes.append(NodeInfo("medic_0", get_service_name(OFFSET_MEDIC_HOSTNAME)))
+        self.nodes.append(NodeInfo("medic_1", get_service_name(OFFSET_MEDIC_HOSTNAME + 1)))        
+        self.nodes.append(NodeInfo("medic_2", get_service_name(OFFSET_MEDIC_HOSTNAME + 2)))        
+        self.nodes.append(NodeInfo("medic_3", get_service_name(OFFSET_MEDIC_HOSTNAME + 3)))        
 
     # Es raro si el nodo muere y lo detectamos ya sea en el excepcion o al monitorearlo hay q setearlo q no esta activo. 
     # porque si tratamos de enviar otro mensaje a un nodo muerto, tarda mucho mas el docker.   

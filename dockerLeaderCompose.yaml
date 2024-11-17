@@ -1,11 +1,11 @@
 services:
-
-  medic0:
+  medic_0:
     image: "leader:latest"
-    container_name: medic0
+    container_name: medic_0
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_ID=100
+      - NODE_NAME=medic
+      - NODE_ID=500
       - RING_SIZE=4
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
@@ -14,15 +14,16 @@ services:
     networks:
       - system_network
     depends_on:
-      medic1:
+      medic_1:
         condition: service_started
 
-  medic1:
+  medic_1:
     image: "leader:latest"
-    container_name: medic1
+    container_name: medic_1
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_ID=101
+      - NODE_NAME=medic
+      - NODE_ID=501
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
@@ -31,15 +32,16 @@ services:
     networks:
       - system_network
     depends_on:
-      medic2:
+      medic_2:
         condition: service_started
 
-  medic2:
+  medic_2:
     image: "leader:latest"
-    container_name: medic2
+    container_name: medic_2
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_ID=102
+      - NODE_NAME=medic
+      - NODE_ID=502
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
@@ -48,20 +50,33 @@ services:
     networks:
       - system_network
     depends_on:
-      medic3:
+      medic_3:
         condition: service_started
 
-  medic3:
+  medic_3:
     image: "leader:latest"
-    container_name: medic3
+    container_name: medic_3
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_ID=103
+      - NODE_NAME=medic
+      - NODE_ID=503
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - system_network
+
+  nodetoy_0:
+    image: "nodetoy:latest"
+    container_name: nodetoy_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=nodetoy
+      - NODE_ID=150
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
     networks:
       - system_network
 

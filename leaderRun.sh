@@ -1,6 +1,7 @@
 docker kill $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker build -f ./system/leader/Dockerfile -t "leader:latest" .
+docker build -f ./system/leader/nodeToy/Dockerfile -t "nodetoy:latest" .
 
 
 docker compose -f dockerLeaderCompose.yaml up -d --build
