@@ -26,11 +26,15 @@ class InternalMedicCheck:
                 cls.socket.sendto(message, (cls.hostname, cls.service_name))
             except OSError as e:
                 return
+    @classmethod
+    def is_alive_medic_node(cls, hostname_to_check, service_name_to_check):
+        cls.hostname = hostname_to_check
+        cls.service_name = service_name_to_check + OFFSET_MEDIC_SERVER_INTERN
+        return cls.try_to_connect_with_medic("⛑️ ")
+    
 
     @classmethod
-    def is_alive(cls, my_id, node_id_to_check) -> bool:
-        cls.hostname = get_host_name(node_id_to_check)
-        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
+    def try_to_connect_with_medic(cls, my_id):
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.socket.settimeout(TIME_OUT_HEALTH_CHECK - cls.offset_time_conecction_ready)
         try:
@@ -39,17 +43,17 @@ class InternalMedicCheck:
             data, addr = cls.socket.recvfrom(1024)
             logging.info(f"Response of ping of {(cls.hostname, cls.service_name)}  ⚡⚡🅱️")
             if data == b'ping':
-                logging.info(f"[{my_id}] Now it's Connected with {node_id_to_check} OK!. ✅")
+                logging.info(f"[{my_id}] Now it's Connected with {cls.hostname} OK!. ✅")
                 cls.socket.close()
                 thr_sender.join()
                 return True
         except socket.timeout:
-            logging.info(f"[{my_id}] This Node [{node_id_to_check}] is 💀 Timeout!")
+            logging.info(f"[{my_id}] This Node [{cls.hostname}] is 💀 Timeout!")
             cls.socket.close()
             thr_sender.join()
             return False
         except socket.gaierror as e:
-            logging.error(f"[{my_id}] -> Node: [{node_id_to_check}] is falling Error: {e}  👈")
+            logging.error(f"[{my_id}] -> Node: [{cls.hostname}] is falling Error: {e}  👈")
             cls.socket.close()
             thr_sender.join()
             return False
@@ -57,6 +61,13 @@ class InternalMedicCheck:
             cls.socket.close()
             thr_sender.join()
             traceback.print_exc()
-            logging.info(f"[{node_id_to_check}] Other type of Error in healtcheck {e} 👈")
+            logging.info(f"[{cls.hostname}] Other type of Error in healtcheck {e} 👈")
             return False
         return False
+    
+    @classmethod
+    def is_alive(cls, my_id, node_id_to_check) -> bool:
+        cls.hostname = get_host_name(node_id_to_check)
+        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
+        return cls.try_to_connect_with_medic(my_id)
+

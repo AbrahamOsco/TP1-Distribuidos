@@ -76,7 +76,7 @@ class LeaderElection:
                     lambda: not self.leader_id.is_this_value(None), TIME_OUT_TO_FIND_LEADER)
                 if result_leader:
                     break
-                elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER:
+                elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER: 
                     logging.info(f"[{self.id}] Timeout to find a leader!")
                 break
         if self.leader_id.is_this_value(self.id) and self.heartbeat_server is None:
