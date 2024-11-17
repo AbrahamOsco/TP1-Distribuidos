@@ -1,15 +1,24 @@
 from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
+from enum import Enum
 import logging
 import socket
 import logging
 import time
 import threading
+import subprocess
 
 OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 5
-TIME_FOR_SEND_PING = 6.0 
-TIMEOUT_FOR_RECV_PING = 4 # INTERVAL_HEARBEAT + 1
-TIME_TO_CHECK_FOR_DEAD_NODES = 3.0
+TIME_NORMAL_FOR_SEND_PING = 3.0
+THRESHOLD_RESTART_PING = 1.5
+TIMEOUT_FOR_RECV_PING = 1.5 # INTERVAL_HEARBEAT + 1
+TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
+
+class NodeStatus(Enum):
+    ACTIVE = 0
+    DEAD = 1
+    RECENTLY_REVIVED = 2
+
 
 class NodeInfo:
     def __init__(self, hostname: str, service_name: int):
@@ -17,6 +26,7 @@ class NodeInfo:
         self.numeric_ip = None
         self.service_name = service_name
         self.last_time = None
+        self.status = NodeStatus.ACTIVE
         self.active = True
     
     def update_lastime(self, time_received):
@@ -37,18 +47,39 @@ class HeartbeatServer:
         self.nodes.append(NodeInfo("medic_0", get_service_name(OFFSET_MEDIC_HOSTNAME)))
         self.nodes.append(NodeInfo("medic_1", get_service_name(OFFSET_MEDIC_HOSTNAME + 1)))        
         self.nodes.append(NodeInfo("medic_2", get_service_name(OFFSET_MEDIC_HOSTNAME + 2)))        
-        self.nodes.append(NodeInfo("medic_3", get_service_name(OFFSET_MEDIC_HOSTNAME + 3)))        
+        self.nodes.append(NodeInfo("medic_3", get_service_name(OFFSET_MEDIC_HOSTNAME + 3)))
+        self.nodes.append(NodeInfo("filterbasic_0", get_service_name(100)))
+        self.nodes.append(NodeInfo("filterbasic_1", get_service_name(101)))
+        self.nodes.append(NodeInfo("filterbasic_2", get_service_name(102)))
+        self.nodes.append(NodeInfo("filterbasic_3", get_service_name(103)))
+        self.nodes.append(NodeInfo("nodetoy_0", get_service_name(104)))
+        self.nodes.append(NodeInfo("nodetoy_1", get_service_name(105)))
+        self.nodes.append(NodeInfo("nodetoy_2", get_service_name(106)))
+        self.nodes.append(NodeInfo("nodetoy_3", get_service_name(107)))
 
     # Es raro si el nodo muere y lo detectamos ya sea en el excepcion o al monitorearlo hay q setearlo q no esta activo. 
     # porque si tratamos de enviar otro mensaje a un nodo muerto, tarda mucho mas el docker.   
     def broadcast(self, message: bytes):
         for node in self.nodes:
-            if self.my_hostname != node.hostname and node.active:
-                try:
+            send_messg = False
+            try:
+                if self.my_hostname != node.hostname and node.status == NodeStatus.ACTIVE:
                     self.socket.sendto(message, (node.hostname, node.service_name))
-                except socket.gaierror as e:
-                    node.active = False
-                    logging.info(f"We try to send a message a {node.hostname} but is dead ⚰️ 🫥")
+                    send_messg = True
+                if self.my_hostname != node.hostname and node.status == NodeStatus.RECENTLY_REVIVED:
+                    hi_message = f"hi|{self.my_hostname}".encode('utf-8')
+                    self.socket.sendto(hi_message, (node.hostname, node.service_name))
+                    self.socket.sendto(message, (node.hostname, node.service_name))
+                    node.status = NodeStatus.ACTIVE
+                    send_messg = True
+            except socket.gaierror as e:
+                node.status = NodeStatus.DEAD
+                logging.info(f"We try to send a message a {node.hostname} but is dead ⚰️ 🫥 🦾")
+            
+            if not send_messg and self.my_hostname != node.hostname:
+                logging.info(f"Message {message} To {node.hostname} was not sent because his dead 💀")
+            else:
+                logging.info(f"Message {message} To {node.hostname} was sent success ✅")
 
     def send_hi(self):
         first_message = f"hi|{self.my_hostname}".encode('utf-8')
@@ -58,10 +89,16 @@ class HeartbeatServer:
         self.send_hi()
         while not self.socket._closed:
             try:
+                time_to_sleep = TIME_NORMAL_FOR_SEND_PING
                 message = "ping".encode('utf-8')
+                start_time = time.time()
                 self.broadcast(message)
+                end_time = time.time()
+                if end_time - start_time >= THRESHOLD_RESTART_PING:
+                    logging.info(f"Time surpassed: {end_time - start_time} ⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛⌛")
+                    time_to_sleep = 0
                 logging.info(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
-                time.sleep(TIME_FOR_SEND_PING)
+                time.sleep(time_to_sleep)
             except OSError as e:
                 logging.info("Sender closed by socket was closed")
                 return
@@ -92,12 +129,17 @@ class HeartbeatServer:
                 elif "ping" in message:
                     self.update_lastime(addr, time_received)
             except socket.timeout:
-                logging.info("Timeout in HeartbeatServer ⏳")
-                continue
+                logging.info("[⛑️ ] Don't recived any ping! ⌛")
             except OSError as e:
                 logging.info("Receiver closed by socket was closed")
                 return
     
+    def revive_node(self, node: NodeInfo):
+        result = subprocess.run(['docker', 'start', f'{node.hostname}' ], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logging.info(f"Result of Revive {node.hostname}: ReturnCode:{result.returncode}" +
+                     f"Stdout: {result.stdout} Stderr: {result.stderr}")
+        node.status = NodeStatus.RECENTLY_REVIVED
+
     def monitor(self):
         while not self.socket._closed:
             for node in self.nodes:
@@ -105,9 +147,10 @@ class HeartbeatServer:
                     continue
                 elif node.last_time is None:
                     logging.info(f"[⛑️ ] Node {node.hostname} is Loading ⏳")
-                elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING:
+                elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
-                    node.active = False
+                    node.status = NodeStatus.DEAD
+                    self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)

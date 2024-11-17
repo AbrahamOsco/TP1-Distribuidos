@@ -5,9 +5,9 @@ import time
 import queue
 
 MAX_SIZE_QUEUE_HEARTBEAT = 5
-TIME_FOR_SEND_PING = 3.0
-TIMEOUT_LEADER_RESPONSE = 8
-TIMEOUT_SOCKET = 2
+TIME_FOR_SEND_PING_HEARTBEAT = 1.0
+TIMEOUT_LEADER_RESPONSE = 14.0
+TIMEOUT_SOCKET = 2.0
 EXIT = "Exit"
 SPECIAL_PING ="special_ping"
 
@@ -18,11 +18,12 @@ class HeartbeatClient:
         self.my_hostname = my_hostname
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.my_hostname, self.my_service_name))
-        self.numeric_ip = socket.gethostbyname(socket.gethostname())
+        self.my_numeric_ip = socket.gethostbyname(socket.gethostname())
         self.socket.settimeout(TIMEOUT_SOCKET)
         self.joins = []
         self.queue = queue.Queue(maxsize =MAX_SIZE_QUEUE_HEARTBEAT)
         self.leader_hostname = None
+        self.leader_numeric_ip = None
         self.leader_service_name = None
         self.last_hearbeat_time = time.time()
 
@@ -36,6 +37,7 @@ class HeartbeatClient:
             logging.info(f"[{self.my_service_name}] Leader is dead! 💀")
             self.leader_hostname = None
             self.leader_service_name = None
+            self.leader_numeric_ip = None
             return True
         return False
 
@@ -46,16 +48,16 @@ class HeartbeatClient:
                     logging.info(f"[{self.my_service_name}] Waiting for the leader! ⌚")
                     result = self.queue.get()
                     if result == SPECIAL_PING:
-                        message = f"ping|{self.numeric_ip}".encode('utf-8')
-                        self.socket.sendto(message, (self.leader_hostname, self.leader_service_name))
+                        message = f"ping|{self.my_numeric_ip}".encode('utf-8')
+                        self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
                     if result == EXIT:
                         return
                     self.last_hearbeat_time = time.time()
                 if self.leader_had_timeout():
                     continue
                 message = "ping".encode('utf-8')
-                self.socket.sendto(message, (self.leader_hostname, self.leader_service_name))
-                time.sleep(TIME_FOR_SEND_PING)
+                self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
+                time.sleep(TIME_FOR_SEND_PING_HEARTBEAT)
             except OSError as e:
                 return
 
@@ -63,16 +65,17 @@ class HeartbeatClient:
         if "hi" in message:
             hi, leader_hostname = message.split("|")
             self.leader_hostname = leader_hostname
-            self.leader_service_name = addr[1]
+            self.leader_numeric_ip = addr[0]
+            self.leader_service_name = int(addr[1])
             self.queue.put(SPECIAL_PING)
-        elif message == "ping":
-            self.last_hearbeat_time = time.time()
+        self.last_hearbeat_time = time.time()
 
     def receiver(self):
         while not self.socket._closed:
             try: 
                 data, addr = self.socket.recvfrom(1024)
                 data = data.decode('utf-8')
+                logging.info(f"Recv: {data} 👈👈🗡️")
                 self.handler_message(data, addr)
             except socket.timeout:
                 continue

@@ -7,7 +7,7 @@ import socket
 import logging
 import threading
 
-TIME_OUT_HEALTH_CHECK = 3  # en segundos
+TIME_OUT_HEALTH_CHECK = 5 #ensegundos
 FAIL = 0
 SUCCESS = 1
 
@@ -15,6 +15,7 @@ class InternalMedicCheck:
     hostname = None
     service_name = None
     socket = None
+    offset_time_conecction_ready = 2 #Si ya se armo el anillo entonces, reducimos el timeout a 3. (5-2 = 3)
 
     @classmethod
     def sender(cls):
@@ -31,7 +32,7 @@ class InternalMedicCheck:
         cls.hostname = get_host_name(node_id_to_check)
         cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        cls.socket.settimeout(TIME_OUT_HEALTH_CHECK)
+        cls.socket.settimeout(TIME_OUT_HEALTH_CHECK - cls.offset_time_conecction_ready)
         try:
             thr_sender = threading.Thread(target= cls.sender)
             thr_sender.start()
