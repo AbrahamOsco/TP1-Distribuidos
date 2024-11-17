@@ -68,13 +68,52 @@ services:
     networks:
       - system_network
 
+  # NODOS DEL SISTEMA ABAJO, changes we need: 
+  # 1) node_id creciente siempre. 
+  # 2) node_name con el mismo nombre q el nombre del servicio ej: filterbasic_0
+  filterbasic_0:
+    image: "nodetoy:latest"
+    container_name: filterbasic_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterbasic_0
+      - NODE_ID=100
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filterbasic_1:
+    image: "nodetoy:latest"
+    container_name: filterbasic_1
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterbasic_1
+      - NODE_ID=102
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
   nodetoy_0:
     image: "nodetoy:latest"
     container_name: nodetoy_0
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
-      - NODE_NAME=nodetoy
-      - NODE_ID=150
+      - NODE_NAME=nodetoy_0
+      - NODE_ID=103
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  nodetoy_1:
+    image: "nodetoy:latest"
+    container_name: nodetoy_1
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=nodetoy_1
+      - NODE_ID=104
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
