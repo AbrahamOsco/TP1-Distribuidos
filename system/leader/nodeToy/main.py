@@ -6,7 +6,7 @@ import os
 
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',)
-    logging.info("🅰️🅰️🅰️🅰️🅰️ 🥍[ALIVE]🥍🥍🥍🥍🥍🥍🥍🥍🥍🥍🥍🥍🥍")
+    logging.info("🥍 Alive")
     my_id = os.getenv("NODE_ID")
     my_hostname = get_host_name(my_id)
     my_service_name = get_service_name(my_id)

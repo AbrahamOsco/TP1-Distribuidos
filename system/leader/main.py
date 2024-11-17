@@ -4,7 +4,6 @@ import threading
 from LeaderElection import LeaderElection
 
 def main():
-    print(f"Starting Leader Election... 🗡️🗡️ ⚡🗡️ ⚡🗡️ ⚡ ⚡")
     leader_election :LeaderElection = LeaderElection()
     thr_leader = threading.Thread(target= lambda: leader_election.find_new_leader())
     thr_leader.start()

@@ -23,6 +23,7 @@ MESSG_ELEC = "ELECTION"
 TIME_OUT_TO_FIND_LEADER = 10
 TIME_OUT_TO_GET_ACK = 6
 MAX_SIZE_QUEUE_PROTO_CONNECT = 5
+TIME_FOR_BOOSTRAPING = 3
 
 class LeaderElection:
     def __init__(self):
@@ -41,7 +42,15 @@ class LeaderElection:
         self.stop_value = ControlValue(False)
         self.reset_skts_and_protocols()
         self.resource_control = threading.Lock()
-       
+        self.thr_obs_leader = None
+    
+    def thr_observer_leader(self):
+        while True:
+            leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value)
+            if (not leader_is_alive):
+                logging.info(f"[{self.id}] Leader is dead! 💀, Searching a new leader")
+                self.find_new_leader()
+
     def thread_accepter(self):
         self.skt_accept = Socket(port = get_service_name(self.id))
         while True:
@@ -59,14 +68,15 @@ class LeaderElection:
         self.start_accept()
         self.heartbeat_client = HeartbeatClient(get_host_name(self.id), get_service_name(self.id))
         self.heartbeat_client.run()
+        logging.info(f"[{self.id}] Waiting a time for Bootstrapping search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
+        time.sleep(TIME_FOR_BOOSTRAPING) # Wait to the other nodes to be ready
+        self.leader_id.change_value(None)
 
     def find_new_leader(self):
         self.free_resources()
         self.start_resources()
         if self.stop_value.is_this_value(True):
             return
-        logging.info(f"[{self.id}] Searching a leader!")
-        self.leader_id.change_value(None)
         message = ids_to_msg(MESSG_ELEC, [self.id])
         start_time = time.time()
         self.safe_send_next(message, self.id)
@@ -84,7 +94,9 @@ class LeaderElection:
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
-        
+        if self.thr_obs_leader is None:
+            self.thr_obs_leader = threading.Thread(target=self.thr_observer_leader)
+            self.thr_obs_leader.start()
 
 
     def send_message_proto_connect_with_lock(self, message: str, next_id:int = -1):
@@ -258,6 +270,8 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
+        if self.thr_obs_leader:
+            self.thr_obs_leader.join()
         self.free_resources()
 
     def am_i_leader(self):
