@@ -21,9 +21,10 @@ MESSG_COORD = "COORDINATOR"
 MESSG_ACK = "ACK"
 MESSG_ELEC = "ELECTION"
 TIME_OUT_TO_FIND_LEADER = 10
-TIME_OUT_TO_GET_ACK = 6
+TIME_OUT_TO_GET_ACK = 8
 MAX_SIZE_QUEUE_PROTO_CONNECT = 5
-TIME_FOR_BOOSTRAPING = 2
+TIME_FOR_BOOSTRAPING = 1.0
+TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
 class LeaderElection:
     def __init__(self):
@@ -53,8 +54,9 @@ class LeaderElection:
             leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value, verbose =1)
             if (not leader_is_alive):
                 logging.info(f"[{self.id}] Leader is dead! 💀, Searching a new leader")
+                self.internal_medic_server.set_leader_id(None)
                 self.find_new_leader()
-            time.sleep(0.5)
+            time.sleep(TIME_FOR_SLEEP_OBS_LEADER)
 
     def thread_accepter(self):
         self.skt_accept = Socket(port = get_service_name(self.id))
@@ -88,9 +90,21 @@ class LeaderElection:
         time.sleep(TIME_FOR_BOOSTRAPING) # Wait to the other nodes to be ready
         self.leader_id.change_value(None)
 
+    def there_is_leader_already(self) -> bool:
+        leader_id = InternalMedicCheck.try_to_get_leader_id(self.id, self.getNextId(self.id))
+        if leader_id != None:
+            logging.info(f"There is a leader already! 🎖️ {leader_id}")
+            self.leader_id.change_value(leader_id)
+            self.internal_medic_server.set_leader_id(leader_id)
+            return True
+        logging.info("There isn't any leader  already 👌")
+        return False
+
+    #TODO: Refactor this method, and reduces time when a leader medic dead. takecare with timeout of ack. 
     def find_new_leader(self):
         self.free_resources()
         self.wait_boostrap_leader()
+        if self.there_is_leader_already(): return
         if self.stop_value.is_this_value(True):
             return
         message = ids_to_msg(MESSG_ELEC, [self.id])
@@ -105,6 +119,7 @@ class LeaderElection:
                 elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER: 
                     logging.info(f"[{self.id}] Timeout to find a leader!")
                 break
+        self.internal_medic_server.set_leader_id(self.leader_id.value)
         if self.leader_id.is_this_value(self.id) and self.heartbeat_server is None:
             logging.info(f"[{self.id}] I'm the leader medic! ⛑️")
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))

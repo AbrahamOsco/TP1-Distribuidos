@@ -66,10 +66,6 @@ class HeartbeatServer:
         for node in self.nodes:
             send_messg = False
             try:
-                #if self.my_hostname != node.hostname and "medic" in node.hostname:
-                #    if not InternalMedicCheck.is_alive_medic_node(node.hostname, node.service_name):
-                #        node.status = NodeStatus.DEAD
-                #        continue
                 if self.my_hostname != node.hostname and node.status == NodeStatus.ACTIVE:
                     self.socket.sendto(message, (node.hostname, node.service_name))
                     send_messg = True

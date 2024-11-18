@@ -15,18 +15,20 @@ class InternalMedicServer:
         self.skt_udp.bind(("", self.service_name))
         self.skt_udp.settimeout(TIMEOUT_FOR_CHECK_PING)
         self.joins = []
-    
+        self.leader_id = None
+
     def start(self):
         while not self.skt_udp._closed:
             try:
                 message, addr = self.skt_udp.recvfrom(1024)
                 if message == b"ping":
                     self.skt_udp.sendto(b"ping", addr)
-                elif message == b'':
-                    logging.info(f"[{self.node_id}] Received empty message, ignoring")
-                    continue
-                else:
-                    logging.info(f"msg recv: {message} ❌")
+                elif message == b"leader_id":
+                    if not self.leader_id:
+                        self.skt_udp.sendto(b"no_leader", addr)
+                    else:
+                        leader_id_str = str(self.leader_id).encode('utf-8')
+                        self.skt_udp.sendto(leader_id_str, addr)
             except socket.timeout:
                 continue
             except Exception as e:
@@ -39,11 +41,12 @@ class InternalMedicServer:
         self.joins.append(thr_medic_server)
         thr_medic_server.start()
 
+    def set_leader_id(self, leader_id: int):
+        self.leader_id = leader_id
     
     def free_resources(self):
         self.skt_udp.close()
         for thr in self.joins:
             thr.join()
         logging.info("[Internal MedicServer] All resources are free 💯")
-
 
