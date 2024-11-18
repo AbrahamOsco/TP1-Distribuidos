@@ -64,8 +64,6 @@ services:
         condition: service_started
       filterbasic_1:
         condition: service_started
-      filterbasic_2:
-        condition: service_started
 
   filterbasic_0:
     container_name: filterbasic_0
@@ -94,7 +92,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_ID=0
-        - AMOUNT_OF_NODES=3
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -128,41 +126,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_ID=1
-        - AMOUNT_OF_NODES=3
-        - SOURCE=DataRaw
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=DataParsed
-        - SINK_TYPE=topic
-
-  filterbasic_2:
-    container_name: filterbasic_2
-    image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        selectq1_0:
-            condition: service_started
-        selectq1_1:
-            condition: service_started
-        selectq2345_0:
-            condition: service_started
-        selectq2345_1:
-            condition: service_started
-        filterscorepositive_0:
-            condition: service_started
-        filterscorenegative_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterbasic
-        - NODE_ID=2
-        - AMOUNT_OF_NODES=3
+        - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -183,8 +147,6 @@ services:
             condition: service_started
         platformcounter_1:
             condition: service_started
-        platformcounter_2:
-            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
@@ -197,7 +159,7 @@ services:
         - SINK=GamesPlatform
         - SINK_TYPE=direct
         - SELECT=2
-        - SEND_MODULO=3
+        - SEND_MODULO=2
 
   selectq1_1:
     container_name: selectq1_1
@@ -213,8 +175,6 @@ services:
             condition: service_started
         platformcounter_1:
             condition: service_started
-        platformcounter_2:
-            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
@@ -227,7 +187,7 @@ services:
         - SINK=GamesPlatform
         - SINK_TYPE=direct
         - SELECT=2
-        - SEND_MODULO=3
+        - SEND_MODULO=2
 
   platformcounter_0:
     container_name: platformcounter_0
@@ -248,7 +208,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_ID=0
-        - AMOUNT_OF_NODES=3
+        - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=0
         - SOURCE_TYPE=direct
@@ -275,40 +235,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_ID=1
-        - AMOUNT_OF_NODES=3
+        - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=1
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
         - SOURCE_NAME=platformcounter1
-
-  platformcounter_2:
-    container_name: platformcounter_2
-    image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        platformreducer:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=platformcounter
-        - NODE_ID=2
-        - AMOUNT_OF_NODES=3
-        - SOURCE=GamesPlatform
-        - SOURCE_KEY=2
-        - SOURCE_TYPE=direct
-        - SINK=CountByPlatform
-        - SINK_TYPE=direct
-        - SOURCE_NAME=platformcounter2
 
   platformreducer:
     container_name: platformreducer
@@ -333,6 +266,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+        - QUERY=1
 
   selectq2345_0:
     container_name: selectq2345_0
@@ -462,6 +396,7 @@ services:
         - SINK=Output
         - SINK_TYPE=direct
         - TOP_SIZE=10
+        - QUERY=2
 
   selectidnameindie_0:
     container_name: selectidnameindie_0
@@ -563,6 +498,7 @@ services:
         - SINK=Output
         - SINK_TYPE=direct
         - TOP_SIZE=5
+        - QUERY=3
 
   selectidnameaction_0:
     container_name: selectidnameaction_0
@@ -692,6 +628,7 @@ services:
         - SINK=Output
         - SINK_TYPE=direct
         - AMOUNT_NEEDED=5000
+        - QUERY=4
 
   monitorstorageq5:
     container_name: monitorstorageq5
@@ -717,6 +654,7 @@ services:
         - SINK=Output
         - SINK_TYPE=direct
         - PERCENTILE=0.9
+        - QUERY=5
 
 networks:
   system_network:
