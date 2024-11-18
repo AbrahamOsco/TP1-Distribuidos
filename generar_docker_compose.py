@@ -157,16 +157,20 @@ def special_envs(service_name, id):
         - DECADE=2010"""
     if service_name == "groupertopaverageplaytime":
         return """
-        - TOP_SIZE=10"""
+        - TOP_SIZE=10
+        - QUERY=2"""
     if service_name == "groupertopreviewspositiveindie":
         return """
-        - TOP_SIZE=5"""
+        - TOP_SIZE=5
+        - QUERY=3"""
     if service_name == "monitorstorageq4":
         return """
-        - AMOUNT_NEEDED=5000"""
+        - AMOUNT_NEEDED=5000
+        - QUERY=4"""
     if service_name == "monitorstorageq5":
         return """
-        - PERCENTILE=0.9"""
+        - PERCENTILE=0.9
+        - QUERY=5"""
     if service_name == "filterscorepositive":
         return """
         - SCORE_WANTED=1"""
@@ -186,6 +190,9 @@ def special_envs(service_name, id):
     if service_name == "platformcounter":
         return f"""
         - SOURCE_NAME=platformcounter{id}"""
+    if service_name == "platformreducer":
+        return f"""
+        - QUERY=1"""
     return ""
 
 def get_source_key(service_name, i):

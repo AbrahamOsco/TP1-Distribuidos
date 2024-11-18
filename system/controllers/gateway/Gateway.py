@@ -138,9 +138,9 @@ class Gateway(Node):
     def inform_eof_to_nodes(self, data: EOFDTO, delivery_tag: str):
         client_id = data.get_client()
         if client_id not in self.result_eofs_by_client:
-            self.result_eofs_by_client[client_id] = 0
-        self.result_eofs_by_client[client_id] += 1
-        if self.result_eofs_by_client[client_id] == self.amount_of_queries:
+            self.result_eofs_by_client[client_id] = set()
+        self.result_eofs_by_client[client_id].add(data.query)
+        if len(self.result_eofs_by_client[client_id]) == self.amount_of_queries:
             with self.manager_lock:
                 self.shared_namespace.protocols.get(data.get_client()).send_result(None)
             del self.result_eofs_by_client[client_id]
