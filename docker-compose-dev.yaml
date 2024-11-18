@@ -62,8 +62,6 @@ services:
         condition: service_healthy
       filterbasic_0:
         condition: service_started
-      filterbasic_1:
-        condition: service_started
 
   filterbasic_0:
     container_name: filterbasic_0
@@ -77,11 +75,7 @@ services:
             condition: service_healthy
         selectq1_0:
             condition: service_started
-        selectq1_1:
-            condition: service_started
         selectq2345_0:
-            condition: service_started
-        selectq2345_1:
             condition: service_started
         filterscorepositive_0:
             condition: service_started
@@ -92,41 +86,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_ID=0
-        - AMOUNT_OF_NODES=2
-        - SOURCE=DataRaw
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=DataParsed
-        - SINK_TYPE=topic
-
-  filterbasic_1:
-    container_name: filterbasic_1
-    image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        selectq1_0:
-            condition: service_started
-        selectq1_1:
-            condition: service_started
-        selectq2345_0:
-            condition: service_started
-        selectq2345_1:
-            condition: service_started
-        filterscorepositive_0:
-            condition: service_started
-        filterscorenegative_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterbasic
-        - NODE_ID=1
-        - AMOUNT_OF_NODES=2
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
@@ -145,49 +105,19 @@ services:
             condition: service_healthy
         platformcounter_0:
             condition: service_started
-        platformcounter_1:
-            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_ID=0
-        - AMOUNT_OF_NODES=2
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
         - SELECT=2
-        - SEND_MODULO=2
-
-  selectq1_1:
-    container_name: selectq1_1
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        platformcounter_0:
-            condition: service_started
-        platformcounter_1:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectq1
-        - NODE_ID=1
-        - AMOUNT_OF_NODES=2
-        - SOURCE=DataParsed
-        - SOURCE_KEY=games
-        - SOURCE_TYPE=topic
-        - SINK=GamesPlatform
-        - SINK_TYPE=direct
-        - SELECT=2
-        - SEND_MODULO=2
+        - SEND_MODULO=1
 
   platformcounter_0:
     container_name: platformcounter_0
@@ -208,40 +138,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_ID=0
-        - AMOUNT_OF_NODES=2
+        - AMOUNT_OF_NODES=1
         - SOURCE=GamesPlatform
         - SOURCE_KEY=0
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
         - SOURCE_NAME=platformcounter0
-
-  platformcounter_1:
-    container_name: platformcounter_1
-    image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        platformreducer:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=platformcounter
-        - NODE_ID=1
-        - AMOUNT_OF_NODES=2
-        - SOURCE=GamesPlatform
-        - SOURCE_KEY=1
-        - SOURCE_TYPE=direct
-        - SINK=CountByPlatform
-        - SINK_TYPE=direct
-        - SOURCE_NAME=platformcounter1
 
   platformreducer:
     container_name: platformreducer
@@ -285,32 +188,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_ID=0
-        - AMOUNT_OF_NODES=2
-        - SOURCE=DataParsed
-        - SOURCE_KEY=games
-        - SOURCE_TYPE=topic
-        - SINK=GamesQ2345
-        - SINK_TYPE=direct
-        - SELECT=3
-
-  selectq2345_1:
-    container_name: selectq2345_1
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        filtergender_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectq2345
-        - NODE_ID=1
-        - AMOUNT_OF_NODES=2
+        - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic

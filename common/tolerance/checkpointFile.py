@@ -38,7 +38,7 @@ class CheckpointFile:
     def save_checkpoint(self, data: bytes):
         self._save_stg_checkpoint(data)
         self._promote_staging_cleanup()
-        logging.info("Checkpoint saved")
+        logging.debug("Checkpoint saved")
 
     def _verify_checkpoint_integrity(self, data: bytes) -> bool:
         return b"UNCORRUPTED END" in data

@@ -136,12 +136,12 @@ class SteamAnalyzer:
                 break
 
             if local_batch_id <= self.batch_id:
-                logging.info(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
+                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
                 local_batch_id += 1
                 continue
 
             self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=local_batch_id))
-            logging.info(f"action: Sent game batch | batch_id: {local_batch_id} ✅")
+            logging.debug(f"action: Sent game batch | batch_id: {local_batch_id} ✅")
             local_batch_id += 1
 
         if not games_eof_sent and not self.there_a_signal:
@@ -159,12 +159,12 @@ class SteamAnalyzer:
                     break
 
                 if local_batch_id <= self.batch_id:
-                    logging.info(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
+                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
                     local_batch_id += 1
                     continue
 
                 self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=local_batch_id))
-                logging.info(f"action: Sent review batch | batch_id: {local_batch_id} ✅")
+                logging.debug(f"action: Sent review batch | batch_id: {local_batch_id} ✅")
                 local_batch_id += 1
 
             if not reviews_eof_sent and not self.there_a_signal:

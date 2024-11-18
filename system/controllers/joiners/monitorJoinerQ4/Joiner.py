@@ -13,7 +13,7 @@ class Joiner(DualInputNode):
     def process_reviews(self, data: ReviewsDTO):
         client_id = data.get_client()
         if self.data.status[client_id] == STATUS_STARTED:
-            logging.error(f"Client {client_id} is still started")
+            logging.debug(f"Client {client_id} is still started")
             self.add_premature_message(data)
             return
         data.filter_data(lambda review: review.app_id in self.data.games[client_id])

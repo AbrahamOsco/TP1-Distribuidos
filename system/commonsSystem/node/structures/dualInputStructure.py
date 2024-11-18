@@ -73,7 +73,7 @@ class DualInputStructure(Structure):
             self.status[client_id] = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
             game_size = int.from_bytes(data[offset:offset+4], byteorder='big')
-            offset += 1
+            offset += 4
             self.list[client_id] = {}
             self.games[client_id] = {}
             for j in range(game_size):
@@ -88,6 +88,7 @@ class DualInputStructure(Structure):
             offset += 2
             self.premature_messages[client_id] = []
             for j in range(premature_size):
+                offset += 1
                 message, offset = ReviewsDTO.deserialize(data, offset)
                 self.premature_messages[client_id].append(message)
             self.counter[client_id] = []
@@ -102,9 +103,10 @@ class DualInputStructure(Structure):
         return self, offset
     
     def print_state(self):
-        logging.info(f"List: {self.list}")
-        logging.info(f"Games: {self.games}")
-        logging.info(f"Status: {self.status}")
-        logging.info(f"Counter: {self.counter}")
-        logging.info(f"Premature messages: {self.premature_messages}")
+        pass
+        # logging.info(f"List: {self.list}")
+        # logging.info(f"Games: {self.games}")
+        # logging.info(f"Status: {self.status}")
+        # logging.info(f"Counter: {self.counter}")
+        # logging.info(f"Premature messages: {self.premature_messages}")
         

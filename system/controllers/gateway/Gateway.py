@@ -128,11 +128,11 @@ class Gateway(Node):
             logging.warning("No available client IDs found.")
             return None
 
-
-
     def process_data(self, data: GamesDTO):
         result = data.to_result()
         with self.manager_lock:
+            if data.get_client() not in self.shared_namespace.protocols:
+                raise Exception(f"Client {data.get_client()} not found in protocols")
             self.shared_namespace.protocols.get(data.get_client()).send_result(result)
 
     def inform_eof_to_nodes(self, data: EOFDTO, delivery_tag: str):

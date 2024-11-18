@@ -20,6 +20,7 @@ class Broker:
         delay = 4
         for attempt in range(retries):
             try:
+                logging.getLogger("pika").setLevel(logging.ERROR)
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(
                     'rabbitmq',
                     heartbeat=600,
@@ -60,7 +61,7 @@ class Broker:
         return a_queue.get_name()
 
     def create_sink(self, type, name=''):
-        logging.info(f"action: Created a Exchange: | name: {name} | type: {type} | result: sucess ✅")
+        logging.debug(f"action: Created a Exchange: | name: {name} | type: {type} | result: sucess ✅")
         self.channel.exchange_declare(exchange=name, exchange_type=type)
 
     def bind_queue(self, queue_name='', sink='', routing_key='default'):

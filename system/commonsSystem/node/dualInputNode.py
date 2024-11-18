@@ -16,13 +16,15 @@ class DualInputNode(StatefullNode):
 
     def inform_eof_to_nodes(self, data, delivery_tag: str):
         client_id = data.get_client()
-        if self.data.status[client_id] == STATUS_REVIEWING:
+        if data.get_type() == "reviews" and self.data.status[client_id] == STATUS_REVIEWING:
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Finished.")
-        else:
+            self.checkpoint.save_checkpoint(self.data.to_bytes())
+        elif data.get_type() == "games" and self.data.status[client_id] == STATUS_STARTED:
             self.data.status[client_id] = STATUS_REVIEWING
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
+            self.checkpoint.save_checkpoint(self.data.to_bytes())
             self.check_premature_messages(data.get_client())
         self.broker.basic_ack(delivery_tag)
 
@@ -62,7 +64,7 @@ class DualInputNode(StatefullNode):
             return
         client_id = data.get_client()
         if self.data.status[client_id] == STATUS_STARTED:
-            logging.error(f"Client {client_id} is still started")
+            logging.debug(f"Client {client_id} is still started")
             self.add_premature_message(data) # TODO: Revisar que onda con esto
             return
         self.review_id_list.insert(data.global_counter)

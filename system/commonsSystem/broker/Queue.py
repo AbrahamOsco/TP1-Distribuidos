@@ -32,7 +32,7 @@ class Queue:
         has_callback = "✅"
         if self.callback == None:
             has_callback = "⛔"
-        logging.info(f"action: Created a Queue: | name: {self.name} | durable: {self.durable} | exclusive: {self.exclusive}"\
+        logging.debug(f"action: Created a Queue: | name: {self.name} | durable: {self.durable} | exclusive: {self.exclusive}"\
                      f"| call_back: {has_callback} | result: sucess ✅")
 
     def get_properties(self):
