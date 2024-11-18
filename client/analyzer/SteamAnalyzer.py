@@ -1,4 +1,5 @@
 import logging
+import time
 from common.utils.utils import initialize_log 
 import os
 import threading
@@ -21,6 +22,8 @@ class SteamAnalyzer:
         self.batch_id = 1
         self.there_a_signal = False
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
+        self.max_retries = int(os.getenv("MAX_RETRIES", 5))
+        self.retry_delay = int(os.getenv("RETRY_DELAY", 5)) 
 
     def init_readers_and_responses(self, percent_of_file):
         self.percent = percent_of_file
@@ -45,12 +48,35 @@ class SteamAnalyzer:
                 return client_id
         logging.info(f"action: get_id_client | client_id: {None}")
         return None
+    
 
     def connect_to_server(self):
-        self.socket = Socket(self.config_params["hostname"], 12345) #always put the name of docker's service nos ahorra problemas 👈
-        result, msg =  self.socket.connect()
-        logging.info(f"action: connect 🏪 | result: {result} | msg: {msg} 👈 ")
-        self.protocol = ClientProtocol(socket =self.socket)
+        try:
+            self.socket = Socket(self.config_params["hostname"], 12345)
+            result, msg = self.socket.connect()
+            if not result:
+                logging.error(f"action: connect_to_server | result: failed ❌ | msg: {msg}")
+                return False
+            logging.info(f"action: connect_to_server | result: success ✅ | msg: {msg}")
+            self.protocol = ClientProtocol(socket=self.socket)
+            return True
+        except Exception as e:
+            logging.error(f"action: connect_to_server | result: failed ❌ | error: {e}")
+            return False
+
+    def reconnect(self):
+        attempts = 0
+        while attempts < self.max_retries:
+            logging.info(f"action: reconnect | attempt: {attempts + 1}/{self.max_retries}")
+            if self.connect_to_server():
+                logging.info("action: reconnect | result: success ✅")
+                return True
+            attempts += 1
+            time.sleep(self.retry_delay)
+        
+        logging.error("action: reconnect | result: failed after all retry attempts ❌")
+        self.stop_by_signal()
+        return False
 
     def send_games(self):
         logging.info("action: Sending Games | result: pending ⌚")
@@ -80,13 +106,22 @@ class SteamAnalyzer:
 
     def send_data(self):
         try:
-            if (self.batch_id > 1):
+            if self.batch_id > 1:
                 self.find_and_send_remaining_data()
             else:
                 self.send_games()
                 self.send_reviews()
+        except (BrokenPipeError, ConnectionResetError) as e:
+            logging.error(f"action: send_data | error: {e} | attempting reconnect")
+            if self.reconnect():
+                logging.info("action: send_data | reconnected")
+                self.auth(self.config_params["id"])
+                logging.info("action: send_data | auth reenviado")
+                self.send_data()
+                logging.info("action: send_data | reenviado")
         except Exception as e:
-            logging.info(f"action: Error Catch from thread Sender: {e} | result: success ✅ ")
+            logging.error(f"action: send_data | unexpected error: {e}")
+            self.stop()
 
     def find_and_send_remaining_data(self):
         logging.info("action: Finding and sending remaining data | result: pending ⌚")
@@ -182,16 +217,19 @@ class SteamAnalyzer:
 
     def execute(self, percent):
         self.init_readers_and_responses(percent)
-        self.connect_to_server()
-        if (self.config_params["id"] is None):
+        if not self.connect_to_server():
+            logging.error("action: execute | result: failed to establish initial connection")
+            return
+
+        if self.config_params["id"] is None:
             logging.info("action: Sending auth without client id")
-            self.auth(INVALID_CLIENT_ID)  
+            self.auth(INVALID_CLIENT_ID)
         else:
             logging.info(f"action: Sending auth with client id {self.config_params['id']}")
             self.auth(self.config_params["id"])
 
-        self.threads.append(threading.Thread(target =self.send_data))
-        self.threads.append(threading.Thread(target =self.get_result_from_queries))
+        self.threads.append(threading.Thread(target=self.send_data))
+        self.threads.append(threading.Thread(target=self.get_result_from_queries))
         for thread in self.threads:
             thread.start()
         for thread in self.threads:
@@ -203,7 +241,7 @@ class SteamAnalyzer:
             logging.info("action: Waiting for the results 📊 | result: pending ⌚")
             while not self.there_a_signal:
                 resultQuerys = self.protocol.recv_result()
-                if resultQuerys == None:
+                if resultQuerys is None:
                     break
                 logging.info(f"action: result_received 📊 | result: success ✅")
                 self.actual_responses = resultQuerys.append_data(self.actual_responses)
@@ -216,6 +254,8 @@ class SteamAnalyzer:
                 logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
         except Exception as e:
             logging.info(f"action: Error Catch from thread Receiver: {e} | result: success ✅")
+            if self.reconnect():
+                self.get_result_from_queries()
 
     def stop_by_signal(self):
         self.there_a_signal = True

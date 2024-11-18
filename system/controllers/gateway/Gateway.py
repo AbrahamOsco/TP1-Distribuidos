@@ -26,23 +26,25 @@ class Gateway(Node):
         self.shared_namespace = manager.Namespace()
         self.shared_namespace.protocols = {}
         self.manager_lock = manager.Lock()
-        self.load_clients_allow()
         super().__init__()
+        self.load_clients_allow()
 
     def load_clients_allow(self):
         self.clients_allow = Array('b', [True] * MAX_CLIENTS)
 
         if os.path.exists(CLIENTS_LOG_PATH):
+            logging.info(f"Restoring gateway from logs.. ⌚")
             with self.manager_lock:
                 with open(CLIENTS_LOG_PATH, "r") as file:
                     for line in file:
                         match = re.match(r"Client ID: (\d+), Batch ID: (\d+)", line)
                         if match:
                             client_id = int(match.group(1))
+                            logging.info(f"Client {client_id} was find in log with batch {match.group(2)}")
                             if 1 <= client_id <= MAX_CLIENTS:
                                 self.clients_allow[client_id - 1] = False
-
-
+            logging.info(f"Finished restoring gateway from logs.. ✅")
+        
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
         socket_peer, addr = self.socket_accepter.accept()
@@ -79,14 +81,15 @@ class Gateway(Node):
                     client_id = self.get_client_id(client_handler)
                     client_handler.set_batch_id(1)
                 else:
+                    logging.info(f"action: auth with client_id | client_id: {client_id}")
                     client_handler.set_client_id(client_id)
                     self.get_batch_id(client_handler,client_id)
-
                 with self.manager_lock:
                     protocols = self.shared_namespace.protocols
                     protocols[client_id] = client_handler.protocol
                     self.shared_namespace.protocols = protocols
                 self.pool.apply_async(func = client_handler.start, args = (), error_callback = lambda e: logging.error(f"action: error | result: {e}"))
+            logging.info("Llegue al server stop")
             self.stop_server()
 
 
