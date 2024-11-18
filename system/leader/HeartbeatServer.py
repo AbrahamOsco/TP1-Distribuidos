@@ -10,10 +10,10 @@ import threading
 import subprocess
 
 OFFSET_PORT_LEADER_MEDIC= 300
-MAX_SIZE_QUEUE_HEARTBEAT = 5
+MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
-TIMEOUT_FOR_RECV_PING = 1.5 # INTERVAL_HEARBEAT + 1
+TIMEOUT_FOR_RECV_PING = 1.2 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
@@ -65,11 +65,13 @@ class HeartbeatServer:
     def broadcast(self, message: bytes):
         for node in self.nodes:
             send_messg = False
+            if self.my_hostname == node.hostname:
+                continue
             try:
-                if self.my_hostname != node.hostname and node.status == NodeStatus.ACTIVE:
+                if node.status == NodeStatus.ACTIVE:
                     self.socket.sendto(message, (node.hostname, node.service_name))
                     send_messg = True
-                elif self.my_hostname != node.hostname and node.status == NodeStatus.RECENTLY_REVIVED:
+                elif node.status == NodeStatus.RECENTLY_REVIVED:
                     hi_message = f"hi|{self.my_hostname}".encode('utf-8')
                     self.socket.sendto(hi_message, (node.hostname, node.service_name))
                     self.socket.sendto(message, (node.hostname, node.service_name))
@@ -78,12 +80,13 @@ class HeartbeatServer:
             except socket.gaierror as e:
                 node.status = NodeStatus.DEAD
                 logging.info(f"We try to send a message a {node.hostname} but is dead ⚰️ 🫥 🦾")
-            if not send_messg and self.my_hostname != node.hostname:
+            if not send_messg:
                 logging.info(f"Message {message} To {node.hostname} was not sent because his dead 💀")
 
     def send_hi(self):
         first_message = f"hi|{self.my_hostname}".encode('utf-8')
         self.broadcast(first_message)
+        logging.info(f"Sent first Hi to all nodes 🏅✅")
     
     def sender(self):
         self.send_hi()
@@ -95,7 +98,6 @@ class HeartbeatServer:
                 self.broadcast(message)
                 end_time = time.time()
                 if end_time - start_time >= THRESHOLD_RESTART_PING: #Si supera 1.5s muy probable murio otro nodo y fue revivido necesitamos enviarle ping. con la data del lider
-                    logging.info(f"Time to broadcast was {end_time - start_time}: go broadcast again. ⌛⌛")
                     time_to_sleep = 0
                 logging.info(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
                 time.sleep(time_to_sleep)
@@ -125,7 +127,7 @@ class HeartbeatServer:
                 if "|" in message:
                     self.add_real_ip(addr, message, time_received)
                 elif "ping" in message:
-                    self.update_lastime(addr, time_received)
+                    self.update_lastime(addr, time_received) #si no recibo el ping de un nodo dead, su lastime no se actualiza. 
             except socket.timeout:
                 logging.info("[⛑️ ] Don't recived any ping! ⌛")
             except OSError as e:
@@ -146,7 +148,7 @@ class HeartbeatServer:
                 if node.hostname == self.my_hostname:
                     continue
                 elif node.last_time is None:
-                    logging.info(f"[⛑️ ] Node {node.hostname} Has a new LastTime ⌛")
+                    logging.info(f"[⛑️ ] Node {node.hostname} has a new LastTime 🆕")
                     node.last_time = time.time()
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")

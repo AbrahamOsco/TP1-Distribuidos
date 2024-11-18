@@ -20,15 +20,14 @@ import signal
 MESSG_COORD = "COORDINATOR"
 MESSG_ACK = "ACK"
 MESSG_ELEC = "ELECTION"
-TIME_OUT_TO_FIND_LEADER = 10
-TIME_OUT_TO_GET_ACK = 8
-MAX_SIZE_QUEUE_PROTO_CONNECT = 5
+TIME_OUT_TO_FIND_LEADER = 16
+TIME_OUT_TO_GET_ACK = 15
+MAX_SIZE_QUEUE_PROTO_CONNECT = 1
 TIME_FOR_BOOSTRAPING = 1.0
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
 class LeaderElection:
     def __init__(self):
-        signal.signal(signal.SIGTERM, self.sign_term_handler)
         self.config_params = initialize_config_log()
         self.joins = []
         self.heartbeat_client = None
@@ -40,7 +39,6 @@ class LeaderElection:
         self.send_peer_control = threading.Lock()
         self.leader_id = ControlValue(-1)
         self.got_ack = ControlValue(-1)
-        self.stop_value = ControlValue(False)
         self.reset_skts_and_protocols()
         self.resource_control = threading.Lock()
         self.thr_obs_leader = None
@@ -48,35 +46,19 @@ class LeaderElection:
         self.skt_peer = None
         self.can_observer_lider = True
         self.start_resource_unique()
+        signal.signal(signal.SIGTERM, self.sign_term_handler)
 
+    # Una vez que exista un primer lider se inicia el observer. 
     def thread_observer_leader(self):
+        logging.info(f"[{self.id}] Starting to observer to the leader (if there is any)! 👀 ")
         while self.can_observer_lider:
-            leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value, verbose =1)
-            if (not leader_is_alive):
-                logging.info(f"[{self.id}] Leader is dead! 💀, Searching a new leader")
+            leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value, verbose =0)
+            if (not leader_is_alive): # Si murio el lider actual seteamos None y search a new lider.
+                logging.info(f"[{self.id}] Currnet Leader is dead! 💀, Searching a new leader 🔄")
+                self.leader_id.change_value(None)
                 self.internal_medic_server.set_leader_id(None)
                 self.find_new_leader()
             time.sleep(TIME_FOR_SLEEP_OBS_LEADER)
-
-    def thread_accepter(self):
-        self.skt_accept = Socket(port = get_service_name(self.id))
-        while True:
-            skt_peer, addr = self.skt_accept.accept_simple()
-            if not skt_peer:
-                break
-            else:
-                self.skt_peer = skt_peer
-                self.protocol_peer = Protocol(self.skt_peer)
-                thr_receiver = threading.Thread(target= self.thread_receiver_peer)
-                thr_receiver.start()
-                self.joins.append(thr_receiver)
-
-    def thread_client(self, skt_peer):
-        self.skt_peer = skt_peer
-        self.protocol_peer = Protocol(self.skt_peer)
-        thr_receiver = threading.Thread(target= self.thread_receiver_peer)
-        thr_receiver.start()
-        self.joins.append(thr_receiver)
 
     def start_resource_unique(self):
         self.internal_medic_server = InternalMedicServer(self.id)
@@ -96,20 +78,13 @@ class LeaderElection:
             logging.info(f"There is a leader already! 🎖️ {leader_id}")
             self.leader_id.change_value(leader_id)
             self.internal_medic_server.set_leader_id(leader_id)
+            self.start_observer_leader()
             return True
-        logging.info("There isn't any leader  already 👌")
+        #logging.info("There is not 🙅 a leader in the ring 🛟👌")
         return False
 
-    #TODO: Refactor this method, and reduces time when a leader medic dead. takecare with timeout of ack. 
-    def find_new_leader(self):
-        self.free_resources()
-        self.wait_boostrap_leader()
-        if self.there_is_leader_already(): return
-        if self.stop_value.is_this_value(True):
-            return
-        message = ids_to_msg(MESSG_ELEC, [self.id])
+    def wait_to_get_leader(self):
         start_time = time.time()
-        self.safe_send_next(message, self.id)
         while True:
             with self.leader_id.condition:
                 result_leader = self.leader_id.condition.wait_for(
@@ -125,9 +100,70 @@ class LeaderElection:
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
-        if self.thr_obs_leader is None and self.id != self.leader_id.value:
-            self.thr_obs_leader = threading.Thread(target=self.thread_observer_leader)
-            self.thr_obs_leader.start()
+    
+    def start_observer_leader(self):
+        self.thr_obs_leader = threading.Thread(target=self.thread_observer_leader)
+        self.thr_obs_leader.start()
+
+    def find_new_leader(self):
+        self.free_resources()
+        self.wait_boostrap_leader()
+        if self.there_is_leader_already(): 
+            return
+        message = ids_to_msg(MESSG_ELEC, [self.id])
+        self.safe_send_next(message, self.id)
+        self.wait_to_get_leader()
+        if self.thr_obs_leader is None and not self.leader_id.is_this_value(self.id):
+            self.start_observer_leader()
+
+
+    def send_message_and_wait_for_ack(self, message: str, next_id: int, ):
+        self.send_message_proto_connect_with_lock(message, next_id)
+        start_time = time.time()
+        while True:
+            with self.got_ack.condition:
+                result = self.got_ack.condition.wait_for(lambda: self.is_got_ack_this_value(next_id), TIME_OUT_TO_GET_ACK)
+                if result:
+                    break
+                elif (time.time() - start_time) >= TIME_OUT_TO_GET_ACK:
+                    logging.info(f"[{self.id}] Connect Timeout to get a ack! from {next_id} We try with the next! 🔕")
+                    if not self.leader_id.is_this_value(None):
+                        logging.info(f"[{self.id}] We found a leader already! Leader:{self.leader_id.value} 💯 ✅")
+                        break
+                    with self.resource_control:
+                        if self.skt_connect and not self.skt_connect.is_closed():
+                            self.skt_connect.close()
+                    self.skt_connect = None
+                    self.protocol_connect = None
+                    self.safe_send_next(message, next_id)
+
+    def create_connect_and_send_message(self, next_id: int, message: str):
+        self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
+        can_connect, _ = self.skt_connect.connect()
+        if can_connect:
+            self.protocol_connect = Protocol(self.skt_connect)
+            self.queue_proto_connect.put("Protoconnect Created! ✅")
+            thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect)
+            thr_receiver_connect.start()
+            self.joins.append(thr_receiver_connect)
+            self.send_message_and_wait_for_ack(message, next_id)
+
+    def safe_send_next(self, message: str, a_id: int):
+        next_id = self.getNextId(a_id)
+        if a_id == next_id:
+            raise Exception("I went all around without any answers ❌")
+        self.got_ack.change_value(None)
+        if self.skt_connect and self.protocol_connect:
+            self.send_message_and_wait_for_ack(message, next_id)
+        else:
+            while True:
+                logging.info(f"[{self.id}] Trying to connect to {next_id} 🔄")
+                if InternalMedicCheck.is_alive(self.id, next_id):
+                    self.create_connect_and_send_message(next_id, message)
+                    break
+                else:
+                    logging.info(f"[{self.id}] We can't connect to {next_id}  ❌")
+                    next_id = self.getNextId(next_id)
 
     def send_message_proto_connect_with_lock(self, message: str, next_id:int = -1):
         with self.send_connect_control:
@@ -157,77 +193,12 @@ class LeaderElection:
         if self.id not in ids_recv:
             ids_recv.append(self.id)
             message_to_send = ids_to_msg(MESSG_COORD, ids_recv)
-            thr_continue_coord = threading.Thread(target= self.safe_send_next, args=(message_to_send, self.id, ))
+            thr_continue_coord = threading.Thread(target= self.safe_send_next, args=(message_to_send, self.id,))
             thr_continue_coord.start()
             self.joins.append(thr_continue_coord)
         message_to_send = ids_to_msg(MESSG_ACK, [self.id])
         self.send_message_proto_peer_with_lock(message_to_send)
 
-    def thread_receiver_connect(self):
-        while True:
-            try:
-                message_recv = self.protocol_connect.recv_string()
-                logging.info(f"[{self.id}-Connect] Recv: {message_recv} 🎃")
-                message_type, ids_recv = self.parse_message(message_recv)
-                if (message_type == MESSG_ACK):
-                    self.ack_message_handler(ids_recv[0])
-            except Exception as e :
-                if self.skt_connect and self.skt_connect.is_closed():
-                    break
-                break
-        
-    def send_message_and_wait_for_ack(self, message: str, next_id: int, ):
-        self.send_message_proto_connect_with_lock(message, next_id)
-        start_time = time.time()
-        while True:
-            with self.got_ack.condition:
-                result = self.got_ack.condition.wait_for(lambda: self.condition_to_get_ack(next_id), TIME_OUT_TO_GET_ACK)
-                if result:
-                    break
-                elif (time.time() - start_time) >= TIME_OUT_TO_GET_ACK:
-                    logging.info(f"[{self.id}] Connect Timeout to get a ack! from {next_id} We try with the next!")
-                    if not self.leader_id.is_this_value(None):
-                        logging.info(f"[{self.id}] We found a leader already! Leader:{self.leader_id.value} 💯")
-                        break
-                    with self.resource_control:
-                        if self.skt_connect and self.skt_connect.was_closed:
-                            self.skt_connect.close()
-                    self.skt_connect = None
-                    self.protocol_connect = None
-                    self.safe_send_next(message, next_id)
-
-    def connect_and_send_message(self, next_id: int, message: str):
-        self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
-        can_connect, msg = self.skt_connect.connect()
-        if can_connect:
-            self.protocol_connect = Protocol(self.skt_connect)
-            self.queue_proto_connect.put("ProtoConnect Created successfully ✅ 🌟")
-            thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect)
-            thr_receiver_connect.start()
-            self.joins.append(thr_receiver_connect)
-            self.send_message_and_wait_for_ack(message, next_id)
-        return can_connect        
-
-    def safe_send_next(self, message: str, a_id: int):
-        #if not self.leader_id.is_this_value(None):
-        #    return
-        next_id = self.getNextId(a_id)
-        if a_id == next_id:
-            logging.info(f"message: mssg dio toda la vuelta! | result: success  ❌")
-            raise Exception("Di toda la vuelta sin ninguna respuestas!")
-        self.got_ack.change_value(None)
-        if self.skt_connect and self.protocol_connect:
-            self.send_message_and_wait_for_ack(message, next_id)
-        else:
-            while True:
-                logging.info(f"[{self.id}] Trying to connect to {next_id} 🔄")
-                if InternalMedicCheck.is_alive(self.id, next_id):
-                    self.connect_and_send_message(next_id, message)
-                    break
-                else:
-                    logging.info(f"[{self.id}] We can't connect to {next_id}  ❌")
-                    next_id = self.getNextId(next_id)
-        
     def get_message(self):
         message_recv = self.protocol_peer.recv_string()
         logging.info(f"[{self.id}-Peer] Recv: {message_recv} 🎃")
@@ -237,8 +208,6 @@ class LeaderElection:
         result = self.queue_proto_connect.get()
         while True:
             try: 
-                if self.stop_value.is_this_value(True):
-                    break
                 message_type, ids_recv = self.get_message()
                 if (message_type == MESSG_ACK):
                     self.ack_message_handler(ids_recv[0])
@@ -251,13 +220,37 @@ class LeaderElection:
                     break
                 #traceback.print_exc()
                 break
-        self.stop_value.change_value(False)
-        self.stop_value.notify_all()
-    
-    def stop(self):
-        self.stop_value.change_value(True)
-        self.stop_value.notify_all()
-        self.free_resources()
+
+    def thread_receiver_connect(self):
+        while True:
+            try:
+                message_recv = self.protocol_connect.recv_string()
+                logging.info(f"[{self.id}-Connect] Recv: {message_recv} 🎃")
+                message_type, ids_recv = self.parse_message(message_recv)
+                if (message_type == MESSG_ACK):
+                    self.ack_message_handler(ids_recv[0])
+            except Exception as e :
+                break
+
+    def thread_accepter(self):
+        self.skt_accept = Socket(port = get_service_name(self.id))
+        while True:
+            skt_peer, addr = self.skt_accept.accept_simple()
+            if not skt_peer:
+                break
+            else:
+                self.skt_peer = skt_peer
+                self.protocol_peer = Protocol(self.skt_peer)
+                thr_receiver = threading.Thread(target= self.thread_receiver_peer)
+                thr_receiver.start()
+                self.joins.append(thr_receiver)
+
+    def thread_client(self, skt_peer):
+        self.skt_peer = skt_peer
+        self.protocol_peer = Protocol(self.skt_peer)
+        thr_receiver = threading.Thread(target= self.thread_receiver_peer)
+        thr_receiver.start()
+        self.joins.append(thr_receiver)
 
     def getNextId(self, aId: int):
         return ((aId - OFFSET_MEDIC_HOSTNAME + 1) % self.ring_size) + OFFSET_MEDIC_HOSTNAME
@@ -267,7 +260,7 @@ class LeaderElection:
             self.protocol_peer.send_string(message)
             logging.info(f"[{self.id}-Peer]  Send: {message}")
 
-    def condition_to_get_ack(self, next_id :int):
+    def is_got_ack_this_value(self, next_id :int):
         return self.got_ack.is_this_value(next_id)
 
     def ack_message_handler(self, ack_value:int):
@@ -298,6 +291,9 @@ class LeaderElection:
             self.heartbeat_client.free_resources()
         if self.internal_medic_server:
             self.internal_medic_server.free_resources()
+        if self.heartbeat_server:
+            self.heartbeat_server.free_resources()
+            self.heartbeat_server = None
         self.free_resources()
 
     def am_i_leader(self):
@@ -314,13 +310,10 @@ class LeaderElection:
 
     def free_resources(self):
         with self.resource_control:
-            if self.skt_connect:
+            if self.skt_connect and not self.skt_connect.is_closed():
                 self.skt_connect.close()
         if self.skt_accept:
             self.skt_accept.close()
-        if self.heartbeat_server:
-            self.heartbeat_server.free_resources()
-            self.heartbeat_server = None
         if self.skt_peer:
             self.skt_peer.close()
         self.reset_skts_and_protocols()

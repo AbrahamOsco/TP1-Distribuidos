@@ -4,7 +4,7 @@ import logging
 import time
 import queue
 
-MAX_SIZE_QUEUE_HEARTBEAT = 5
+MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_FOR_SEND_PING_HEARTBEAT = 1.0
 TIMEOUT_LEADER_RESPONSE = 14.0
 TIMEOUT_SOCKET = 2.0
@@ -61,7 +61,7 @@ class HeartbeatClient:
                 return
 
     def handler_message(self, message: bytes, addr: list[str]):
-        if "hi" in message:
+        if "hi" in message and not self.leader_hostname:
             hi, leader_hostname = message.split("|")
             self.leader_hostname = leader_hostname
             self.leader_numeric_ip = addr[0]
@@ -74,7 +74,7 @@ class HeartbeatClient:
             try: 
                 data, addr = self.socket.recvfrom(1024)
                 data = data.decode('utf-8')
-                logging.info(f"Recv: {data} 👈👈🗡️")
+                logging.info(f"Recv: {data} 👈 ✅")
                 self.handler_message(data, addr)
             except socket.timeout:
                 continue

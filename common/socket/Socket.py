@@ -64,7 +64,10 @@ class Socket:
     
     def close(self):
         if not self.was_closed:
-            self.socket.shutdown(socket.SHUT_RDWR)
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+            except OSError as e:
+                pass
             self.socket.close()
             self.was_closed = self.socket._closed
     

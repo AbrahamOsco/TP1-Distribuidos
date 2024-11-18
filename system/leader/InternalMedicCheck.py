@@ -11,48 +11,40 @@ VERBOSE = 1
 TIME_OUT_HEALTH_CHECK = 0.5
 FAIL = 0
 SUCCESS = 1
+PING_ATTEMPTS = 1
 
 class InternalMedicCheck:
     hostname = None
     service_name = None
     socket = None
 
-    @classmethod
-    def sender(cls):
-        message = "ping".encode('utf-8')
-        while True:
-            try:
-                cls.socket.sendto(message, (cls.hostname, cls.service_name))
-            except OSError as e:
-                return
 
     @classmethod
     def try_to_connect_with_medic(cls, my_id, verbose) -> bool:
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.socket.settimeout(TIME_OUT_HEALTH_CHECK)
+        message = "ping".encode('utf-8')
+        i = 0
         try:
-            thr_sender = threading.Thread(target= cls.sender)
-            thr_sender.start()
+            while i < PING_ATTEMPTS:
+                cls.socket.sendto(message, (cls.hostname, cls.service_name))
+                i += 1
             data, addr = cls.socket.recvfrom(1024)
-            if data == b'ping':
-                if verbose == VERBOSE:
-                    logging.info(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
-                cls.socket.close()
-                thr_sender.join()
-                return True
-        except socket.timeout:
-            logging.info(f"[{my_id}] This Node [{cls.hostname}] is 💀 Timeout!")
+            if data == b'ping'and verbose == VERBOSE:
+                logging.info(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
             cls.socket.close()
-            thr_sender.join()
+            return True
+        except socket.timeout:
+            cls.socket.close()
+            logging.info(f"[{my_id}] This Node [{cls.hostname}] is 💀 Timeout!")
+            logging.info(f"[{my_id}] End join load a lot?? 🪓 ")
             return False
         except socket.gaierror as e:
-            logging.error(f"[{my_id}] -> Node: [{cls.hostname}] is falling Error: {e}  👈")
             cls.socket.close()
-            thr_sender.join()
+            logging.error(f"[{my_id}] -> Node: [{cls.hostname}] is falling Error: {e}  👈")
             return False
         except Exception as e:
             cls.socket.close()
-            thr_sender.join()
             traceback.print_exc()
             logging.info(f"[{cls.hostname}] Other type of Error in healtcheck {e} 👈")
             return False
@@ -76,7 +68,8 @@ class InternalMedicCheck:
             cls.socket.sendto(message, (cls.hostname, cls.service_name))
             data, addr = cls.socket.recvfrom(1024)
             if data != b"no_leader":
-                cls.socket.close()
-                return int(data)
+                if cls.is_alive(my_id, int(data)):
+                    cls.socket.close()
+                    return int(data)
             cls.socket.close()
         return None
