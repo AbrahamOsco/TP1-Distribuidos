@@ -76,6 +76,9 @@ class Gateway(Node):
                 client_handler = ClientHandler(socket_peer)
                 client_handler.set_manager_lock(self.manager_lock)
                 client_id = client_handler.recv_auth()
+                if client_id == None:
+                    socket_peer.close()
+                    continue
                 if client_id == CLIENT_NOT_FOUND:
                     logging.info("action: auth without client_id")
                     client_id = self.get_client_id(client_handler)

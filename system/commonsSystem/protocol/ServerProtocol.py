@@ -16,9 +16,12 @@ class ServerProtocol(Protocol):
         super().__init__(socket)
 
     def recv_auth(self):
-        operation_type = self.recv_number_n_bytes_timeout(1)
-        id_client = self.recv_number_n_bytes(1)
-        return id_client
+        try:
+            operation_type = self.recv_number_n_bytes_timeout(1)
+            id_client = self.recv_number_n_bytes(1)
+            return id_client
+        except Exception as e:
+            return None
 
     def recv_data_raw(self, client_id):
         operation_type = self.recv_number_n_bytes(1)

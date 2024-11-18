@@ -4,7 +4,7 @@ from system.commonsSystem.DTO.GamesDTO import STATE_REVIEWED
 
 class Storage(DualInputNode):
     def __init__(self):
-        super().__init__(2500)
+        super().__init__(3)
 
     def send_result(self, client_id):
         games = []

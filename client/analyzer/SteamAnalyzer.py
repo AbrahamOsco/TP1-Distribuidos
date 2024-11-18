@@ -22,7 +22,7 @@ class SteamAnalyzer:
         self.batch_id = 1
         self.there_a_signal = False
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
-        self.max_retries = int(os.getenv("MAX_RETRIES", 5))
+        self.max_retries = int(os.getenv("MAX_RETRIES", 10))
         self.retry_delay = int(os.getenv("RETRY_DELAY", 5)) 
 
     def init_readers_and_responses(self, percent_of_file):
@@ -128,9 +128,9 @@ class SteamAnalyzer:
         local_batch_id = 1
         games_eof_sent = False
         reviews_eof_sent = False
-
+        show_message = True
         while not self.there_a_signal:
-            some_games = self.game_reader.get_next_batch()
+            some_games = self.game_reader.skip_batch()
             if some_games is None:
                 logging.info("action: No more game batches left to process.")
                 break
@@ -141,7 +141,10 @@ class SteamAnalyzer:
                 continue
 
             self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=local_batch_id))
-            logging.debug(f"action: Sent game batch | batch_id: {local_batch_id} ✅")
+            if show_message:
+                logging.debug(f"action: Start sending games from batch batch_id: {local_batch_id} ✅")
+                show_message = False
+
             local_batch_id += 1
 
         if not games_eof_sent and not self.there_a_signal:
@@ -153,7 +156,7 @@ class SteamAnalyzer:
         if self.should_send_reviews:
             logging.info("action: Resuming with reviews | result: pending ⌚")
             while not self.there_a_signal:
-                some_reviews = self.review_reader.get_next_batch()
+                some_reviews = self.review_reader.skip_batch()
                 if some_reviews is None:
                     logging.info("action: No more review batches left to process.")
                     break
@@ -219,7 +222,7 @@ class SteamAnalyzer:
         self.init_readers_and_responses(percent)
         if not self.connect_to_server():
             logging.error("action: execute | result: failed to establish initial connection")
-            return
+            self.reconnect()
 
         if self.config_params["id"] is None:
             logging.info("action: Sending auth without client id")

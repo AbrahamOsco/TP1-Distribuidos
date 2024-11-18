@@ -6,7 +6,7 @@ import logging
 
 class Storage(DualInputNode):
     def __init__(self):
-        super().__init__(500)
+        super().__init__(2)
         self.percentile = float(os.getenv("PERCENTILE", 0.9))
 
     def send_result(self, client_id):

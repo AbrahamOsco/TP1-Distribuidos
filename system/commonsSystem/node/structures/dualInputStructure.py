@@ -94,9 +94,9 @@ class DualInputStructure(Structure):
             self.counter[client_id] = []
             if (self.counter_size == 0):
                 continue
-            counter_size = int.from_bytes(data[offset:offset+1], byteorder='big')
-            offset += 1
-            for j in range(counter_size):
+            counter_len = int.from_bytes(data[offset:offset+self.counter_size], byteorder='big')
+            offset += self.counter_size
+            for j in range(counter_len):
                 counter = int.from_bytes(data[offset:offset+6], byteorder='big')
                 offset += 6
                 self.counter[client_id].append(counter)
