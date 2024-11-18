@@ -45,7 +45,6 @@ class HeartbeatClient:
         while not self.socket._closed:
             try:
                 if not self.leader_hostname or not self.leader_service_name:
-                    logging.info(f"[{self.my_service_name}] Waiting for the leader! ⌚")
                     result = self.queue.get()
                     if result == SPECIAL_PING:
                         message = f"ping|{self.my_numeric_ip}".encode('utf-8')

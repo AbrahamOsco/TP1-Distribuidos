@@ -23,7 +23,7 @@ MESSG_ELEC = "ELECTION"
 TIME_OUT_TO_FIND_LEADER = 10
 TIME_OUT_TO_GET_ACK = 6
 MAX_SIZE_QUEUE_PROTO_CONNECT = 5
-TIME_FOR_BOOSTRAPING = 3
+TIME_FOR_BOOSTRAPING = 2
 
 class LeaderElection:
     def __init__(self):
@@ -43,13 +43,18 @@ class LeaderElection:
         self.reset_skts_and_protocols()
         self.resource_control = threading.Lock()
         self.thr_obs_leader = None
-    
-    def thr_observer_leader(self):
-        while True:
-            leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value)
+        self.skt_accept = None
+        self.skt_peer = None
+        self.can_observer_lider = True
+        self.start_resource_unique()
+
+    def thread_observer_leader(self):
+        while self.can_observer_lider:
+            leader_is_alive = InternalMedicCheck.is_alive(self.id, self.leader_id.value, verbose =1)
             if (not leader_is_alive):
                 logging.info(f"[{self.id}] Leader is dead! 💀, Searching a new leader")
                 self.find_new_leader()
+            time.sleep(0.5)
 
     def thread_accepter(self):
         self.skt_accept = Socket(port = get_service_name(self.id))
@@ -58,23 +63,34 @@ class LeaderElection:
             if not skt_peer:
                 break
             else:
-                thr_client = threading.Thread(target =self.thread_client, args=(skt_peer, ))
-                thr_client.start()
-                self.joins.append(thr_client)
-    
-    def start_resources(self):
-        self.medic_server = InternalMedicServer(self.id)
-        self.medic_server.run()
-        self.start_accept()
+                self.skt_peer = skt_peer
+                self.protocol_peer = Protocol(self.skt_peer)
+                thr_receiver = threading.Thread(target= self.thread_receiver_peer)
+                thr_receiver.start()
+                self.joins.append(thr_receiver)
+
+    def thread_client(self, skt_peer):
+        self.skt_peer = skt_peer
+        self.protocol_peer = Protocol(self.skt_peer)
+        thr_receiver = threading.Thread(target= self.thread_receiver_peer)
+        thr_receiver.start()
+        self.joins.append(thr_receiver)
+
+    def start_resource_unique(self):
+        self.internal_medic_server = InternalMedicServer(self.id)
+        self.internal_medic_server.run()
         self.heartbeat_client = HeartbeatClient(get_host_name(self.id), get_service_name(self.id))
         self.heartbeat_client.run()
-        logging.info(f"[{self.id}] Waiting a time for Bootstrapping search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
+
+    def wait_boostrap_leader(self):
+        self.start_accept()
+        logging.info(f"[{self.id}] Bootstrapping search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
         time.sleep(TIME_FOR_BOOSTRAPING) # Wait to the other nodes to be ready
         self.leader_id.change_value(None)
 
     def find_new_leader(self):
         self.free_resources()
-        self.start_resources()
+        self.wait_boostrap_leader()
         if self.stop_value.is_this_value(True):
             return
         message = ids_to_msg(MESSG_ELEC, [self.id])
@@ -94,10 +110,9 @@ class LeaderElection:
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
-        if self.thr_obs_leader is None:
-            self.thr_obs_leader = threading.Thread(target=self.thr_observer_leader)
+        if self.thr_obs_leader is None and self.id != self.leader_id.value:
+            self.thr_obs_leader = threading.Thread(target=self.thread_observer_leader)
             self.thr_obs_leader.start()
-
 
     def send_message_proto_connect_with_lock(self, message: str, next_id:int = -1):
         with self.send_connect_control:
@@ -168,7 +183,7 @@ class LeaderElection:
 
     def connect_and_send_message(self, next_id: int, message: str):
         self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
-        can_connect, msg = self.skt_connect.connect() 
+        can_connect, msg = self.skt_connect.connect()
         if can_connect:
             self.protocol_connect = Protocol(self.skt_connect)
             self.queue_proto_connect.put("ProtoConnect Created successfully ✅ 🌟")
@@ -183,7 +198,7 @@ class LeaderElection:
         #    return
         next_id = self.getNextId(a_id)
         if a_id == next_id:
-            logging.info(f"action: safe_send_next | message: mssg dio toda la vuelta! | result: success  ❌")
+            logging.info(f"message: mssg dio toda la vuelta! | result: success  ❌")
             raise Exception("Di toda la vuelta sin ninguna respuestas!")
         self.got_ack.change_value(None)
         if self.skt_connect and self.protocol_connect:
@@ -223,13 +238,6 @@ class LeaderElection:
                 break
         self.stop_value.change_value(False)
         self.stop_value.notify_all()
-
-    def thread_client(self, skt_peer):
-        self.skt_peer = skt_peer
-        self.protocol_peer = Protocol(self.skt_peer)
-        thr_receiver = threading.Thread(target= self.thread_receiver_peer)
-        thr_receiver.start()
-        self.joins.append(thr_receiver)
     
     def stop(self):
         self.stop_value.change_value(True)
@@ -261,8 +269,6 @@ class LeaderElection:
         return (fields[0], [int(x) for x in fields[1:]])
 
     def reset_skts_and_protocols(self):
-        self.medic_server = None
-        self.skt_accept = None
         self.skt_peer = None
         self.skt_connect = None
         self.protocol_connect = None
@@ -271,7 +277,12 @@ class LeaderElection:
     def sign_term_handler(self, signum, frame):
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
         if self.thr_obs_leader:
+            self.can_observer_lider = False
             self.thr_obs_leader.join()
+        if self.heartbeat_client:
+            self.heartbeat_client.free_resources()
+        if self.internal_medic_server:
+            self.internal_medic_server.free_resources()
         self.free_resources()
 
     def am_i_leader(self):
@@ -290,18 +301,13 @@ class LeaderElection:
         with self.resource_control:
             if self.skt_connect:
                 self.skt_connect.close()
+        if self.skt_accept:
+            self.skt_accept.close()
         if self.heartbeat_server:
             self.heartbeat_server.free_resources()
             self.heartbeat_server = None
-        if self.medic_server:
-            self.medic_server.free_resources()
-        if self.skt_accept:
-            self.skt_accept.close()
         if self.skt_peer:
             self.skt_peer.close()
-        if self.heartbeat_client:
-            self.heartbeat_client.free_resources()
-            self.heartbeat_client = None
         self.reset_skts_and_protocols()
         self.release_threads()
         logging.info(f"[LeaderElection] All resource are free 💯")

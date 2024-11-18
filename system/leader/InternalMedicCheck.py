@@ -7,6 +7,7 @@ import socket
 import logging
 import threading
 
+VERBOSE = 1
 TIME_OUT_HEALTH_CHECK = 1.1
 FAIL = 0
 SUCCESS = 1
@@ -32,7 +33,7 @@ class InternalMedicCheck:
         return cls.try_to_connect_with_medic("⛑️ ")
     
     @classmethod
-    def try_to_connect_with_medic(cls, my_id):
+    def try_to_connect_with_medic(cls, my_id, verbose):
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.socket.settimeout(TIME_OUT_HEALTH_CHECK - cls.offset_time_conecction_ready)
         try:
@@ -40,7 +41,8 @@ class InternalMedicCheck:
             thr_sender.start()
             data, addr = cls.socket.recvfrom(1024)
             if data == b'ping':
-                logging.info(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
+                if verbose == VERBOSE:
+                    logging.info(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
                 cls.socket.close()
                 thr_sender.join()
                 return True
@@ -63,10 +65,10 @@ class InternalMedicCheck:
         return False
     
     @classmethod
-    def is_alive(cls, my_id, node_id_to_check) -> bool:
+    def is_alive(cls, my_id, node_id_to_check, verbose = VERBOSE) -> bool:
         if my_id == node_id_to_check:
             return True
         cls.hostname = get_host_name(node_id_to_check)
         cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
-        return cls.try_to_connect_with_medic(my_id)
+        return cls.try_to_connect_with_medic(my_id, verbose)
 

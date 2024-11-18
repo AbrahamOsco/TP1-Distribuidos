@@ -4,9 +4,10 @@ import threading
 from LeaderElection import LeaderElection
 
 def main():
-    leader_election :LeaderElection = LeaderElection()
-    thr_leader = threading.Thread(target= lambda: leader_election.find_new_leader())
-    thr_leader.start()
+    leader_election = LeaderElection()
+    leader_election.find_new_leader()
+    #thr_leader = threading.Thread(target= lambda: leader_election.find_new_leader())
+    #thr_leader.start()
     #time.sleep(5)
     #logging.info(f"[{leader_election.id}] Current Leader: {leader_election.get_leader_id()}")
     #if leader_election.am_i_leader():
