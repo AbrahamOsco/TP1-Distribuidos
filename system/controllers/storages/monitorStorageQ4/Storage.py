@@ -21,7 +21,7 @@ class Storage(StatefullNode):
         self.data.reset(client_id)
     
     def send_result(self, client_id, review):
-        result = GamesDTO(client_id=client_id, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4, global_counter=self.data.counter.pop(0))
+        result = GamesDTO(client_id=client_id, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4, global_counter=self.data.counter[client_id].pop(0))
         self.broker.public_message(sink=self.sink, message=result.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):

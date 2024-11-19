@@ -1,5 +1,4 @@
 import multiprocessing
-import logging
 
 class GlobalCounter:
     _counter = multiprocessing.Value('i', 1)
@@ -10,3 +9,11 @@ class GlobalCounter:
             value = GlobalCounter._counter.value
             GlobalCounter._counter.value += 1
         return value
+    
+    def set_current(value):
+        with GlobalCounter._lock:
+            GlobalCounter._counter.value = value
+    
+    def get_current():
+        with GlobalCounter._lock:
+            return GlobalCounter._counter.value
