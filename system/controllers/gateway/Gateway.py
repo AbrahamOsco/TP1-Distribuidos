@@ -74,8 +74,7 @@ class Gateway(Node):
             self.stop_server()
 
     def process_data(self, data: GamesDTO):
-        result = data.to_result()
-        self.state_handler.send_result_to_client(data.get_client(), result)
+        self.state_handler.send_result_to_client(data.get_client(), data)
 
     def inform_eof_to_nodes(self, data: EOFDTO, delivery_tag: str):
         client_id = data.get_client()

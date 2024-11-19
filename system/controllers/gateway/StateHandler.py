@@ -1,6 +1,8 @@
 from common.tolerance.logFile import LogFile
 from common.tolerance.checkpointFile import CheckpointFile
 from system.commonsSystem.DTO.RawDTO import RawDTO
+from system.controllers.gateway.gatewayStructure import GatewayStructure
+from system.commonsSystem.DTO.DetectDTO import DetectDTO
 import multiprocessing
 from multiprocessing import Manager
 import logging
@@ -19,10 +21,12 @@ class StateHandler:
         self.shared_namespace.result_eofs_by_client = {}
         self.shared_namespace.client_handlers = {}
         self.shared_namespace.last_batch_by_client = {}
+        self.shared_namespace.responses_by_client = {}
         self.shared_namespace.logs = LogFile(prefix, remain_open=False)
         self.shared_namespace.clients_allow = [True] * 5
         self.manager_lock = manager.Lock()
         self.checkpoint = CheckpointFile(prefix, log_file=self.shared_namespace.logs, id_lists=[])
+        self.recover()
 
     def get_instance():
         if StateHandler._instance is None:
@@ -63,6 +67,10 @@ class StateHandler:
             eofs = self.shared_namespace.result_eofs_by_client
             del eofs[client_id]
             self.shared_namespace.result_eofs_by_client = eofs
+        if client_id in self.shared_namespace.responses_by_client:
+            responses = self.shared_namespace.responses_by_client
+            del responses[client_id]
+            self.shared_namespace.responses_by_client = responses
 
     def get_client_id(self):
         with self.lock:
@@ -102,10 +110,21 @@ class StateHandler:
             protocols[client_id] = protocol
             self.shared_namespace.protocols = protocols
 
-    def send_result_to_client(self, client_id, result):
+    def _add_result(self, client_id, result):
+        with self.lock:
+            responses = self.shared_namespace.responses_by_client
+            if client_id not in responses:
+                responses[client_id] = []
+            responses[client_id].append(result)
+            self.shared_namespace.responses_by_client = responses
+
+    def send_result_to_client(self, client_id, data):
         with self.manager_lock:
             if client_id not in self.shared_namespace.protocols:
                 raise Exception(f"Client {client_id} not found in protocols")
+            self._add_log(data.serialize())
+            self._add_result(client_id, data)
+            result = data.to_result()
             self.shared_namespace.protocols.get(client_id).send_result(result)
 
     def is_client_finished(self, client_id):
@@ -122,7 +141,21 @@ class StateHandler:
             self.remove_client(client_id)
             with self.lock:
                 self.set_client_available(client_id)
+                self.save_checkpoint()
 
     def save_checkpoint(self):
-        logging.info("Saving checkpoint")
-        self.shared_namespace.logs.reset()
+        data = GatewayStructure.to_bytes(self.shared_namespace.result_eofs_by_client, self.shared_namespace.last_batch_by_client, self.shared_namespace.responses_by_client, self.shared_namespace.clients_allow)
+        self.checkpoint.save_checkpoint(data)
+
+    def recover(self):
+        checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
+        self.data.from_bytes(checkpoint)
+        if must_reprocess:
+            for log in self.shared_namespace.logs:
+                data = DetectDTO(log).get_dto()
+                pass# CHANGE THIS
+        self.print_state()
+        self.save_checkpoint()
+
+    def print_state():
+        pass
