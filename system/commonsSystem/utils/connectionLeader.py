@@ -7,7 +7,7 @@ def get_host_name(a_id: str):
     a_id = int(a_id)
     node_name = os.getenv("NODE_NAME")
     if a_id >= OFFSET_MEDIC_HOSTNAME:
-        number_linked_node = OFFSET_MEDIC_HOSTNAME
+        number_linked_node = OFFSET_MEDIC_HOSTNAME #using sockets we can obtain medic ip.
         return f"{node_name}_{a_id-number_linked_node}"
     return f"{node_name}"
 

@@ -27,8 +27,8 @@ class InternalMedicServer:
                     if not self.leader_id:
                         self.skt_udp.sendto(b"no_leader", addr)
                     else:
-                        leader_id_str = str(self.leader_id).encode('utf-8')
-                        self.skt_udp.sendto(leader_id_str, addr)
+                        leader_data = str(f"{self.leader_id[0]}|{self.leader_id[1]}").encode('utf-8')
+                        self.skt_udp.sendto(leader_data, addr)
             except socket.timeout:
                 continue
             except Exception as e:
@@ -41,7 +41,7 @@ class InternalMedicServer:
         self.joins.append(thr_medic_server)
         thr_medic_server.start()
 
-    def set_leader_id(self, leader_id: int):
+    def set_leader_data(self, leader_id: (int,str)):
         self.leader_id = leader_id
     
     def free_resources(self):

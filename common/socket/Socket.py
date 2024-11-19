@@ -67,6 +67,7 @@ class Socket:
             try:
                 self.socket.shutdown(socket.SHUT_RDWR)
             except OSError as e:
+                logging.info("Closing socket with error: " + str(e))
                 pass
             self.socket.close()
             self.was_closed = self.socket._closed
@@ -114,4 +115,10 @@ class Socket:
 
     def get_peer_name(self):
         return self.socket.getpeername()
-        
+    
+    @classmethod
+    def get_my_numeric_ip(self,):
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        logging.info(f" 🏆 My Hostname {hostname} ip_address: {ip_address}  🔥 🐕‍🦺")
+        return ip_address

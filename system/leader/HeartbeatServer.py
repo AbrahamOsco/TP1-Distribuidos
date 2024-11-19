@@ -1,6 +1,5 @@
 from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
 from system.leader.InternalMedicCheck import InternalMedicCheck
-
 from enum import Enum
 import logging
 import socket
@@ -13,7 +12,7 @@ OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
-TIMEOUT_FOR_RECV_PING = 1.2 # INTERVAL_HEARBEAT + 1
+TIMEOUT_FOR_RECV_PING = 1.5 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
@@ -60,8 +59,6 @@ class HeartbeatServer:
         self.nodes.append(NodeInfo("nodetoy_2", get_service_name(106)))
         self.nodes.append(NodeInfo("nodetoy_3", get_service_name(107)))
 
-    # Es raro si el nodo muere y lo detectamos ya sea en el excepcion o al monitorearlo hay q setearlo q no esta activo. 
-    # porque si tratamos de enviar otro mensaje a un nodo muerto, tarda mucho mas el docker.   
     def broadcast(self, message: bytes):
         for node in self.nodes:
             send_messg = False
@@ -98,6 +95,7 @@ class HeartbeatServer:
                 self.broadcast(message)
                 end_time = time.time()
                 if end_time - start_time >= THRESHOLD_RESTART_PING: #Si supera 1.5s muy probable murio otro nodo y fue revivido necesitamos enviarle ping. con la data del lider
+                    logging.info(f"Threshold exceed We send ping right now {end_time - start_time} 👌")
                     time_to_sleep = 0
                 logging.info(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
                 time.sleep(time_to_sleep)
@@ -124,6 +122,7 @@ class HeartbeatServer:
                 message, addr = self.socket.recvfrom(1024)
                 time_received = time.time()
                 message = message.decode('utf-8')
+                #logging.info(f"[⛑️ ] Recv: {message} 👈 ✅ from {addr} ")
                 if "|" in message:
                     self.add_real_ip(addr, message, time_received)
                 elif "ping" in message:

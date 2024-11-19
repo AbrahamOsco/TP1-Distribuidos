@@ -95,20 +95,46 @@ class HeartbeatClient:
         for a_join in self.joins:
             a_join.join()   
         logging.info("All resources released 💯")
+from enum import Enum
+
+class TypeToken(Enum):
+    ELECTION = 0
+    COORDINATOR = 1
+    ACK = 2
+
+class TokenDTO:
+    def __init__(self, a_type: TypeToken, dic_medics ={}, leader_id =0, numeric_ip_leader=""):
+        self.a_type = a_type
+        self.dic_medics = dic_medics # {medic_id: medic_numeric_ip}
+        self.leader_id = leader_id
+        self.numeric_ip_leader = numeric_ip_leader
 
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%H:%M:%S')
-    heartbeat = HeartbeatClient(f"127.0.0.{sys.argv[1]}",20015)
-    logging.info(f"{heartbeat.my_hostname} {heartbeat.my_service_name} -{sys.argv[1]}-")
-    thr_beat = threading.Thread(target=heartbeat.run)
-    thr_beat.start()
-    while True:
-        a_input = input("Ingresq q para salir")
-        if a_input == "q":
-            heartbeat.release_resources()
-            thr_beat.join()
-            return
+    aToken = TokenDTO(a_type=TypeToken.ELECTION, dic_medics={})
+    x = 3
+    logging.info(f"{x in aToken.dic_medics}")
+    aToken.dic_medics[500] = "172.2.2.2"
+    aToken.dic_medics[501] = "172.2.2.1"
+    leader_id = max(aToken.dic_medics.keys())
+    logging.info(f"{aToken.dic_medics} {500 in aToken.dic_medics} {501 in aToken.dic_medics} {leader_id}")
+    aToken.a_type = TypeToken.COORDINATOR
+    aToken.leader_id = leader_id
+    aToken.numeric_ip_leader = aToken.dic_medics[leader_id]
+    aToken.dic_medics = {350, "123.2.2.2"}
+    logging.info(f"{aToken.dic_medics}")
 
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%H:%M:%S')
+    #heartbeat = HeartbeatClient(f"127.0.0.{sys.argv[1]}",20015)
+    #logging.info(f"{heartbeat.my_hostname} {heartbeat.my_service_name} -{sys.argv[1]}-")
+    #thr_beat = threading.Thread(target=heartbeat.run)
+    #thr_beat.start()
+    #while True:
+    #    a_input = input("Ingresq q para salir")
+    #    if a_input == "q":
+    #        heartbeat.release_resources()
+    #        thr_beat.join()
+    #        return
 
 
 main()

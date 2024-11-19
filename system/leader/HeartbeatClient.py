@@ -6,7 +6,7 @@ import queue
 
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_FOR_SEND_PING_HEARTBEAT = 1.0
-TIMEOUT_LEADER_RESPONSE = 14.0
+TIMEOUT_LEADER_RESPONSE = 3.5
 TIMEOUT_SOCKET = 2.0
 EXIT = "Exit"
 SPECIAL_PING ="special_ping"
@@ -26,6 +26,7 @@ class HeartbeatClient:
         self.leader_numeric_ip = None
         self.leader_service_name = None
         self.last_hearbeat_time = time.time()
+        self.special_ping = True
 
     def get_time(self, a_time):
         local_time = time.localtime(a_time)
@@ -41,14 +42,18 @@ class HeartbeatClient:
             return True
         return False
 
+    def send_special_ping(self, result):
+        if result == SPECIAL_PING:
+            logging.info(f"Sending special PING! 🌟🌟🌟🌟🌟")
+            message = f"ping|{self.my_numeric_ip}".encode('utf-8')
+            self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
+
     def sender(self):
         while not self.socket._closed:
             try:
-                if not self.leader_hostname or not self.leader_service_name:
+                if not self.leader_hostname or not self.leader_service_name or not self.queue.empty():
                     result = self.queue.get()
-                    if result == SPECIAL_PING:
-                        message = f"ping|{self.my_numeric_ip}".encode('utf-8')
-                        self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
+                    self.send_special_ping(result)
                     if result == EXIT:
                         return
                     self.last_hearbeat_time = time.time()
@@ -61,7 +66,7 @@ class HeartbeatClient:
                 return
 
     def handler_message(self, message: bytes, addr: list[str]):
-        if "hi" in message and not self.leader_hostname:
+        if "hi" in message and self.leader_numeric_ip != addr[0]: #not self.leader_hostname
             hi, leader_hostname = message.split("|")
             self.leader_hostname = leader_hostname
             self.leader_numeric_ip = addr[0]
