@@ -61,6 +61,7 @@ class DualInputNode(StatefullNode):
 
     def process_reviews(self, data: ReviewsDTO):
         if self.review_id_list.already_processed(data.global_counter):
+            logging.error(f"Review {data.global_counter} already processed")
             return
         client_id = data.get_client()
         if self.data.status[client_id] == STATUS_STARTED:
@@ -74,6 +75,7 @@ class DualInputNode(StatefullNode):
 
     def process_games(self, data: GamesDTO):
         if self.games_id_list.already_processed(data.global_counter):
+            logging.error(f"Game {data.global_counter} already processed")
             return
         self.games_id_list.insert(data.global_counter)
         client_id = data.get_client()

@@ -4,7 +4,6 @@ from common.tolerance.checkpointFile import CheckpointFile
 from common.tolerance.logFile import LogFile
 from common.tolerance.IDList import IDList
 from system.commonsSystem.node.structures.structure import Structure
-from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 import os
 
 class StatefullNode(Node):

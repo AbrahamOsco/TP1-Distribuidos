@@ -102,8 +102,8 @@ class Broker:
         try:
             logging.info(f"action: stop consuming {self.tag} | result: pending ⌚")
             self.channel.stop_consuming()
-            logging.info(f"action: stop consuming {self.tag}| result: success ✅")
             self.connection.close()
+            logging.info(f"action: stop consuming {self.tag}| result: success ✅")
         except Exception as e:
             logging.info(f"action: close | result: failed ❌ | error: {e}")
 #
