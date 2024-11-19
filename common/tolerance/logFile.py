@@ -72,7 +72,8 @@ class LogFile:
         return self.logs.pop(0)
     
     def reset(self):
-        self.file.close()
+        if self.remain_open:
+            self.file.close()
         self.logs = []
         self.log_count = 0
         self._remove_file()

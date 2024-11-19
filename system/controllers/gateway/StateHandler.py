@@ -149,13 +149,17 @@ class StateHandler:
 
     def recover(self):
         checkpoint, must_reprocess = self.checkpoint.load_checkpoint()
-        self.data.from_bytes(checkpoint)
+        result_eofs_by_client, last_batch_by_client, responses_by_client, client_allows = GatewayStructure.from_bytes(checkpoint)
+        self.shared_namespace.result_eofs_by_client = result_eofs_by_client
+        self.shared_namespace.last_batch_by_client = last_batch_by_client
+        self.shared_namespace.responses_by_client = responses_by_client
+        self.shared_namespace.clients_allow = client_allows
         if must_reprocess:
-            for log in self.shared_namespace.logs:
+            for log in self.shared_namespace.logs.logs:
                 data = DetectDTO(log).get_dto()
                 pass# CHANGE THIS
         self.print_state()
         self.save_checkpoint()
 
-    def print_state():
+    def print_state(self):
         pass
