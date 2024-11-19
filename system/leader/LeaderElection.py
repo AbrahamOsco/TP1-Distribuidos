@@ -45,12 +45,11 @@ class LeaderElection:
         self.start_resource_unique()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
 
-    # Una vez que exista un primer lider se inicia el observer. 
     def thread_observer_leader(self):
         logging.info(f"[{self.id}] Starting to observer to the leader 👁️👁️ ")
         while self.can_observer_lider:
             leader_is_alive = InternalMedicCheck.is_alive_with_ip(self.id, self.leader_id.value[0], self.leader_id.value[1], verbose= -1)
-            if (not leader_is_alive): # Si murio el lider actual seteamos None y search a new lider.
+            if (not leader_is_alive):
                 logging.info(f"[{self.id}] Current Leader is dead! 💀, Searching a new leader 🔄")
                 InternalMedicCheck.set_leader_id_dead(self.leader_id.value[0])
                 self.leader_id.change_value(None)
@@ -67,7 +66,7 @@ class LeaderElection:
     def wait_boostrap_leader(self):
         self.start_accept()
         logging.info(f"[{self.id}] Bootstrapping search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
-        time.sleep(TIME_FOR_BOOSTRAPING) # Wait to the other nodes to be ready
+        time.sleep(TIME_FOR_BOOSTRAPING)
         self.leader_id.change_value(None)
 
     def there_is_leader_already(self) -> bool:
@@ -96,7 +95,7 @@ class LeaderElection:
             logging.info(f"[{self.id}] I'm the leader medic! ⛑️ Withour HearbeatServer")
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
-            InternalMedicCheck.clean_leader_id() # ver esto
+            InternalMedicCheck.clean_leader_id()
         logging.info(f"[{self.id}] Finish new Leader 🪜🗡️ Now the leader is {self.leader_id.value}")
     
     def start_observer_leader(self):
@@ -137,7 +136,7 @@ class LeaderElection:
         self.skt_connect = Socket(ip= get_host_name(next_id), port= get_service_name(next_id))
         can_connect, _ = self.skt_connect.connect()
         if can_connect:
-            self.protocol_connect = LeaderProtocol(self.skt_connect) # uso ahora el leaderProtocol
+            self.protocol_connect = LeaderProtocol(self.skt_connect)
             self.queue_proto_connect.put("Protoconnect Created! ✅")
             thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect, name="self.thread_receiver_connect")
             thr_receiver_connect.start()
@@ -154,7 +153,7 @@ class LeaderElection:
         else:
             while True:
                 logging.info(f"[{self.id}] Trying to connect to {next_id} 🔄")
-                if InternalMedicCheck.is_alive(self.id, next_id): # ver si sacarlo y usar directamente el connect.
+                if InternalMedicCheck.is_alive(self.id, next_id):
                     self.create_connect_and_send_message(next_id, token_dto)
                     break
                 else:
