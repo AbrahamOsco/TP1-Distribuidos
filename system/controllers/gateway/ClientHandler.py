@@ -47,9 +47,7 @@ class ClientHandler:
                 if raw_dto is None:
                     break
                 raw_dto.set_counter(GlobalCounter.get_next())
-                logging.info("action: client message received")
                 self.state_handler.last_client_message(raw_dto)
-                logging.info("action: client message stored in logs")
                 self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")
             except Exception as e:
                 logging.info(f"action: client disconnected")

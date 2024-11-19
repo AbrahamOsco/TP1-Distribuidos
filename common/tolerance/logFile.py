@@ -4,12 +4,14 @@ import logging
 FILE_PATH = "/persistent/"
 
 class LogFile:
-    def __init__(self, identifier: str):
+    def __init__(self, identifier: str, remain_open: bool = True):
         self.file_name = FILE_PATH + identifier + "logs"
+        self.remain_open = remain_open
         self.logs = []
         self.log_count = 0
         self._load_file()
-        self._init_file_write()
+        if self.remain_open:
+            self._init_file_write()
 
     def is_full(self):
         return self.log_count >= 100
@@ -77,7 +79,11 @@ class LogFile:
         self._init_file_write()
     
     def add_log(self, content: bytes):
+        if not self.remain_open:
+            self._init_file_write()
         self._add_log_to_file(content, self.file)
+        if not self.remain_open:
+            self.file.close()
         self.log_count += 1
 
     def _add_log_to_file(self, content: bytes, file):
