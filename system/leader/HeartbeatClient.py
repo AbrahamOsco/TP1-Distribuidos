@@ -96,8 +96,6 @@ class HeartbeatClient:
         
     def free_resources(self):
         self.socket.close()
-        self.close_receiver = True
-        self.close_sender = True
         self.queue.put(EXIT)
         for a_join in self.joins:
             a_join.join()   

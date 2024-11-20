@@ -4,7 +4,7 @@ services:
     container_name: medic_0
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_NAME=medic
+      - NODE_NAME=medic_0
       - NODE_ID=500
       - RING_SIZE=4
       - LOGGING_LEVEL=INFO
@@ -22,7 +22,7 @@ services:
     container_name: medic_1
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_NAME=medic
+      - NODE_NAME=medic_1
       - NODE_ID=501
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
@@ -40,7 +40,7 @@ services:
     container_name: medic_2
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_NAME=medic
+      - NODE_NAME=medic_2
       - NODE_ID=502
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
@@ -55,7 +55,7 @@ services:
     container_name: medic_3
     entrypoint: python3 -u /app/system/leader/main.py
     environment:
-      - NODE_NAME=medic
+      - NODE_NAME=medic_3
       - NODE_ID=503
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4

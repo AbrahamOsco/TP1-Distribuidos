@@ -19,8 +19,6 @@ class InternalMedicCheck:
     socket = None
     leader_id_dead = None
 
-
-
     @classmethod
     def set_leader_id_dead(cls, leader_id_dead):
         cls.leader_id_dead = leader_id_dead
