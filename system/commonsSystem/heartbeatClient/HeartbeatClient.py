@@ -93,7 +93,6 @@ class HeartbeatClient:
         self.joins.append(thread_receiver)
         thread_sender.start()
         thread_receiver.start()
-        logging.info("Ready to start in run 🌟🌟🌟")
         
     def free_resources(self):
         self.socket.close()
