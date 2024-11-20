@@ -63,6 +63,8 @@ class HeartbeatServer:
             logging.error(f"Node info CSV file not found at {csv_path}")
         except Exception as e:
             logging.error(f"Error reading node info CSV: {e}")
+        for a_node in self.nodes:
+            logging.info(f" Add {a_node.hostname} {a_node.service_name} 🍰 👁️👁️👁️👁️👁️👁️👁️")
 
     def broadcast(self, message: bytes):
         for node in self.nodes:

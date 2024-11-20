@@ -85,528 +85,233 @@ services:
       medic_2:
         condition: service_started
     
-
-  client1:
-    container_name: client1
-    image: client:latest
-    entrypoint: python3 /app/client/main.py
-    volumes:
-      - ./data/games.csv:/data/games.csv
-      - ./data/dataset.csv:/data/dataset.csv
-      - ./data/responses:/data/responses
-      - ./persistent:/persistent
+  gateway:
+    image: "nodetoy:latest"
+    container_name: gateway
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
-      - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
+      - NODE_NAME=gateway
+      - NODE_ID=101
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
-      - HOSTNAME=gateway
-      - NODE_NAME=client1
-      - NODE_ID=100
-      - SEND_REVIEWS=1
     networks:
       - system_network
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      gateway:
-        condition: service_started
-    
-  gateway:
-    container_name: gateway
-    image: gateway:latest
-    entrypoint: python3 /app/system/controllers/gateway/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    volumes:
-      - ./persistent:/persistent
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=gateway
-        - NODE_ID=101
-        - SOURCE=Output
-        - SINK=DataRaw
-        - AMOUNT_OF_QUERIES=5
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      filterbasic_0:
-        condition: service_started
-        
-  filterbasic_0:
-    container_name: filterbasic_0
-    image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        selectq1_0:
-            condition: service_started
-        selectq2345_0:
-            condition: service_started
-        filterscorepositive_0:
-            condition: service_started
-        filterscorenegative_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterbasic_0
-        - NODE_ID=102
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DataRaw
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=DataParsed
-        - SINK_TYPE=topic
-        
-  selectq1_0:
-    container_name: selectq1_0
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        platformcounter_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectq1_0
-        - NODE_ID=103
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DataParsed
-        - SOURCE_KEY=games
-        - SOURCE_TYPE=topic
-        - SINK=GamesPlatform
-        - SINK_TYPE=direct
-        - SELECT=2
-        - SEND_MODULO=1
-        
-  platformcounter_0:
-    container_name: platformcounter_0
-    image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        platformreducer:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=platformcounter_0
-        - NODE_ID=104
-        - AMOUNT_OF_NODES=1
-        - SOURCE=GamesPlatform
-        - SOURCE_KEY=104
-        - SOURCE_TYPE=direct
-        - SINK=CountByPlatform
-        - SINK_TYPE=direct
-        - SOURCE_NAME=platformcounter104
-    
-  platformreducer:
-    container_name: platformreducer
-    image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=platformreducer
-        - NODE_ID=105
-        - AMOUNT_OF_NODES=1
-        - SOURCE=CountByPlatform
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=Output
-        - SINK_TYPE=direct
-        - QUERY=1
-        
-  selectq2345_0:
-    container_name: selectq2345_0
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        filtergender_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectq2345_0
-        - NODE_ID=106
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DataParsed
-        - SOURCE_KEY=games
-        - SOURCE_TYPE=topic
-        - SINK=GamesQ2345
-        - SINK_TYPE=direct
-        - SELECT=3
-        
-  filtergender_0:
-    container_name: filtergender_0
-    image: filtergender:latest
-    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        selectidnameaction_0:
-            condition: service_started
-        selectidnameindie_0:
-            condition: service_started
-        filterdecade_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filtergender_0
-        - NODE_ID=107
-        - AMOUNT_OF_NODES=1
-        - SOURCE=GamesQ2345
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=GenderGames
-        - SINK_TYPE=topic
-        - GENDERS=Indie,Action
-        
-  filterdecade_0:
-    container_name: filterdecade_0
-    image: filterdecade:latest
-    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        groupertopaverageplaytime:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterdecade_0
-        - NODE_ID=108
-        - AMOUNT_OF_NODES=1
-        - SOURCE=GenderGames
-        - SOURCE_KEY=Indie
-        - SOURCE_TYPE=topic
-        - SINK=DecadeGames
-        - SINK_TYPE=direct
-        - DECADE=2010
-    
-  groupertopaverageplaytime:
-    container_name: groupertopaverageplaytime
-    image: groupertopaverageplaytime:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=groupertopaverageplaytime
-        - NODE_ID=109
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DecadeGames
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=Output
-        - SINK_TYPE=direct
-        - TOP_SIZE=10
-        - QUERY=2
-        
-  selectidnameindie_0:
-    container_name: selectidnameindie_0
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        monitorstorageq3:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectidnameindie_0
-        - NODE_ID=110
-        - AMOUNT_OF_NODES=1
-        - SOURCE=GenderGames
-        - SOURCE_KEY=Indie
-        - SOURCE_TYPE=topic
-        - SINK=MonitorQ3
-        - SINK_TYPE=direct
-        - SELECT=6
-        
-  filterscorepositive_0:
-    container_name: filterscorepositive_0
-    image: filterscore:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        monitorstorageq3:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterscorepositive_0
-        - NODE_ID=111
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DataParsed
-        - SOURCE_KEY=reviews
-        - SOURCE_TYPE=topic
-        - SINK=ReviewsPositives
-        - SINK_TYPE=direct
-        - SCORE_WANTED=1
-    
-  monitorstorageq3:
-    container_name: monitorstorageq3
-    image: monitorstorageq3:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        groupertopreviewspositiveindie:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=monitorstorageq3
-        - NODE_ID=112
-        - AMOUNT_OF_NODES=1
-        - SOURCE=ReviewsPositives,MonitorQ3
-        - SOURCE_KEY=default,default
-        - SOURCE_TYPE=direct,direct
-        - SINK=IndieGamesReviewed
-        - SINK_TYPE=direct
-    
-  groupertopreviewspositiveindie:
-    container_name: groupertopreviewspositiveindie
-    image: groupertopreviewspositiveindie:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=groupertopreviewspositiveindie
-        - NODE_ID=113
-        - AMOUNT_OF_NODES=1
-        - SOURCE=IndieGamesReviewed
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=Output
-        - SINK_TYPE=direct
-        - TOP_SIZE=5
-        - QUERY=3
-        
-  selectidnameaction_0:
-    container_name: selectidnameaction_0
-    image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        monitorjoinerq4:
-            condition: service_started
-        monitorstorageq5:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=selectidnameaction_0
-        - NODE_ID=114
-        - AMOUNT_OF_NODES=1
-        - SOURCE=GenderGames
-        - SOURCE_KEY=Action
-        - SOURCE_TYPE=topic
-        - SINK=MonitorQ45
-        - SINK_TYPE=fanout
-        - SELECT=6
-        
-  filterscorenegative_0:
-    container_name: filterscorenegative_0
-    image: filterscore:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        monitorjoinerq4:
-            condition: service_started
-        monitorstorageq5:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterscorenegative_0
-        - NODE_ID=115
-        - AMOUNT_OF_NODES=1
-        - SOURCE=DataParsed
-        - SOURCE_KEY=reviews
-        - SOURCE_TYPE=topic
-        - SINK=ReviewsNegatives
-        - SINK_TYPE=fanout
-        - SCORE_WANTED=-1
-    
-  monitorjoinerq4:
-    container_name: monitorjoinerq4
-    image: monitorjoinerq4:latest
-    entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        filterreviewenglish_0:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=monitorjoinerq4
-        - NODE_ID=116
-        - AMOUNT_OF_NODES=1
-        - SOURCE=ReviewsNegatives,MonitorQ45
-        - SOURCE_KEY=default,default
-        - SOURCE_TYPE=fanout,fanout
-        - SINK=ActionGamesReviewed
-        - SINK_TYPE=direct
-        
-  filterreviewenglish_0:
-    container_name: filterreviewenglish_0
-    image: filterreviewenglish:latest
-    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
-    networks:
-        - system_network
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-        monitorstorageq4:
-            condition: service_started
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=filterreviewenglish_0
-        - NODE_ID=117
-        - AMOUNT_OF_NODES=1
-        - SOURCE=ActionGamesReviewed
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=ActionGamesEnglishReviews
-        - SINK_TYPE=direct
-    
-  monitorstorageq4:
-    container_name: monitorstorageq4
-    image: monitorstorageq4:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=monitorstorageq4
-        - NODE_ID=118
-        - AMOUNT_OF_NODES=1
-        - SOURCE=ActionGamesEnglishReviews
-        - SOURCE_KEY=default
-        - SOURCE_TYPE=direct
-        - SINK=Output
-        - SINK_TYPE=direct
-        - AMOUNT_NEEDED=5000
-        - QUERY=4
-    
-  monitorstorageq5:
-    container_name: monitorstorageq5
-    image: monitorstorageq5:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
-    networks:
-        - system_network
-    volumes:
-      - ./persistent:/persistent
-    restart: on-failure
-    depends_on:
-        rabbitmq:
-            condition: service_healthy
-    environment:
-        - LOGGING_LEVEL=INFO
-        - PYTHONPATH=/app
-        - NODE_NAME=monitorstorageq5
-        - NODE_ID=119
-        - AMOUNT_OF_NODES=1
-        - SOURCE=ReviewsNegatives,MonitorQ45
-        - SOURCE_KEY=default,default
-        - SOURCE_TYPE=fanout,fanout
-        - SINK=Output
-        - SINK_TYPE=direct
-        - PERCENTILE=0.9
-        - QUERY=5
 
+  filterbasic_0:
+    image: "nodetoy:latest"
+    container_name: filterbasic_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterbasic_0
+      - NODE_ID=102
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  selectq1_0:
+    image: "nodetoy:latest"
+    container_name: selectq1_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=selectq1_0
+      - NODE_ID=103
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  platformcounter_0:
+    image: "nodetoy:latest"
+    container_name: platformcounter_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=platformcounter_0
+      - NODE_ID=104
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  platformreducer:
+    image: "nodetoy:latest"
+    container_name: platformreducer
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=platformreducer
+      - NODE_ID=105
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  selectq2345_0:
+    image: "nodetoy:latest"
+    container_name: selectq2345_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=selectq2345_0
+      - NODE_ID=106
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filtergender_0:
+    image: "nodetoy:latest"
+    container_name: filtergender_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filtergender_0
+      - NODE_ID=107
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filterdecade_0:
+    image: "nodetoy:latest"
+    container_name: filterdecade_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterdecade_0
+      - NODE_ID=108
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  groupertopaverageplaytime:
+    image: "nodetoy:latest"
+    container_name: groupertopaverageplaytime
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=groupertopaverageplaytime
+      - NODE_ID=109
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  selectidnameindie_0:
+    image: "nodetoy:latest"
+    container_name: selectidnameindie_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=selectidnameindie_0
+      - NODE_ID=110
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filterscorepositive_0:
+    image: "nodetoy:latest"
+    container_name: filterscorepositive_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterscorepositive_0
+      - NODE_ID=111
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  monitorstorageq3:
+    image: "nodetoy:latest"
+    container_name: monitorstorageq3
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=monitorstorageq3
+      - NODE_ID=112
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  groupertopreviewspositiveindie:
+    image: "nodetoy:latest"
+    container_name: groupertopreviewspositiveindie
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=groupertopreviewspositiveindie
+      - NODE_ID=113
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  selectidnameaction_0:
+    image: "nodetoy:latest"
+    container_name: selectidnameaction_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=selectidnameaction_0
+      - NODE_ID=114
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filterscorenegative_0:
+    image: "nodetoy:latest"
+    container_name: filterscorenegative_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterscorenegative_0
+      - NODE_ID=115
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  monitorjoinerq4:
+    image: "nodetoy:latest"
+    container_name: monitorjoinerq4
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=monitorjoinerq4
+      - NODE_ID=116
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  filterreviewenglish_0:
+    image: "nodetoy:latest"
+    container_name: filterreviewenglish_0
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=filterreviewenglish_0
+      - NODE_ID=117
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  monitorstorageq4:
+    image: "nodetoy:latest"
+    container_name: monitorstorageq4
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=monitorstorageq4
+      - NODE_ID=118
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+
+  monitorstorageq5:
+    image: "nodetoy:latest"
+    container_name: monitorstorageq5
+    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
+    environment:
+      - NODE_NAME=monitorstorageq5
+      - NODE_ID=119
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+    networks:
+      - system_network
 networks:
   system_network:
     ipam:
