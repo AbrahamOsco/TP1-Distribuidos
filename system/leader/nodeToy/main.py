@@ -14,14 +14,14 @@ class GenericNodeToy:
         self.hearbeatClient = HeartbeatClient(self.my_hostname, self.my_service_name)
         self.hearbeatClient.run()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
-
+        self.nodes = []
+    
     def run(self):
         logging.info("hii!")
     
     def sign_term_handler(self, signum, frame):
         logging.info(f"[{self.id}] ⚡ {signum} SIGTERM Bye! 💯 💯 🅰️")
         self.hearbeatClient.free_resources()
-
 
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',)

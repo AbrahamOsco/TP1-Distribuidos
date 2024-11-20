@@ -467,7 +467,7 @@ networks:
     with open(output_file, 'w') as f:
         f.write(compose)
 
-    nodes_csv_file = 'node_info.csv'
+    nodes_csv_file = 'system/leader/node_info.csv'
     with open(nodes_csv_file, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=['NODE_NAME', 'NODE_ID'])
         for node in nodes_list:

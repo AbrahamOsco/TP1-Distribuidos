@@ -49,15 +49,15 @@ class HeartbeatServer:
     
     def load_nodes(self):
         csv_path = os.path.join(os.path.dirname(__file__), 'node_info.csv')
-        
         try:
             with open(csv_path, 'r') as csvfile:
                 csv_reader = csv.reader(csvfile)
                 for row in csv_reader:
                     hostname = row[0].strip()
                     service_name = get_service_name(int(row[1]))
-                    
                     node_info = NodeInfo(hostname, service_name)
+                    if "medic" in hostname:
+                        node_info = NodeInfo(hostname, get_service_name(OFFSET_MEDIC_HOSTNAME + int(hostname[-1])))
                     self.nodes.append(node_info)
         except FileNotFoundError:
             logging.error(f"Node info CSV file not found at {csv_path}")
@@ -81,7 +81,7 @@ class HeartbeatServer:
                     send_messg = True
             except socket.gaierror as e:
                 node.status = NodeStatus.DEAD
-                logging.info(f"We try to send a message a {node.hostname} but is dead ⚰️ 🫥 🦾")
+                logging.info(f"We try to send a message a {node.hostname} but his is dead ⚰️ 🫥 🦾")
             if not send_messg:
                 logging.info(f"Message {message} To {node.hostname} was not sent because his dead 💀")
 
@@ -156,7 +156,6 @@ class HeartbeatServer:
                     node.last_time = time.time()
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
-                    node.status = NodeStatus.DEAD
                     self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
