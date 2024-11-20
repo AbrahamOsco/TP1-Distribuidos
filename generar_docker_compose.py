@@ -254,7 +254,7 @@ def generar_servicio_escalable(queries, service_name, node_id, nodes_list=None):
   {service_instance_name}:
     container_name: {service_instance_name}
     image: {images.get(service_name, service_name)}:latest
-    entrypoint: python3 {entrypoints[service_name]}
+    entrypoint: python3 -u {entrypoints[service_name]}
     networks:
         - system_network{add_persistence_to_pc(service_name)}
     restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0], service_instance_name)}"""
@@ -273,7 +273,7 @@ def generar_servicio_no_escalable(queries, service_name, node_id, nodes_list=Non
   {service_name}:
     container_name: {service_name}
     image: {images.get(service_name, service_name)}:latest
-    entrypoint: python3 {entrypoints[service_name]}
+    entrypoint: python3 -u {entrypoints[service_name]}
     networks:
         - system_network
     volumes:
@@ -292,7 +292,7 @@ def get_gateway(queries, node_id):
   gateway:
     container_name: gateway
     image: gateway:latest
-    entrypoint: python3 /app/system/controllers/gateway/main.py
+    entrypoint: python3 -u /app/system/controllers/gateway/main.py
     networks:
         - system_network
     restart: on-failure
@@ -357,7 +357,7 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries, node_id)
   client{i}:
     container_name: client{i}
     image: client:latest
-    entrypoint: python3 /app/client/main.py
+    entrypoint: python3 -u /app/client/main.py
     volumes:
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
