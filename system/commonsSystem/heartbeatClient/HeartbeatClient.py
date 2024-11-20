@@ -49,10 +49,12 @@ class HeartbeatClient:
             self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
 
     def sender(self):
+        logging.info("In sender before while!run 🌟🌟🌟")
         while not self.socket._closed:
             try:
                 if not self.leader_hostname or not self.leader_service_name or not self.queue.empty():
                     result = self.queue.get()
+                    logging.info("Waitiign a push of helo|... 🌟🌟🌟")
                     self.send_special_ping(result)
                     if result == EXIT:
                         return
@@ -93,6 +95,7 @@ class HeartbeatClient:
         self.joins.append(thread_receiver)
         thread_sender.start()
         thread_receiver.start()
+        logging.info("Ready to start in run 🌟🌟🌟")
         
     def free_resources(self):
         self.socket.close()

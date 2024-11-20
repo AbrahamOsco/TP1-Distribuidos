@@ -312,6 +312,8 @@ services:
       - PYTHONPATH=/app
     networks:
       - system_network
+
+      
 networks:
   system_network:
     ipam:

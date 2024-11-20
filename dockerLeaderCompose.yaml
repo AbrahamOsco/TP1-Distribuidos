@@ -93,49 +93,13 @@ services:
     networks:
       - system_network
 
-  filterbasic_1:
-    image: "nodetoy:latest"
-    container_name: filterbasic_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterbasic_1
-      - NODE_ID=103
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterbasic_2:
-    image: "nodetoy:latest"
-    container_name: filterbasic_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterbasic_2
-      - NODE_ID=104
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
   selectq1_0:
     image: "nodetoy:latest"
     container_name: selectq1_0
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=selectq1_0
-      - NODE_ID=105
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  selectq1_1:
-    image: "nodetoy:latest"
-    container_name: selectq1_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=selectq1_1
-      - NODE_ID=106
+      - NODE_ID=103
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -147,31 +111,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=platformcounter_0
-      - NODE_ID=107
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  platformcounter_1:
-    image: "nodetoy:latest"
-    container_name: platformcounter_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=platformcounter_1
-      - NODE_ID=108
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  platformcounter_2:
-    image: "nodetoy:latest"
-    container_name: platformcounter_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=platformcounter_2
-      - NODE_ID=109
+      - NODE_ID=104
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -183,7 +123,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=platformreducer
-      - NODE_ID=110
+      - NODE_ID=105
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -195,19 +135,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=selectq2345_0
-      - NODE_ID=111
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  selectq2345_1:
-    image: "nodetoy:latest"
-    container_name: selectq2345_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=selectq2345_1
-      - NODE_ID=112
+      - NODE_ID=106
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -219,31 +147,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=filtergender_0
-      - NODE_ID=113
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filtergender_1:
-    image: "nodetoy:latest"
-    container_name: filtergender_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filtergender_1
-      - NODE_ID=114
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filtergender_2:
-    image: "nodetoy:latest"
-    container_name: filtergender_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filtergender_2
-      - NODE_ID=115
+      - NODE_ID=107
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -255,31 +159,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=filterdecade_0
-      - NODE_ID=116
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterdecade_1:
-    image: "nodetoy:latest"
-    container_name: filterdecade_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterdecade_1
-      - NODE_ID=117
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterdecade_2:
-    image: "nodetoy:latest"
-    container_name: filterdecade_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterdecade_2
-      - NODE_ID=118
+      - NODE_ID=108
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -291,7 +171,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=groupertopaverageplaytime
-      - NODE_ID=119
+      - NODE_ID=109
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -303,19 +183,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=selectidnameindie_0
-      - NODE_ID=120
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  selectidnameindie_1:
-    image: "nodetoy:latest"
-    container_name: selectidnameindie_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=selectidnameindie_1
-      - NODE_ID=121
+      - NODE_ID=110
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -327,31 +195,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=filterscorepositive_0
-      - NODE_ID=122
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterscorepositive_1:
-    image: "nodetoy:latest"
-    container_name: filterscorepositive_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterscorepositive_1
-      - NODE_ID=123
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterscorepositive_2:
-    image: "nodetoy:latest"
-    container_name: filterscorepositive_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterscorepositive_2
-      - NODE_ID=124
+      - NODE_ID=111
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -363,7 +207,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=monitorstorageq3
-      - NODE_ID=125
+      - NODE_ID=112
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -375,7 +219,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=groupertopreviewspositiveindie
-      - NODE_ID=126
+      - NODE_ID=113
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -387,19 +231,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=selectidnameaction_0
-      - NODE_ID=127
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  selectidnameaction_1:
-    image: "nodetoy:latest"
-    container_name: selectidnameaction_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=selectidnameaction_1
-      - NODE_ID=128
+      - NODE_ID=114
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -411,31 +243,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=filterscorenegative_0
-      - NODE_ID=129
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterscorenegative_1:
-    image: "nodetoy:latest"
-    container_name: filterscorenegative_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterscorenegative_1
-      - NODE_ID=130
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterscorenegative_2:
-    image: "nodetoy:latest"
-    container_name: filterscorenegative_2
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterscorenegative_2
-      - NODE_ID=131
+      - NODE_ID=115
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -447,7 +255,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=monitorjoinerq4
-      - NODE_ID=132
+      - NODE_ID=116
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -459,19 +267,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=filterreviewenglish_0
-      - NODE_ID=133
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
-    networks:
-      - system_network
-
-  filterreviewenglish_1:
-    image: "nodetoy:latest"
-    container_name: filterreviewenglish_1
-    entrypoint: python3 -u /app/system/leader/nodeToy/main.py
-    environment:
-      - NODE_NAME=filterreviewenglish_1
-      - NODE_ID=134
+      - NODE_ID=117
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -483,7 +279,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=monitorstorageq4
-      - NODE_ID=135
+      - NODE_ID=118
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
@@ -495,7 +291,7 @@ services:
     entrypoint: python3 -u /app/system/leader/nodeToy/main.py
     environment:
       - NODE_NAME=monitorstorageq5
-      - NODE_ID=136
+      - NODE_ID=119
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
     networks:
