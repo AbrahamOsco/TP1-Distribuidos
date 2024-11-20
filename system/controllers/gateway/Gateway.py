@@ -19,8 +19,8 @@ class Gateway(Node):
         self.socket_accepter = Socket(port =PORT_SERVER)
         self.running = True
         self.pool_size = MAX_CLIENTS
-        self.state_handler = StateHandler.get_instance()
         super().__init__()
+        self.state_handler = StateHandler.get_instance()
         
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
