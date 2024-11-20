@@ -1,4 +1,4 @@
-from system.leader.common_leader import OFFSET_MEDIC_SERVER_INTERN 
+from system.leader.common_leader import OFFSET_MEDIC_PORT_SERVER_INTERN 
 from system.commonsSystem.utils.connectionLeader import get_service_name
 import threading
 import socket
@@ -9,7 +9,7 @@ TIMEOUT_FOR_CHECK_PING = 1
 class InternalMedicServer:
 
     def __init__(self, node_id: int):
-        self.service_name = get_service_name(node_id + OFFSET_MEDIC_SERVER_INTERN)
+        self.service_name = get_service_name(node_id + OFFSET_MEDIC_PORT_SERVER_INTERN)
         self.node_id = node_id
         self.skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.skt_udp.bind(("", self.service_name))

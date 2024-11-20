@@ -1,5 +1,5 @@
 from system.commonsSystem.utils.connectionLeader import get_host_name, get_service_name
-from system.leader.common_leader import OFFSET_MEDIC_SERVER_INTERN
+from system.leader.common_leader import OFFSET_MEDIC_PORT_SERVER_INTERN
 import logging
 import traceback
 import time
@@ -29,7 +29,7 @@ class InternalMedicCheck:
     @classmethod
     def is_alive_with_ip(cls,my_id, node_id_to_check, ip_numeric, verbose = VERBOSE) -> bool:
         cls.hostname = ip_numeric
-        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
+        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_PORT_SERVER_INTERN)
         return cls.try_to_connect_with_medic(my_id, verbose)
 
     @classmethod
@@ -70,7 +70,7 @@ class InternalMedicCheck:
     @classmethod
     def get_ip_numeric(cls, a_id):
         cls.hostname = get_host_name(a_id)
-        cls.service_name = get_service_name(a_id + OFFSET_MEDIC_SERVER_INTERN)
+        cls.service_name = get_service_name(a_id + OFFSET_MEDIC_PORT_SERVER_INTERN)
         cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cls.socket.sendto(b"ping", (cls.hostname, cls.service_name))
         data, addr = cls.socket.recvfrom(1024)
@@ -83,7 +83,7 @@ class InternalMedicCheck:
         if my_id == node_id_to_check:
             return True
         cls.hostname = get_host_name(node_id_to_check)
-        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
+        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_PORT_SERVER_INTERN)
         return cls.try_to_connect_with_medic(my_id, verbose)
 
     @classmethod
@@ -91,7 +91,7 @@ class InternalMedicCheck:
         if node_id_to_check == cls.leader_id_dead:
             return None
         cls.hostname = get_host_name(node_id_to_check)
-        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_SERVER_INTERN)
+        cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_PORT_SERVER_INTERN)
         if cls.try_to_connect_with_medic(my_id, VERBOSE):
             cls.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             message = "leader_id".encode('utf-8')
