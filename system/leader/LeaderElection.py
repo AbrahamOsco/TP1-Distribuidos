@@ -279,7 +279,8 @@ class LeaderElection:
             self.heartbeat_server.free_resources()
             self.heartbeat_server = None
         self.free_resources()
-
+        self.release_threads()
+    
     def am_i_leader(self):
         return self.leader_id.is_this_value(self.id)
 
@@ -292,13 +293,12 @@ class LeaderElection:
         self.joins.clear()
 
     def free_resources(self):
+        if self.skt_accept and not self.skt_accept.is_closed():
+            self.skt_accept.close()
         if self.skt_peer and not self.skt_peer.is_closed():
             self.skt_peer.close()
         if self.skt_connect and not self.skt_connect.is_closed():
             self.skt_connect.close()
-        if self.skt_accept and not self.skt_accept.is_closed():
-            self.skt_accept.close()
         self.reset_skts_and_protocols()
-        self.release_threads()
         logging.info(f"[LeaderElection] All resource are free 💯")
 
