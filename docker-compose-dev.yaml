@@ -14,6 +14,77 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+    
+
+  medic_0:
+    container_name: medic_0
+    image: leader:latest
+    entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_0  
+      - NODE_ID=500
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    
+  medic_1:
+    container_name: medic_1
+    image: leader:latest
+    entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_1  
+      - NODE_ID=501
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    depends_on:
+      medic_0:
+        condition: service_started
+    
+  medic_2:
+    container_name: medic_2
+    image: leader:latest
+    entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_2  
+      - NODE_ID=502
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    depends_on:
+      medic_1:
+        condition: service_started
+    
+  medic_3:
+    container_name: medic_3
+    image: leader:latest
+    entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_3  
+      - NODE_ID=503
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network
+    depends_on:
+      medic_2:
+        condition: service_started
+    
 
   client1:
     container_name: client1
@@ -30,6 +101,8 @@ services:
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
+      - NODE_NAME=client1
+      - NODE_ID=100
       - SEND_REVIEWS=1
     networks:
       - system_network
@@ -39,7 +112,7 @@ services:
         condition: service_healthy
       gateway:
         condition: service_started
-
+    
   gateway:
     container_name: gateway
     image: gateway:latest
@@ -53,7 +126,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=gateway
-        - NODE_ID=1
+        - NODE_ID=101
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES=5
@@ -62,7 +135,7 @@ services:
         condition: service_healthy
       filterbasic_0:
         condition: service_started
-
+        
   filterbasic_0:
     container_name: filterbasic_0
     image: filterbasic:latest
@@ -84,15 +157,15 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filterbasic
-        - NODE_ID=0
+        - NODE_NAME=filterbasic_0
+        - NODE_ID=102
         - AMOUNT_OF_NODES=1
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=DataParsed
         - SINK_TYPE=topic
-
+        
   selectq1_0:
     container_name: selectq1_0
     image: select:latest
@@ -108,8 +181,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=selectq1
-        - NODE_ID=0
+        - NODE_NAME=selectq1_0
+        - NODE_ID=103
         - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -118,7 +191,7 @@ services:
         - SINK_TYPE=direct
         - SELECT=2
         - SEND_MODULO=1
-
+        
   platformcounter_0:
     container_name: platformcounter_0
     image: platformcounter:latest
@@ -136,16 +209,16 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=platformcounter
-        - NODE_ID=0
+        - NODE_NAME=platformcounter_0
+        - NODE_ID=104
         - AMOUNT_OF_NODES=1
         - SOURCE=GamesPlatform
-        - SOURCE_KEY=0
+        - SOURCE_KEY=104
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
-        - SOURCE_NAME=platformcounter0
-
+        - SOURCE_NAME=platformcounter104
+    
   platformreducer:
     container_name: platformreducer
     image: platformcounter:latest
@@ -162,7 +235,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=platformreducer
-        - NODE_ID=0
+        - NODE_ID=105
         - AMOUNT_OF_NODES=1
         - SOURCE=CountByPlatform
         - SOURCE_KEY=default
@@ -170,7 +243,7 @@ services:
         - SINK=Output
         - SINK_TYPE=direct
         - QUERY=1
-
+        
   selectq2345_0:
     container_name: selectq2345_0
     image: select:latest
@@ -186,8 +259,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=selectq2345
-        - NODE_ID=0
+        - NODE_NAME=selectq2345_0
+        - NODE_ID=106
         - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -195,7 +268,7 @@ services:
         - SINK=GamesQ2345
         - SINK_TYPE=direct
         - SELECT=3
-
+        
   filtergender_0:
     container_name: filtergender_0
     image: filtergender:latest
@@ -215,8 +288,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filtergender
-        - NODE_ID=0
+        - NODE_NAME=filtergender_0
+        - NODE_ID=107
         - AMOUNT_OF_NODES=1
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
@@ -224,7 +297,7 @@ services:
         - SINK=GenderGames
         - SINK_TYPE=topic
         - GENDERS=Indie,Action
-
+        
   filterdecade_0:
     container_name: filterdecade_0
     image: filterdecade:latest
@@ -240,8 +313,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filterdecade
-        - NODE_ID=0
+        - NODE_NAME=filterdecade_0
+        - NODE_ID=108
         - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -249,7 +322,7 @@ services:
         - SINK=DecadeGames
         - SINK_TYPE=direct
         - DECADE=2010
-
+    
   groupertopaverageplaytime:
     container_name: groupertopaverageplaytime
     image: groupertopaverageplaytime:latest
@@ -266,7 +339,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=groupertopaverageplaytime
-        - NODE_ID=0
+        - NODE_ID=109
         - AMOUNT_OF_NODES=1
         - SOURCE=DecadeGames
         - SOURCE_KEY=default
@@ -275,7 +348,7 @@ services:
         - SINK_TYPE=direct
         - TOP_SIZE=10
         - QUERY=2
-
+        
   selectidnameindie_0:
     container_name: selectidnameindie_0
     image: select:latest
@@ -291,8 +364,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=selectidnameindie
-        - NODE_ID=0
+        - NODE_NAME=selectidnameindie_0
+        - NODE_ID=110
         - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -300,7 +373,7 @@ services:
         - SINK=MonitorQ3
         - SINK_TYPE=direct
         - SELECT=6
-
+        
   filterscorepositive_0:
     container_name: filterscorepositive_0
     image: filterscore:latest
@@ -316,8 +389,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filterscorepositive
-        - NODE_ID=0
+        - NODE_NAME=filterscorepositive_0
+        - NODE_ID=111
         - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -325,7 +398,7 @@ services:
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
         - SCORE_WANTED=1
-
+    
   monitorstorageq3:
     container_name: monitorstorageq3
     image: monitorstorageq3:latest
@@ -344,14 +417,14 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq3
-        - NODE_ID=0
+        - NODE_ID=112
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsPositives,MonitorQ3
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=direct,direct
         - SINK=IndieGamesReviewed
         - SINK_TYPE=direct
-
+    
   groupertopreviewspositiveindie:
     container_name: groupertopreviewspositiveindie
     image: groupertopreviewspositiveindie:latest
@@ -368,7 +441,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=groupertopreviewspositiveindie
-        - NODE_ID=0
+        - NODE_ID=113
         - AMOUNT_OF_NODES=1
         - SOURCE=IndieGamesReviewed
         - SOURCE_KEY=default
@@ -377,7 +450,7 @@ services:
         - SINK_TYPE=direct
         - TOP_SIZE=5
         - QUERY=3
-
+        
   selectidnameaction_0:
     container_name: selectidnameaction_0
     image: select:latest
@@ -395,8 +468,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=selectidnameaction
-        - NODE_ID=0
+        - NODE_NAME=selectidnameaction_0
+        - NODE_ID=114
         - AMOUNT_OF_NODES=1
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
@@ -404,7 +477,7 @@ services:
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
         - SELECT=6
-
+        
   filterscorenegative_0:
     container_name: filterscorenegative_0
     image: filterscore:latest
@@ -422,8 +495,8 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filterscorenegative
-        - NODE_ID=0
+        - NODE_NAME=filterscorenegative_0
+        - NODE_ID=115
         - AMOUNT_OF_NODES=1
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -431,7 +504,7 @@ services:
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
         - SCORE_WANTED=-1
-
+    
   monitorjoinerq4:
     container_name: monitorjoinerq4
     image: monitorjoinerq4:latest
@@ -450,14 +523,14 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=monitorjoinerq4
-        - NODE_ID=0
+        - NODE_ID=116
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=fanout,fanout
         - SINK=ActionGamesReviewed
         - SINK_TYPE=direct
-
+        
   filterreviewenglish_0:
     container_name: filterreviewenglish_0
     image: filterreviewenglish:latest
@@ -473,15 +546,15 @@ services:
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME=filterreviewenglish
-        - NODE_ID=0
+        - NODE_NAME=filterreviewenglish_0
+        - NODE_ID=117
         - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=ActionGamesEnglishReviews
         - SINK_TYPE=direct
-
+    
   monitorstorageq4:
     container_name: monitorstorageq4
     image: monitorstorageq4:latest
@@ -498,7 +571,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq4
-        - NODE_ID=0
+        - NODE_ID=118
         - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesEnglishReviews
         - SOURCE_KEY=default
@@ -507,7 +580,7 @@ services:
         - SINK_TYPE=direct
         - AMOUNT_NEEDED=5000
         - QUERY=4
-
+    
   monitorstorageq5:
     container_name: monitorstorageq5
     image: monitorstorageq5:latest
@@ -524,7 +597,7 @@ services:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq5
-        - NODE_ID=0
+        - NODE_ID=119
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
