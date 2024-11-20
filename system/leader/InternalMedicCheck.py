@@ -46,7 +46,7 @@ class InternalMedicCheck:
             return True
         except socket.timeout:
             cls.socket.close()
-            logging.info(f"[{my_id}] This Node [{cls.hostname}] is 💀 Timeout!")
+            logging.info(f"[{my_id}] This Node with this port: [{cls.service_name}] Timeout!")
             return False
         except socket.gaierror as e:
             cls.socket.close()

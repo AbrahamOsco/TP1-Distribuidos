@@ -120,5 +120,4 @@ class Socket:
     def get_my_numeric_ip(self,):
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
-        logging.info(f" 🏆 My Hostname {hostname} ip_address: {ip_address}  🔥 🐕‍🦺")
         return ip_address

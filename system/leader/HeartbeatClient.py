@@ -44,7 +44,6 @@ class HeartbeatClient:
 
     def send_special_ping(self, result):
         if result == SPECIAL_PING:
-            logging.info(f"Sending special PING! 🌟🌟🌟🌟🌟")
             message = f"ping|{self.my_numeric_ip}".encode('utf-8')
             self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
 
