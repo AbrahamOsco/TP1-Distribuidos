@@ -1,3 +1,4 @@
+import csv
 import sys
 import random
 
@@ -240,7 +241,7 @@ def add_persistence_to_pc(service_name):
     volumes:
       - ./persistent:/persistent"""
 
-def generar_servicio_escalable(queries, service_name, node_id):
+def generar_servicio_escalable(queries, service_name, node_id, nodes_list=None):
     if not service_should_be_included[service_name](queries):
         return ""
     amount = node_amounts[service_name]
@@ -257,9 +258,13 @@ def generar_servicio_escalable(queries, service_name, node_id):
     networks:
         - system_network{add_persistence_to_pc(service_name)}
     restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0], service_instance_name)}"""
+        
+    if nodes_list is not None and amount > 0:
+        for i in range(amount):
+            nodes_list.append({"NODE_NAME": f"{service_name}_{i}", "NODE_ID": node_id[0] - amount + 1 + i})
     return base
         
-def generar_servicio_no_escalable(queries, service_name, node_id):
+def generar_servicio_no_escalable(queries, service_name, node_id, nodes_list=None):
     if not service_should_be_included[service_name](queries):
         return ""
     node_id[0] += 1
@@ -274,6 +279,9 @@ def generar_servicio_no_escalable(queries, service_name, node_id):
     volumes:
       - ./persistent:/persistent
     restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0])}"""
+
+    if nodes_list is not None:
+        nodes_list.append({"NODE_NAME": service_name, "NODE_ID": node_id[0]})
     return base
 
 
@@ -374,6 +382,17 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries, node_id)
         condition: service_started"""
     return compose
 
+
+def add_medicos_to_nodes(nodes_list):
+    medic_nodes = get_medicos().split('\n')
+    for line in medic_nodes:
+        if "- NODE_NAME=" in line:
+            node_name = line.split("NODE_NAME=")[1].strip()
+            node_id_line = next((l for l in medic_nodes[medic_nodes.index(line):] if "- NODE_ID=" in l), None)
+            if node_id_line:
+                node_id_value = node_id_line.split("NODE_ID=")[1].strip()
+                nodes_list.append({"NODE_NAME": node_name, "NODE_ID": int(node_id_value)})
+
 def generar_docker_compose(output_file:str, queries=[], filterbasic="0", select_q1="0", platform_counter="0", select_q2345="0", filter_gender="0",
                            filter_decade="0", select_id_name_indie="0", select_id_name_action="0", filter_score_positive="0",
                            filter_review_english="0", filter_score_negative="0", clients="1", porcentaje_por_ejecucion_para_cliente=""):
@@ -406,30 +425,35 @@ services:
       start_period: 15s
     
 """
-
+    nodes_list = []
     compose += get_medicos()
+    add_medicos_to_nodes(nodes_list)
     node_id = [99]
     compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente, queries, node_id)
-    compose += get_gateway(queries, node_id)
+    for i in range(1, int(clients)+1):
+        nodes_list.append({"NODE_NAME": f"client{i}", "NODE_ID": node_id[0] - int(clients) + i})
 
-    compose += generar_servicio_escalable(queries, "filterbasic", node_id)
-    compose += generar_servicio_escalable(queries, "selectq1", node_id)
-    compose += generar_servicio_escalable(queries, "platformcounter", node_id)
-    compose += generar_servicio_no_escalable(queries, "platformreducer", node_id)
-    compose += generar_servicio_escalable(queries, "selectq2345", node_id)
-    compose += generar_servicio_escalable(queries, "filtergender", node_id)
-    compose += generar_servicio_escalable(queries, "filterdecade", node_id)
-    compose += generar_servicio_no_escalable(queries, "groupertopaverageplaytime", node_id)
-    compose += generar_servicio_escalable(queries, "selectidnameindie", node_id)
-    compose += generar_servicio_escalable(queries, "filterscorepositive", node_id)
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq3", node_id)
-    compose += generar_servicio_no_escalable(queries, "groupertopreviewspositiveindie", node_id)
-    compose += generar_servicio_escalable(queries, "selectidnameaction", node_id)
-    compose += generar_servicio_escalable(queries, "filterscorenegative", node_id)
-    compose += generar_servicio_no_escalable(queries, "monitorjoinerq4", node_id)
-    compose += generar_servicio_escalable(queries, "filterreviewenglish", node_id)
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq4", node_id)
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq5", node_id)
+    compose += get_gateway(queries, node_id)
+    nodes_list.append({"NODE_NAME": "gateway", "NODE_ID": node_id[0]})
+
+    compose += generar_servicio_escalable(queries, "filterbasic", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "selectq1", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "platformcounter", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "platformreducer", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "selectq2345", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "filtergender", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "filterdecade", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "groupertopaverageplaytime", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "selectidnameindie", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "filterscorepositive", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq3", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "groupertopreviewspositiveindie", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "selectidnameaction", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "filterscorenegative", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "monitorjoinerq4", node_id, nodes_list)
+    compose += generar_servicio_escalable(queries, "filterreviewenglish", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq4", node_id, nodes_list)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq5", node_id, nodes_list)
     compose += """
 
 networks:
@@ -443,13 +467,20 @@ networks:
     with open(output_file, 'w') as f:
         f.write(compose)
 
+    nodes_csv_file = 'node_info.csv'
+    with open(nodes_csv_file, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=['NODE_NAME', 'NODE_ID'])
+        for node in nodes_list:
+            writer.writerow(node)
+
     print(f"{output_file} generado con los siguientes parámetros:")
     print(f"FilterBasic: {filterbasic}, SelectQ1: {select_q1}, PlatformCounter: {platform_counter}, "
           f"SelectQ2345: {select_q2345}, FilterGender: {filter_gender}, FilterDecade: {filter_decade}, "
           f"SelectIDNameIndie: {select_id_name_indie}, SelectIDNameAction: {select_id_name_action}, "
           f"FilterScorePositive: {filter_score_positive}, FilterReviewEnglish: {filter_review_english}, "
           f"FilterScoreNegative: {filter_score_negative}")
-
+    
+    print(f"node_info.csv generado con información de nodos")
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Se debe ingresar: python generar_docker_compose.py <nombre_archivo_salida> <Queries>")
