@@ -32,6 +32,7 @@ services:
     networks:
       - system_network
 
+
   medic_2:
     image: "leader:latest"
     container_name: medic_2

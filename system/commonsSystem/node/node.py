@@ -11,12 +11,13 @@ from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.commonsSystem.node.EOFManagement import EOFManagement
 from system.commonsSystem.node.routingPolicies.RoutingPolicy import RoutingPolicy
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
+from system.commonsSystem.heartbeatClient.HeartbeatClient import HeartbeatClient
 
 class Node:
     def __init__(self, routing: RoutingPolicy = RoutingDefault()):
         self.initialize_config()
         self.node_name = os.getenv("NODE_NAME")
-        self.node_id = os.getenv("NODE_ID")
+        self.node_id = int(os.getenv("NODE_ID"))
         self.source = os.getenv("SOURCE").split(',')
         self.source_name = os.getenv("SOURCE_NAME", self.node_name)
         self.source_key = os.getenv("SOURCE_KEY", "default").split(',')
@@ -33,6 +34,8 @@ class Node:
         self.broker = Broker()
         self.initialize_queues()
         self.initialize_healthcheck()
+        self.hearbeatClient = HeartbeatClient(self.node_id)
+        self.hearbeatClient.run()
 
     def initialize_healthcheck(self):
         self.healthcheck_server = HealthcheckServer()
@@ -207,6 +210,7 @@ class Node:
             self.eof_controller.join()
         shutdown_server(self.healthcheck_server)
         self.healthcheck_thread.join()
+        self.hearbeatClient.free_resources()
         sys.exit(0)
     
     def pre_eof_actions(self, client_id):

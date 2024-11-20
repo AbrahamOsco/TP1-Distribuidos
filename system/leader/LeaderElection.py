@@ -7,7 +7,7 @@ from system.leader.LeaderProtocol import LeaderProtocol
 from system.leader.ControlValue import ControlValue 
 from system.leader.InternalMedicServer import InternalMedicServer 
 from system.leader.InternalMedicCheck import InternalMedicCheck 
-from system.leader.HeartbeatClient import HeartbeatClient
+from system.commonsSystem.heartbeatClient.HeartbeatClient import HeartbeatClient
 from system.leader.HeartbeatServer import HeartbeatServer
 import traceback
 import threading
@@ -21,7 +21,7 @@ import sys
 TIME_OUT_TO_FIND_LEADER = 16
 TIME_OUT_TO_GET_ACK = 20
 MAX_SIZE_QUEUE_PROTO_CONNECT = 1
-TIME_FOR_BOOSTRAPING = 1.1
+TIME_FOR_BOOSTRAPING = 3.1
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
 class LeaderElection:
@@ -46,6 +46,7 @@ class LeaderElection:
         self.can_observer_lider = True
         self.start_resource_unique()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
+        self.first_bootstrap = True
 
     def thread_observer_leader(self):
         while self.can_observer_lider:
@@ -61,12 +62,14 @@ class LeaderElection:
     def start_resource_unique(self):
         self.internal_medic_server = InternalMedicServer(self.id)
         self.internal_medic_server.run()
-        self.heartbeat_client = HeartbeatClient(get_host_name(self.id), get_service_name(self.id))
+        self.heartbeat_client = HeartbeatClient(self.id)
         self.heartbeat_client.run()
 
     def wait_boostrap_leader(self):
         self.start_accept()
-        logging.info(f"[{self.id}] Bootstrapping search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
+        if self.first_bootstrap:
+            logging.info(f"[{self.id}] First Boostrap search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
+            self.first_bootstrap = False
         time.sleep(TIME_FOR_BOOSTRAPING)
         self.leader_id.change_value(None)
 

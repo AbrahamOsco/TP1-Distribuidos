@@ -1,4 +1,4 @@
-from system.leader.HeartbeatClient import HeartbeatClient
+from system.commonsSystem.heartbeatClient.HeartbeatClient import HeartbeatClient
 from system.commonsSystem.utils.connectionLeader import PART_INITIAL_PORT_GLOBAL, get_host_name, get_service_name
 import time
 import logging
@@ -7,11 +7,8 @@ import signal
 
 class GenericNodeToy:
     def __init__(self):
-        self.my_id = os.getenv("NODE_ID")
-        self.my_hostname = get_host_name(self.my_id)
-        self.my_service_name = get_service_name(self.my_id)
-        self.id = os.getenv("NODE_ID")
-        self.hearbeatClient = HeartbeatClient(self.my_hostname, self.my_service_name)
+        self.my_id = int(os.getenv("NODE_ID"))
+        self.hearbeatClient = HeartbeatClient(self.my_id)
         self.hearbeatClient.run()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
         self.nodes = []

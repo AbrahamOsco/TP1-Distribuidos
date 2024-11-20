@@ -1,3 +1,4 @@
+from system.commonsSystem.utils.connectionLeader import get_host_name, get_service_name
 import socket
 import threading
 import logging
@@ -13,9 +14,9 @@ SPECIAL_PING ="special_ping"
 
 class HeartbeatClient:
 
-    def __init__(self, my_hostname: str,  my_service_name: int):
-        self.my_service_name = my_service_name
-        self.my_hostname = my_hostname
+    def __init__(self, node_id: int):
+        self.my_hostname = get_host_name(node_id)
+        self.my_service_name = get_service_name(node_id)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.my_hostname, self.my_service_name))
         self.my_numeric_ip = socket.gethostbyname(socket.gethostname())
