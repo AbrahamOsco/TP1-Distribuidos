@@ -15,3 +15,16 @@ Finalmente se puede correr utilizando
 Adicionalmente se puede correr en otra terminal el chaos monkey ejecutando
 
 * **./chaos-monkey.sh**
+
+# Leader Election
+To prove leader election just run (before you should make chmod +x ./leaderRun.sh ): 
+``` 
+    ./leaderRun.sh
+```
+to kill a container you can use: 
+```
+    docker stop -t 0 medic_3 
+```
+wit this command you can kill medic_3 container. 
+ 
+
