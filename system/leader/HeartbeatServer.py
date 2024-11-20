@@ -1,3 +1,5 @@
+import csv
+import os
 from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
 from system.leader.InternalMedicCheck import InternalMedicCheck
 from enum import Enum
@@ -45,19 +47,22 @@ class HeartbeatServer:
         self.nodes = []
         self.load_nodes()
     
-    def load_nodes(self): #TODO : Aca agregar a todos los nodos del sistema , sacar los nodeToy.
-        self.nodes.append(NodeInfo("medic_0", get_service_name(OFFSET_MEDIC_HOSTNAME)))
-        self.nodes.append(NodeInfo("medic_1", get_service_name(OFFSET_MEDIC_HOSTNAME + 1)))        
-        self.nodes.append(NodeInfo("medic_2", get_service_name(OFFSET_MEDIC_HOSTNAME + 2)))        
-        self.nodes.append(NodeInfo("medic_3", get_service_name(OFFSET_MEDIC_HOSTNAME + 3)))
-        self.nodes.append(NodeInfo("filterbasic_0", get_service_name(100)))
-        self.nodes.append(NodeInfo("filterbasic_1", get_service_name(101)))
-        self.nodes.append(NodeInfo("filterbasic_2", get_service_name(102)))
-        self.nodes.append(NodeInfo("filterbasic_3", get_service_name(103)))
-        self.nodes.append(NodeInfo("nodetoy_0", get_service_name(104)))
-        self.nodes.append(NodeInfo("nodetoy_1", get_service_name(105)))
-        self.nodes.append(NodeInfo("nodetoy_2", get_service_name(106)))
-        self.nodes.append(NodeInfo("nodetoy_3", get_service_name(107)))
+    def load_nodes(self):
+        csv_path = os.path.join(os.path.dirname(__file__), 'node_info.csv')
+        
+        try:
+            with open(csv_path, 'r') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                for row in csv_reader:
+                    hostname = row[0].strip()
+                    service_name = get_service_name(int(row[1]))
+                    
+                    node_info = NodeInfo(hostname, service_name)
+                    self.nodes.append(node_info)
+        except FileNotFoundError:
+            logging.error(f"Node info CSV file not found at {csv_path}")
+        except Exception as e:
+            logging.error(f"Error reading node info CSV: {e}")
 
     def broadcast(self, message: bytes):
         for node in self.nodes:
