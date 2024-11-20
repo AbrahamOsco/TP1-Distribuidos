@@ -200,7 +200,7 @@ def get_source_key(service_name, i):
         return f"{i}"
     return source_keys.get(service_name, "default")
 
-def get_depends_and_envs(queries, service_name:str, i:int=0):
+def get_depends_and_envs(queries, service_name:str, i:int=0, service_instance_name:str=None):
     base = f"""
     depends_on:
         rabbitmq:
@@ -222,7 +222,7 @@ def get_depends_and_envs(queries, service_name:str, i:int=0):
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME={service_name}
+        - NODE_NAME={service_instance_name or service_name}
         - NODE_ID={i}
         - AMOUNT_OF_NODES={node_amounts.get(service_name, 1)}
         - SOURCE={sources[service_name]}
@@ -240,28 +240,31 @@ def add_persistence_to_pc(service_name):
     volumes:
       - ./persistent:/persistent"""
 
-def generar_servicio_escalable(queries, service_name):
+def generar_servicio_escalable(queries, service_name, node_id):
     if not service_should_be_included[service_name](queries):
         return ""
     amount = node_amounts[service_name]
     base = ""
     for i in range(amount):
+        node_id[0] += 1
+        service_instance_name = f"{service_name}_{i}"
         base += f"""
-
-  {service_name}_{i}:
-    container_name: {service_name}_{i}
+        
+  {service_instance_name}:
+    container_name: {service_instance_name}
     image: {images.get(service_name, service_name)}:latest
     entrypoint: python3 {entrypoints[service_name]}
     networks:
         - system_network{add_persistence_to_pc(service_name)}
-    restart: on-failure{get_depends_and_envs(queries, service_name, i)}"""
+    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0], service_instance_name)}"""
     return base
         
-def generar_servicio_no_escalable(queries, service_name):
+def generar_servicio_no_escalable(queries, service_name, node_id):
     if not service_should_be_included[service_name](queries):
         return ""
+    node_id[0] += 1
     base = f"""
-
+    
   {service_name}:
     container_name: {service_name}
     image: {images.get(service_name, service_name)}:latest
@@ -270,13 +273,14 @@ def generar_servicio_no_escalable(queries, service_name):
         - system_network
     volumes:
       - ./persistent:/persistent
-    restart: on-failure{get_depends_and_envs(queries, service_name)}"""
+    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0])}"""
     return base
 
 
-def get_gateway(queries):
+def get_gateway(queries, node_id):
+    node_id[0] += 1
     base = f"""
-
+    
   gateway:
     container_name: gateway
     image: gateway:latest
@@ -290,7 +294,7 @@ def get_gateway(queries):
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=gateway
-        - NODE_ID=1
+        - NODE_ID={node_id[0]}
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES={len(queries)}
@@ -303,10 +307,42 @@ def get_gateway(queries):
         condition: service_started"""
     return base
 
-def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries):
+def get_medicos():
+    compose = ""
+    num_medics = 4
+    for i in range(0, num_medics):
+        depends_on = (
+            f"""
+    depends_on:
+      medic_{i - 1}:
+        condition: service_started"""
+            if i > 0
+            else ""
+        )
+        compose += f"""
+  medic_{i}:
+    container_name: medic_{i}
+    image: leader:latest
+    entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_{i}  
+      - NODE_ID={500+i}
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
+    networks:
+      - system_network{depends_on}
+    """
+    return compose
+
+
+def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries, node_id):
     compose = ""
     ejecuciones = porcentaje_por_ejecucion_para_cliente.split(';')
     for i in range(1, int(amount)+1):
+        node_id[0] += 1
         ejecucion = ejecuciones[i-1]
         compose += f"""
 
@@ -325,6 +361,8 @@ def add_clients(amount, porcentaje_por_ejecucion_para_cliente, queries):
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
+      - NODE_NAME=client{i}
+      - NODE_ID={node_id[0]}
       - SEND_REVIEWS={1 if (3 in queries or 4 in queries or 5 in queries) else 0}
     networks:
       - system_network
@@ -365,31 +403,33 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 15s"""
+      start_period: 15s
     
+"""
 
+    compose += get_medicos()
+    node_id = [99]
+    compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente, queries, node_id)
+    compose += get_gateway(queries, node_id)
 
-    compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente, queries)
-    compose += get_gateway(queries)
-
-    compose += generar_servicio_escalable(queries, "filterbasic")
-    compose += generar_servicio_escalable(queries, "selectq1")
-    compose += generar_servicio_escalable(queries, "platformcounter")
-    compose += generar_servicio_no_escalable(queries, "platformreducer")
-    compose += generar_servicio_escalable(queries, "selectq2345")
-    compose += generar_servicio_escalable(queries, "filtergender")
-    compose += generar_servicio_escalable(queries, "filterdecade")
-    compose += generar_servicio_no_escalable(queries, "groupertopaverageplaytime")
-    compose += generar_servicio_escalable(queries, "selectidnameindie")
-    compose += generar_servicio_escalable(queries, "filterscorepositive")
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq3")
-    compose += generar_servicio_no_escalable(queries, "groupertopreviewspositiveindie")
-    compose += generar_servicio_escalable(queries, "selectidnameaction")
-    compose += generar_servicio_escalable(queries, "filterscorenegative")
-    compose += generar_servicio_no_escalable(queries, "monitorjoinerq4")
-    compose += generar_servicio_escalable(queries, "filterreviewenglish")
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq4")
-    compose += generar_servicio_no_escalable(queries, "monitorstorageq5")
+    compose += generar_servicio_escalable(queries, "filterbasic", node_id)
+    compose += generar_servicio_escalable(queries, "selectq1", node_id)
+    compose += generar_servicio_escalable(queries, "platformcounter", node_id)
+    compose += generar_servicio_no_escalable(queries, "platformreducer", node_id)
+    compose += generar_servicio_escalable(queries, "selectq2345", node_id)
+    compose += generar_servicio_escalable(queries, "filtergender", node_id)
+    compose += generar_servicio_escalable(queries, "filterdecade", node_id)
+    compose += generar_servicio_no_escalable(queries, "groupertopaverageplaytime", node_id)
+    compose += generar_servicio_escalable(queries, "selectidnameindie", node_id)
+    compose += generar_servicio_escalable(queries, "filterscorepositive", node_id)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq3", node_id)
+    compose += generar_servicio_no_escalable(queries, "groupertopreviewspositiveindie", node_id)
+    compose += generar_servicio_escalable(queries, "selectidnameaction", node_id)
+    compose += generar_servicio_escalable(queries, "filterscorenegative", node_id)
+    compose += generar_servicio_no_escalable(queries, "monitorjoinerq4", node_id)
+    compose += generar_servicio_escalable(queries, "filterreviewenglish", node_id)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq4", node_id)
+    compose += generar_servicio_no_escalable(queries, "monitorstorageq5", node_id)
     compose += """
 
 networks:

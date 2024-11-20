@@ -5,6 +5,7 @@ docker build -f ./base_images/Dockerfile -t "common:latest" .
 docker build -f ./system/Dockerfile -t "system:latest" .
 
 docker build -f ./system/rabbitmq/Dockerfile -t "rabbit:latest" .
+docker build -f ./system/leader/Dockerfile -t "leader:latest" .
 docker build -f ./system/controllers/gateway/Dockerfile -t "gateway:latest" .
 docker build -f ./system/controllers/filters/filterBasic/Dockerfile -t "filterbasic:latest" .
 docker build -f ./system/controllers/select/Dockerfile -t "select:latest" .
