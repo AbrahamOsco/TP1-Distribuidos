@@ -68,9 +68,6 @@ services:
       medic_0:
         condition: service_started
 
-  # NODOS DEL SISTEMA ABAJO, changes we need: 
-  # 1) node_id creciente siempre. 
-  # 2) node_name con el mismo nombre q el nombre del servicio ej: filterbasic_0
   filterbasic_0:
     image: "nodetoy:latest"
     container_name: filterbasic_0

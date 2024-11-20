@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # Convertir el argumento a un entero
     intervalo_tiempo = int(sys.argv[1])
-    auto_revive = int(sys.argv[2])
+    #auto_revive = int(sys.argv[2])
 
     # Ejecutar el chaos killer con el intervalo proporcionado
-    chaos_killer(intervalo_tiempo, auto_revive)
+    chaos_killer(intervalo_tiempo, None)

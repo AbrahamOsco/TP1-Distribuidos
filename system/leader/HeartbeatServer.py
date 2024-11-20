@@ -45,7 +45,7 @@ class HeartbeatServer:
         self.nodes = []
         self.load_nodes()
     
-    def load_nodes(self):
+    def load_nodes(self): #TODO : Aca agregar a todos los nodos del sistema , sacar los nodeToy.
         self.nodes.append(NodeInfo("medic_0", get_service_name(OFFSET_MEDIC_HOSTNAME)))
         self.nodes.append(NodeInfo("medic_1", get_service_name(OFFSET_MEDIC_HOSTNAME + 1)))        
         self.nodes.append(NodeInfo("medic_2", get_service_name(OFFSET_MEDIC_HOSTNAME + 2)))        

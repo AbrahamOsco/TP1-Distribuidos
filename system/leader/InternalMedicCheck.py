@@ -24,7 +24,6 @@ class InternalMedicCheck:
     @classmethod
     def set_leader_id_dead(cls, leader_id_dead):
         cls.leader_id_dead = leader_id_dead
-        logging.info(f"cls.leader_id_dead: {cls.leader_id_dead} 🎿 💀 if you ask for this id immediately return ")
 
     @classmethod
     def is_alive_with_ip(cls,my_id, node_id_to_check, ip_numeric, verbose = VERBOSE) -> bool:

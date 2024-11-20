@@ -46,7 +46,6 @@ class LeaderElection:
         signal.signal(signal.SIGTERM, self.sign_term_handler)
 
     def thread_observer_leader(self):
-        logging.info(f"[{self.id}] Starting to observer to the leader 👁️👁️ ")
         while self.can_observer_lider:
             leader_is_alive = InternalMedicCheck.is_alive_with_ip(self.id, self.leader_id.value[0], self.leader_id.value[1], verbose= -1)
             if (not leader_is_alive):
@@ -92,7 +91,7 @@ class LeaderElection:
                 break
         self.internal_medic_server.set_leader_data(self.leader_id.value)
         if self.leader_id.value[0] == self.id and self.heartbeat_server is None:
-            logging.info(f"[{self.id}] I'm the leader medic! ⛑️ Withour HearbeatServer")
+            logging.info(f"[{self.id}] I'm the leader medic! ⛑️")
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
             InternalMedicCheck.clean_leader_id()
@@ -163,8 +162,7 @@ class LeaderElection:
     def send_message_proto_connect_with_lock(self, token_dto: TokenDTO):
         with self.send_connect_control:
             self.protocol_connect.send_tokenDTO(token_dto)
-            logging.info(f"[{self.id}-Connect] Send: {token_dto.a_type} {list(token_dto.dic_medics.keys())},"
-                        +f"to {self.protocol_connect.socket.get_peer_name()[1]}")
+
 
     def election_message_handler(self, token_dto: TokenDTO):
         if self.id in token_dto.dic_medics:
@@ -203,7 +201,6 @@ class LeaderElection:
         while True:
             try: 
                 token_dto = self.get_message()
-                logging.info(f"[{self.id}-Peer] Recv: Type: {token_dto.a_type} Medics: {list(token_dto.dic_medics.keys())}  ✅✅")
                 if (token_dto.a_type == TypeToken.ACK):
                     self.ack_message_handler(token_dto)
                 elif (token_dto.a_type == TypeToken.ELECTION):
@@ -213,14 +210,12 @@ class LeaderElection:
             except Exception as e:
                 if self.skt_peer and self.skt_peer.is_closed():
                     break
-                #traceback.print_exc()
                 break
 
     def thread_receiver_connect(self):
         while True:
             try:
                 token_dto = self.protocol_connect.recv_tokenDTO()
-                logging.info(f"[{self.id}-Connect] Recv: ACK{list(token_dto.dic_medics.keys())} ✅")
                 if (token_dto.a_type == TypeToken.ACK):
                     self.ack_message_handler(token_dto)
             except Exception as e :
@@ -245,7 +240,6 @@ class LeaderElection:
     def send_message_proto_peer_with_lock(self, token_dto: TokenDTO):
         with self.send_peer_control:
             self.protocol_peer.send_tokenDTO(token_dto)
-            logging.info(f"[{self.id}-Peer]  Send: {token_dto.a_type} {list(token_dto.dic_medics.keys())} ✅")
 
     def is_got_ack_this_value(self, next_id :int):
         return self.got_ack.is_this_value(next_id)
@@ -268,6 +262,7 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
+        self.free_resources()
         if self.thr_obs_leader:
             self.can_observer_lider = False
             self.thr_obs_leader.join()
@@ -278,7 +273,6 @@ class LeaderElection:
         if self.heartbeat_server:
             self.heartbeat_server.free_resources()
             self.heartbeat_server = None
-        self.free_resources()
         self.release_threads()
     
     def am_i_leader(self):
