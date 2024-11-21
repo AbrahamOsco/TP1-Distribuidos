@@ -14,7 +14,7 @@ OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
-TIMEOUT_FOR_RECV_PING = 1.5 # INTERVAL_HEARBEAT + 1
+TIMEOUT_FOR_RECV_PING = 2.0 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
@@ -127,7 +127,6 @@ class HeartbeatServer:
                 message, addr = self.socket.recvfrom(1024)
                 time_received = time.time()
                 message = message.decode('utf-8')
-                #logging.info(f"[⛑️ ] Recv: {message} 👈 ✅ from {addr} ")
                 if "|" in message:
                     self.add_real_ip(addr, message, time_received)
                 elif "ping" in message:

@@ -17,9 +17,9 @@ import time
 import queue
 import signal
 import sys
-
-TIME_OUT_TO_FIND_LEADER = 16
-TIME_OUT_TO_GET_ACK = 11
+EXIT = "EXIT"
+TIME_OUT_TO_FIND_LEADER = 6
+TIME_OUT_TO_GET_ACK = 8
 MAX_SIZE_QUEUE_PROTO_CONNECT = 1
 TIME_FOR_BOOSTRAPING = 3.1
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
@@ -46,8 +46,7 @@ class LeaderElection:
         signal.signal(signal.SIGTERM, self.sign_term_handler)
 
     def thread_observer_leader(self):
-        logging.info(f"[{self.id}] Starting to observer 👁️ 👁️  to the leader {self.leader_id.value[0]} ")
-        while self.can_observer_lider:
+        while self.can_observer_lider and self.leader_id.value:
             leader_is_alive = InternalMedicCheck.is_alive_with_ip(self.id, self.leader_id.value[0], self.leader_id.value[1], verbose= -1)
             if (not leader_is_alive):
                 logging.info(f"[{self.id}] Current Leader is dead! 💀, Searching a new leader 🔄")
@@ -89,6 +88,7 @@ class LeaderElection:
                     break
                 elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER: 
                     logging.info(f"[{self.id}] Timeout to find a leader!")
+                    return
                 break
         self.internal_medic_server.set_leader_data(self.leader_id.value)
         
@@ -209,6 +209,8 @@ class LeaderElection:
 
     def thread_receiver_peer(self):
         result = self.queue_proto_connect.get()
+        if result == EXIT:
+            return
         while not self.there_was_sigterm:
             try: 
                 token_dto = self.protocol_peer.recv_tokenDTO()
@@ -273,6 +275,7 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         self.there_was_sigterm = True
+        self.queue_proto_connect.put(EXIT)
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
         self.free_resources()
         if self.thr_obs_leader:
