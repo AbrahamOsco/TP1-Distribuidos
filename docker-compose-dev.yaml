@@ -610,6 +610,6 @@ services:
 networks:
   system_network:
     ipam:
-      driver: default
+      driver: bridge #default
       config:
         - subnet: 172.25.125.0/24

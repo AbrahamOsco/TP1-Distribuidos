@@ -35,7 +35,6 @@ class Node:
         self.initialize_queues()
         self.initialize_healthcheck()
         self.hearbeatClient = HeartbeatClient(self.node_id)
-        self.hearbeatClient.run()
 
     def initialize_healthcheck(self):
         self.healthcheck_server = HealthcheckServer()
@@ -200,6 +199,7 @@ class Node:
         #     ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
     def run(self):
+        self.hearbeatClient.run()
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop())
         self.broker.start_consuming()
     

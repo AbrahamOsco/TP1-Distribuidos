@@ -29,10 +29,12 @@ class HeartbeatClient:
         self.last_hearbeat_time = time.time()
         self.special_ping = True
 
-    def get_time(self, a_time):
-        local_time = time.localtime(a_time)
-        formatted_time = time.strftime("%H:%M:%S", local_time)
-        return formatted_time
+    def init_logg_info(self):
+        logging.basicConfig(
+            format='%(asctime)s %(levelname)-8s %(message)s',
+            level=logging.INFO,
+            datefmt='%Y-%m-%d %H:%M:%S',
+        )
 
     def leader_had_timeout(self):
         if time.time() - self.last_hearbeat_time > TIMEOUT_LEADER_RESPONSE:
@@ -79,7 +81,7 @@ class HeartbeatClient:
             try: 
                 data, addr = self.socket.recvfrom(1024)
                 data = data.decode('utf-8')
-                logging.info(f"Recv: {data} 👈 ✅")
+                logging.info("Recv: {data} 👈 ✅")
                 self.handler_message(data, addr)
             except socket.timeout:
                 continue
@@ -87,6 +89,7 @@ class HeartbeatClient:
                 return
 
     def run(self):
+        self.init_logg_info()
         thread_sender = threading.Thread(target= self.sender)
         thread_receiver = threading.Thread(target= self.receiver)
         self.joins.append(thread_sender)

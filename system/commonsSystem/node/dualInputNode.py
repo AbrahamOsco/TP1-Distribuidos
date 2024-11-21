@@ -1,3 +1,4 @@
+from common.utils.utils import initialize_log
 from system.commonsSystem.DTO.ReviewsDTO import ReviewsDTO
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
@@ -9,6 +10,7 @@ import logging
 
 class DualInputNode(StatefullNode):
     def __init__(self, counter_size):
+        initialize_log(logging_level='INFO')
         self.review_id_list = IDList()
         self.games_id_list = IDList()
         self.data = DualInputStructure(counter_size)

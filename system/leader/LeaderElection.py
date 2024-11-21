@@ -31,7 +31,7 @@ class LeaderElection:
         self.heartbeat_client = None
         self.heartbeat_server = None
         self.id = int(os.getenv("NODE_ID"))
-        self.my_numeric_ip = Socket.get_my_numeric_ip() #str by ex: "172.25.125.11"
+        self.my_numeric_ip = Socket.get_my_numeric_ip()
         self.ring_size = int(os.getenv("RING_SIZE"))
         self.queue_proto_connect = queue.Queue(maxsize =MAX_SIZE_QUEUE_PROTO_CONNECT)
         self.send_connect_control = threading.Lock()
@@ -46,7 +46,6 @@ class LeaderElection:
         self.can_observer_lider = True
         self.start_resource_unique()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
-        self.first_bootstrap = True
 
     def thread_observer_leader(self):
         while self.can_observer_lider:
@@ -67,10 +66,8 @@ class LeaderElection:
 
     def wait_boostrap_leader(self):
         self.start_accept()
-        if self.first_bootstrap:
-            logging.info(f"[{self.id}] First Boostrap search of a new lider {TIME_FOR_BOOSTRAPING}s 🎖️ ⏳⏳")
-            self.first_bootstrap = False
-        time.sleep(TIME_FOR_BOOSTRAPING)
+        logging.info(f"[{self.id}] Boostraping for start a search a new lider {TIME_FOR_BOOSTRAPING}s ⏳⏳⏳")
+        time.sleep(TIME_FOR_BOOSTRAPING) # we should always sleep for bootstraping.
         self.leader_id.change_value(None)
 
     def there_is_leader_already(self) -> bool:
@@ -118,9 +115,9 @@ class LeaderElection:
             if self.thr_obs_leader is None and self.leader_id.value[0] != self.id:
                 self.start_observer_leader()
         except TypeError as e:
-            logging.info(f"Catcheando Excepcion of de indice ✅")
+            traceback.print_exc()
+            logging.info(f"Catcheando Excepcion of type (index) ✅")
             return
-
 
     def send_message_and_wait_for_ack(self, token_dto: TokenDTO, next_id: int, ):
         self.send_message_proto_connect_with_lock(token_dto)
@@ -171,6 +168,7 @@ class LeaderElection:
                         next_id = self.getNextId(next_id)
         
         except OSError as e:
+            traceback.print_exc()
             logging.info(f"Catcheando Excepcion {e} ✅")
             return
 
@@ -207,15 +205,12 @@ class LeaderElection:
         token_dto_ack = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
         self.send_message_proto_peer_with_lock(token_dto_ack)
 
-    def get_message(self):
-        token_dto = self.protocol_peer.recv_tokenDTO()
-        return token_dto
 
     def thread_receiver_peer(self):
         result = self.queue_proto_connect.get()
         while not self.there_was_sigterm:
             try: 
-                token_dto = self.get_message()
+                token_dto = self.protocol_peer.recv_tokenDTO()
                 if (token_dto.a_type == TypeToken.ACK):
                     self.ack_message_handler(token_dto)
                 elif (token_dto.a_type == TypeToken.ELECTION):
@@ -291,12 +286,6 @@ class LeaderElection:
             self.heartbeat_server = None
         self.release_threads()
 
-    def am_i_leader(self):
-        return self.leader_id.is_this_value(self.id)
-
-    def get_leader_id(self):
-        return self.leader_id.value
-    
     def release_threads(self):
         for thr in self.joins:
             thr.join()
