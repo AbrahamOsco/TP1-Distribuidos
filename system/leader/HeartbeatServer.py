@@ -160,7 +160,7 @@ class HeartbeatServer:
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
-
+            
     def run(self):
         thr_sender = threading.Thread(target= self.sender)
         thr_receiver = threading.Thread(target= self.receiver)

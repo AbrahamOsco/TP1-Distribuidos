@@ -17,7 +17,7 @@ class GenericNodeToy:
         logging.info("hii!")
     
     def sign_term_handler(self, signum, frame):
-        logging.info(f"[{self.id}] ⚡ {signum} SIGTERM Bye! 💯 💯 🅰️")
+        logging.info(f"[{self.my_id}] ⚡ {signum} SIGTERM Bye! 💯 💯 🅰️")
         self.hearbeatClient.free_resources()
 
 def main():

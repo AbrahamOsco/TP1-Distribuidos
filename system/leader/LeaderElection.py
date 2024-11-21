@@ -19,7 +19,7 @@ import signal
 import sys
 
 TIME_OUT_TO_FIND_LEADER = 16
-TIME_OUT_TO_GET_ACK = 20
+TIME_OUT_TO_GET_ACK = 11
 MAX_SIZE_QUEUE_PROTO_CONNECT = 1
 TIME_FOR_BOOSTRAPING = 3.1
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
@@ -36,18 +36,17 @@ class LeaderElection:
         self.queue_proto_connect = queue.Queue(maxsize =MAX_SIZE_QUEUE_PROTO_CONNECT)
         self.send_connect_control = threading.Lock()
         self.send_peer_control = threading.Lock()
-        self.leader_id = ControlValue(-1)
-        self.got_ack = ControlValue(-1)
+        self.leader_id = ControlValue(None)
+        self.got_ack = ControlValue(None)
         self.reset_skts_and_protocols()
         self.thr_obs_leader = None
-        self.skt_accept = None
-        self.skt_peer = None
         self.there_was_sigterm = False
         self.can_observer_lider = True
         self.start_resource_unique()
         signal.signal(signal.SIGTERM, self.sign_term_handler)
 
     def thread_observer_leader(self):
+        logging.info(f"[{self.id}] Starting to observer 👁️ 👁️  to the leader {self.leader_id.value[0]} ")
         while self.can_observer_lider:
             leader_is_alive = InternalMedicCheck.is_alive_with_ip(self.id, self.leader_id.value[0], self.leader_id.value[1], verbose= -1)
             if (not leader_is_alive):
@@ -92,12 +91,14 @@ class LeaderElection:
                     logging.info(f"[{self.id}] Timeout to find a leader!")
                 break
         self.internal_medic_server.set_leader_data(self.leader_id.value)
-        if self.leader_id.value[0] == self.id and self.heartbeat_server is None:
+        
+        if self.leader_id.value and self.leader_id.value[0] == self.id and self.heartbeat_server is None:
             logging.info(f"[{self.id}] I'm the leader medic! ⛑️")
             self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
             self.heartbeat_server.run()
             InternalMedicCheck.clean_leader_id()
-        logging.info(f"[{self.id}] Finish We have a new Lider {self.leader_id.value[0]} ⛑️ ")
+        if self.leader_id.value:
+            logging.info(f"[{self.id}] Finish We have a new Lider {self.leader_id.value[0]} ⛑️ ")
 
     def start_observer_leader(self):
         self.thr_obs_leader = threading.Thread(target=self.thread_observer_leader)
@@ -112,7 +113,7 @@ class LeaderElection:
         self.safe_send_next(token_dto, self.id)
         try: 
             self.wait_to_get_leader()
-            if self.thr_obs_leader is None and self.leader_id.value[0] != self.id:
+            if self.thr_obs_leader is None and self.leader_id.value and self.leader_id.value[0] != self.id:
                 self.start_observer_leader()
         except TypeError as e:
             traceback.print_exc()
@@ -285,6 +286,7 @@ class LeaderElection:
             self.heartbeat_server.free_resources()
             self.heartbeat_server = None
         self.release_threads()
+        logging.info(f"[Leader Election] All resource are free 💯")
 
     def release_threads(self):
         for thr in self.joins:
@@ -299,5 +301,5 @@ class LeaderElection:
         if self.skt_connect and not self.skt_connect.is_closed():
             self.skt_connect.close()
         self.reset_skts_and_protocols()
-        logging.info(f"[LeaderElection] All resource are free 💯")
+        logging.info(f"Sockets are free 💯")
 
