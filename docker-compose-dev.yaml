@@ -89,7 +89,7 @@ services:
   client1:
     container_name: client1
     image: client:latest
-    entrypoint: python3 /app/client/main.py
+    entrypoint: python3 -u /app/client/main.py
     volumes:
       - ./data/games.csv:/data/games.csv
       - ./data/dataset.csv:/data/dataset.csv
@@ -116,7 +116,7 @@ services:
   gateway:
     container_name: gateway
     image: gateway:latest
-    entrypoint: python3 /app/system/controllers/gateway/main.py
+    entrypoint: python3 -u /app/system/controllers/gateway/main.py
     networks:
         - system_network
     restart: on-failure
@@ -139,7 +139,7 @@ services:
   filterbasic_0:
     container_name: filterbasic_0
     image: filterbasic:latest
-    entrypoint: python3 /app/system/controllers/filters/filterBasic/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterBasic/main.py
     networks:
         - system_network
     restart: on-failure
@@ -169,7 +169,7 @@ services:
   selectq1_0:
     container_name: selectq1_0
     image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
+    entrypoint: python3 -u /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -195,7 +195,7 @@ services:
   platformcounter_0:
     container_name: platformcounter_0
     image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    entrypoint: python3 -u /app/system/controllers/groupers/platformCounter/main.py
     networks:
         - system_network
     volumes:
@@ -222,7 +222,7 @@ services:
   platformreducer:
     container_name: platformreducer
     image: platformcounter:latest
-    entrypoint: python3 /app/system/controllers/groupers/platformCounter/main.py
+    entrypoint: python3 -u /app/system/controllers/groupers/platformCounter/main.py
     networks:
         - system_network
     volumes:
@@ -247,7 +247,7 @@ services:
   selectq2345_0:
     container_name: selectq2345_0
     image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
+    entrypoint: python3 -u /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -272,7 +272,7 @@ services:
   filtergender_0:
     container_name: filtergender_0
     image: filtergender:latest
-    entrypoint: python3 /app/system/controllers/filters/filterGender/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterGender/main.py
     networks:
         - system_network
     restart: on-failure
@@ -301,7 +301,7 @@ services:
   filterdecade_0:
     container_name: filterdecade_0
     image: filterdecade:latest
-    entrypoint: python3 /app/system/controllers/filters/filterDecade/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterDecade/main.py
     networks:
         - system_network
     restart: on-failure
@@ -326,7 +326,7 @@ services:
   groupertopaverageplaytime:
     container_name: groupertopaverageplaytime
     image: groupertopaverageplaytime:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
+    entrypoint: python3 -u /app/system/controllers/groupers/grouperTopAveragePlaytime/main.py
     networks:
         - system_network
     volumes:
@@ -352,7 +352,7 @@ services:
   selectidnameindie_0:
     container_name: selectidnameindie_0
     image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
+    entrypoint: python3 -u /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -377,7 +377,7 @@ services:
   filterscorepositive_0:
     container_name: filterscorepositive_0
     image: filterscore:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterScore/main.py
     networks:
         - system_network
     restart: on-failure
@@ -402,7 +402,7 @@ services:
   monitorstorageq3:
     container_name: monitorstorageq3
     image: monitorstorageq3:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ3/main.py
+    entrypoint: python3 -u /app/system/controllers/storages/monitorStorageQ3/main.py
     networks:
         - system_network
     volumes:
@@ -428,7 +428,7 @@ services:
   groupertopreviewspositiveindie:
     container_name: groupertopreviewspositiveindie
     image: groupertopreviewspositiveindie:latest
-    entrypoint: python3 /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
+    entrypoint: python3 -u /app/system/controllers/groupers/grouperTopReviewsPositiveIndie/main.py
     networks:
         - system_network
     volumes:
@@ -454,7 +454,7 @@ services:
   selectidnameaction_0:
     container_name: selectidnameaction_0
     image: select:latest
-    entrypoint: python3 /app/system/controllers/select/main.py
+    entrypoint: python3 -u /app/system/controllers/select/main.py
     networks:
         - system_network
     restart: on-failure
@@ -481,7 +481,7 @@ services:
   filterscorenegative_0:
     container_name: filterscorenegative_0
     image: filterscore:latest
-    entrypoint: python3 /app/system/controllers/filters/filterScore/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterScore/main.py
     networks:
         - system_network
     restart: on-failure
@@ -508,7 +508,7 @@ services:
   monitorjoinerq4:
     container_name: monitorjoinerq4
     image: monitorjoinerq4:latest
-    entrypoint: python3 /app/system/controllers/joiners/monitorJoinerQ4/main.py
+    entrypoint: python3 -u /app/system/controllers/joiners/monitorJoinerQ4/main.py
     networks:
         - system_network
     volumes:
@@ -534,7 +534,7 @@ services:
   filterreviewenglish_0:
     container_name: filterreviewenglish_0
     image: filterreviewenglish:latest
-    entrypoint: python3 /app/system/controllers/filters/filterReviewEnglish/main.py
+    entrypoint: python3 -u /app/system/controllers/filters/filterReviewEnglish/main.py
     networks:
         - system_network
     restart: on-failure
@@ -558,7 +558,7 @@ services:
   monitorstorageq4:
     container_name: monitorstorageq4
     image: monitorstorageq4:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ4/main.py
+    entrypoint: python3 -u /app/system/controllers/storages/monitorStorageQ4/main.py
     networks:
         - system_network
     volumes:
@@ -584,7 +584,7 @@ services:
   monitorstorageq5:
     container_name: monitorstorageq5
     image: monitorstorageq5:latest
-    entrypoint: python3 /app/system/controllers/storages/monitorStorageQ5/main.py
+    entrypoint: python3 -u /app/system/controllers/storages/monitorStorageQ5/main.py
     networks:
         - system_network
     volumes:
