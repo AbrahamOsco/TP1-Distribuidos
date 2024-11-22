@@ -430,9 +430,6 @@ services:
     add_medicos_to_nodes(nodes_list)
     node_id = [99]
     compose += add_clients(int(clients), porcentaje_por_ejecucion_para_cliente, queries, node_id)
-    for i in range(1, int(clients)+1):
-        nodes_list.append({"NODE_NAME": f"client{i}", "NODE_ID": node_id[0] - int(clients) + i})
-
     compose += get_gateway(queries, node_id)
     nodes_list.append({"NODE_NAME": "gateway", "NODE_ID": node_id[0]})
 
