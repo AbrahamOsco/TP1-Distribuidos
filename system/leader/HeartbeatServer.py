@@ -144,7 +144,7 @@ class HeartbeatServer:
             logging.info(f"Revive {node.hostname} was failed! 😱❌")
         node.status = NodeStatus.RECENTLY_REVIVED
 
-    def monitor(self):
+    def monitor_nodes(self):
         while not self.socket._closed:
             for node in self.nodes:
                 if node.hostname == self.my_hostname:
@@ -153,7 +153,7 @@ class HeartbeatServer:
                     logging.info(f"[⛑️ ] Node {node.hostname} has a new LastTime 🆕")
                     node.last_time = time.time()
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
-                    logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
+                    logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to vReive!")
                     self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.debug(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
@@ -162,7 +162,7 @@ class HeartbeatServer:
     def run(self):
         thr_sender = threading.Thread(target= self.sender)
         thr_receiver = threading.Thread(target= self.receiver)
-        thr_monitor = threading.Thread(target= self.monitor)
+        thr_monitor = threading.Thread(target= self.monitor_nodes)
         self.joins.append(thr_monitor)
         self.joins.append(thr_sender)
         self.joins.append(thr_receiver)
