@@ -26,5 +26,11 @@ to kill a container you can use:
     docker stop -t 0 medic_3 
 ```
 wit this command you can kill medic_3 container. 
- 
+
+# For a gracefully shudtown:
+before you should make a chmod +x ./kill_medic.sh
+```
+    ./kill_medic.sh
+
+```
 

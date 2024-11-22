@@ -25,6 +25,8 @@ class InternalMedicCheck:
 
     @classmethod
     def is_alive_with_ip(cls,my_id, node_id_to_check, ip_numeric, verbose = VERBOSE) -> bool:
+        if cls.leader_id_dead and node_id_to_check == cls.leader_id_dead:
+            return False
         cls.hostname = ip_numeric
         cls.service_name = get_service_name(node_id_to_check + OFFSET_MEDIC_PORT_SERVER_INTERN)
         return cls.try_to_connect_with_medic(my_id, verbose)

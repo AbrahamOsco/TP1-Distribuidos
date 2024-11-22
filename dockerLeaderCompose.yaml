@@ -1,73 +1,74 @@
 services:
+
   medic_0:
-    image: "leader:latest"
     container_name: medic_0
+    image: leader:latest
     entrypoint: python3 -u /app/system/leader/main.py
-    environment:
-      - NODE_NAME=medic_0
-      - NODE_ID=500
-      - RING_SIZE=4
-      - LOGGING_LEVEL=INFO
-      - PYTHONPATH=/app
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - NODE_NAME=medic_0  
+      - NODE_ID=500
+      - LOGGING_LEVEL=INFO
+      - RING_SIZE=4
+      - PYTHONPATH=/app
     networks:
       - system_network
-    depends_on:
-      medic_3:
-        condition: service_started
-
+    
   medic_1:
-    image: "leader:latest"
     container_name: medic_1
+    image: leader:latest
     entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - NODE_NAME=medic_1
+      - NODE_NAME=medic_1  
       - NODE_ID=501
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
-
-
+    depends_on:
+      medic_0:
+        condition: service_started
+    
   medic_2:
-    image: "leader:latest"
     container_name: medic_2
+    image: leader:latest
     entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - NODE_NAME=medic_2
+      - NODE_NAME=medic_2  
       - NODE_ID=502
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
     depends_on:
       medic_1:
         condition: service_started
-
+    
   medic_3:
-    image: "leader:latest"
     container_name: medic_3
+    image: leader:latest
     entrypoint: python3 -u /app/system/leader/main.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - NODE_NAME=medic_3
+      - NODE_NAME=medic_3  
       - NODE_ID=503
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4
       - PYTHONPATH=/app
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - system_network
     depends_on:
       medic_2:
         condition: service_started
+    
 
   gateway:
     image: "nodetoy:latest"

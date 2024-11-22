@@ -14,7 +14,7 @@ OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
-TIMEOUT_FOR_RECV_PING = 1.5 # INTERVAL_HEARBEAT + 1
+TIMEOUT_FOR_RECV_PING = 2.0 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
@@ -63,9 +63,7 @@ class HeartbeatServer:
             logging.error(f"Node info CSV file not found at {csv_path}")
         except Exception as e:
             logging.error(f"Error reading node info CSV: {e}")
-        for a_node in self.nodes:
-            logging.info(f" Add {a_node.hostname} {a_node.service_name} 🍰 👁️👁️👁️👁️👁️👁️👁️")
-
+   
     def broadcast(self, message: bytes):
         for node in self.nodes:
             send_messg = False
@@ -129,7 +127,6 @@ class HeartbeatServer:
                 message, addr = self.socket.recvfrom(1024)
                 time_received = time.time()
                 message = message.decode('utf-8')
-                #logging.info(f"[⛑️ ] Recv: {message} 👈 ✅ from {addr} ")
                 if "|" in message:
                     self.add_real_ip(addr, message, time_received)
                 elif "ping" in message:
@@ -162,7 +159,7 @@ class HeartbeatServer:
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
-
+            
     def run(self):
         thr_sender = threading.Thread(target= self.sender)
         thr_receiver = threading.Thread(target= self.receiver)
