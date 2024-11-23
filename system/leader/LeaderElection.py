@@ -10,7 +10,6 @@ from system.leader.InternalMedicCheck import InternalMedicCheck
 from system.commonsSystem.heartbeatClient.HeartbeatClient import HeartbeatClient
 from system.leader.HeartbeatServer import HeartbeatServer
 from system.leader.Monitor import Monitor
-import traceback
 import threading
 import os
 import logging
@@ -18,10 +17,11 @@ import time
 import queue
 import signal
 import sys
+
 EXIT = "EXIT"
 TIME_OUT_TO_FIND_LEADER = 100
 TIME_OUT_TO_GET_ACK = 20
-MAX_SIZE_QUEUE_PROTO_CONNECT = 1
+MAX_SIZE_QUEUE_PROTO_CONNECT = 3
 TIME_FOR_BOOSTRAPING = 1.5
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
@@ -48,15 +48,15 @@ class LeaderElection:
         signal.signal(signal.SIGTERM, self.sign_term_handler)
 
     def thread_observer_leader(self):
-        while self.can_observer_lider and self.leader_id.value and self.sigterm_monitor.is_this_value(False):
+        while self.leader_id.value and self.sigterm_monitor.is_this_value(False):
             leader_is_alive = InternalMedicCheck.is_alive_with_ip(self.id, self.leader_id.value[0], self.leader_id.value[1], verbose= -1)
-            if (not leader_is_alive):
+            if (self.sigterm_monitor.is_this_value(False) and not leader_is_alive):
                 logging.info(f"[{self.id}] Current Leader is dead! 💀, Searching a new leader 🔄")
                 InternalMedicCheck.set_leader_id_dead(self.leader_id.value[0])
                 self.leader_id.change_value(None)
                 self.internal_medic_server.set_leader_data(None)
                 self.find_new_leader()
-            time.sleep(TIME_FOR_SLEEP_OBS_LEADER)
+            time.sleep(0.7)
 
     def start_resource_unique(self):
         self.internal_medic_server = InternalMedicServer(self.id)
@@ -86,6 +86,8 @@ class LeaderElection:
             with self.leader_id.condition:
                 result_leader = self.leader_id.condition.wait_for(
                     lambda: not self.leader_id.is_this_value(None), TIME_OUT_TO_FIND_LEADER)
+                if self.sigterm_monitor.is_this_value(True):
+                    return
                 if result_leader:
                     break
                 elif (time.time() - start_time) >= TIME_OUT_TO_FIND_LEADER: 
@@ -93,7 +95,6 @@ class LeaderElection:
                     return
                 break
         self.internal_medic_server.set_leader_data(self.leader_id.value)
-        
         if self.leader_id.value and self.leader_id.value[0] == self.id and self.heartbeat_server is None:
             logging.info(f"[{self.id}] I'm the leader medic! ⛑️")
             #self.heartbeat_server = HeartbeatServer(get_host_name(self.id), get_service_name(self.id))
@@ -107,9 +108,11 @@ class LeaderElection:
         self.thr_obs_leader.start()
 
     def find_new_leader(self):
+        if self.sigterm_monitor.is_this_value(True):
+            return 
         self.free_resources()
         self.wait_boostrap_leader()
-        if self.there_is_leader_already(): 
+        if self.sigterm_monitor.is_this_value(False) and self.there_is_leader_already(): 
             return
         token_dto = TokenDTO(a_type= TypeToken.ELECTION, dic_medics= {self.id: self.my_numeric_ip})
         self.safe_send_next(token_dto)
@@ -118,13 +121,19 @@ class LeaderElection:
             if self.thr_obs_leader is None and self.leader_id.value and self.leader_id.value[0] != self.id:
                 self.start_observer_leader()
         except TypeError as e:
-            traceback.print_exc()
             logging.info(f"Catcheando Excepcion of type (index) ✅")
             return
 
+    def reset_socket_connection(self, token_dto: TokenDTO):
+        logging.info(f"[{self.id}] This Node {get_host_name(self.next_id_lock.get_value())} is dead, Let's skt connect to None ")
+        self.skt_connect.close()
+        self.skt_connect = None
+        self.protocol_connect = None
+        self.next_id_lock.set_value(value=self.getNextId(self.next_id_lock.get_value()))
+
+
     def send_message_and_wait_for_ack(self, token_dto: TokenDTO):
         current_next_id = self.next_id_lock.get_value()
-        logging.info(f"[{self.id}] Proto-Connect {token_dto.a_type.value}  dic: {token_dto.dic_medics} sending message to {current_next_id} 👈")
         self.send_message_proto_connect_with_lock(token_dto)
         start_time = time.time()
         with self.got_ack.condition:
@@ -133,18 +142,12 @@ class LeaderElection:
                 return
             elif (time.time() - start_time) >= TIME_OUT_TO_GET_ACK:
                 next_id_to_compare = self.next_id_lock.get_value()
-                logging.info(f"[{self.id}] Connect Timeout to get a ack! from {current_next_id} of message {token_dto.a_type} {token_dto.dic_medics} We try with the next! 🔕 {next_id_to_compare} 👈")
+                logging.info(f"[{self.id}] Connect Timeout to get a ack! from {current_next_id} Type: {token_dto.a_type.value} {token_dto.dic_medics}  We try with the next! 🔕 {next_id_to_compare} 👈")
                 if not self.leader_id.is_this_value(None):
                     logging.info(f"[{self.id}] We found a leader already! Leader:{self.leader_id.value} 💯 ✅")
-                #if self.there_is_leader_already():
-                #    logging.info("there is a leader already") #ver esto!!. 
-                #    return
+                    return
                 if not InternalMedicCheck.is_alive(self.id, self.next_id_lock.get_value()):
-                    logging.info(f"[{self.id}] This Node {get_host_name(self.next_id_lock.get_value())} is dead, Let's skt connect to None ")
-                    self.skt_connect.close()
-                    self.skt_connect = None
-                    self.protocol_connect = None
-                    self.next_id_lock.set_value(value=self.getNextId(self.next_id_lock.get_value()))
+                    self.reset_socket_connection(token_dto)
                 self.safe_send_next(token_dto)
 
     def create_connect_and_send_message(self, token_dto: TokenDTO):
@@ -153,7 +156,7 @@ class LeaderElection:
         if can_connect:
             self.protocol_connect = LeaderProtocol(self.skt_connect)
             self.queue_proto_connect.put("Protoconnect Created! ✅")
-            thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect, name="self.thread_receiver_connect")
+            thr_receiver_connect = threading.Thread(target= self.thread_receiver_connect)
             thr_receiver_connect.start()
             self.joins.append(thr_receiver_connect)
             self.send_message_and_wait_for_ack(token_dto)
@@ -174,20 +177,26 @@ class LeaderElection:
                     else:
                         logging.info(f"[{self.id}] We can't connect to {self.next_id_lock.get_value()}  ❌")
                         self.next_id_lock.set_value(value=self.getNextId(self.next_id_lock.get_value()))
-                        #with self.next_id_lock:
-                        #    self.next_id = self.getNextId(self.next_id)
-
         except OSError as e:
-            traceback.print_exc()
             logging.info(f"Catcheando Excepcion {e} ✅")
             return
 
     def send_message_proto_connect_with_lock(self, token_dto: TokenDTO):
         try:
             with self.send_connect_control:
+                logging.info(f"Sending [Connect]: Type: {token_dto.a_type.value} {token_dto.dic_medics} To: {self.protocol_connect.socket.get_peer_name()[1]} 👈🔥")
                 self.protocol_connect.send_tokenDTO(token_dto)
         except OSError as e:
             return
+
+    def send_message_proto_peer_with_lock(self):
+        token_dto = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
+        try:
+            with self.send_peer_control:
+                logging.info(f"Sending [PEER]: Type: {token_dto.a_type.value} {token_dto.dic_medics} To: {self.protocol_peer.socket.get_peer_name()[0]} 👈🔥")
+                self.protocol_peer.send_tokenDTO(token_dto)
+        except OSError as e:
+            return        
 
     def election_message_handler(self, token_dto: TokenDTO):
         if self.id in token_dto.dic_medics:
@@ -195,29 +204,38 @@ class LeaderElection:
             token_dto.leader_id = leader_id
             token_dto.numeric_ip_leader = token_dto.dic_medics[leader_id]
             token_dto.a_type = TypeToken.COORDINATOR
-            token_dto.dic_medics = {self.id: self.my_numeric_ip} # cuando es coordinator (1era vez) en el dic esta mi ip.
+            token_dto.dic_medics = {self.id: self.my_numeric_ip}
             self.send_message_proto_connect_with_lock(token_dto)
         else:
             token_dto.dic_medics[self.id] = self.my_numeric_ip
-            thr_continue_election = threading.Thread(target= self.safe_send_next, args=(token_dto, ), name="From election_message_handler")
+            thr_continue_election = threading.Thread(target= self.safe_send_next, args=(token_dto, ))
             thr_continue_election.start()
             self.joins.append(thr_continue_election)
-        token_dto_ack = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
-        logging.info(f"Recv {token_dto.a_type.value} {token_dto.dic_medics} Sent Ack to {self.protocol_peer.socket.get_addr_from_connect()[0]}")
-        self.send_message_proto_peer_with_lock(token_dto_ack)
+        token_dto = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
+        logging.info(f"Sending [PEER]: Type: {token_dto.a_type.value} {token_dto.dic_medics} To: {self.protocol_peer.socket.get_peer_name()[1]} 👈🔥")
+        self.protocol_peer.send_tokenDTO(token_dto)
+        #self.send_message_proto_peer_with_lock()
+
+        #token_dto_ack = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
+        #self.protocol_peer.send_tokenDTO(token_dto_ack)
+
     
     def coordinator_message_handler(self, token_dto: TokenDTO):
         self.leader_id.change_value((token_dto.leader_id, token_dto.numeric_ip_leader))
         self.leader_id.notify_all()
         if self.id not in token_dto.dic_medics:
             token_dto.dic_medics[self.id] = self.my_numeric_ip
-            thr_continue_coord = threading.Thread(target= self.safe_send_next, args=(token_dto, ), name="from: coordinator_message_handler" )
+            thr_continue_coord = threading.Thread(target= self.safe_send_next, args=(token_dto, ))
             thr_continue_coord.start()
             self.joins.append(thr_continue_coord)
-
-        token_dto_ack = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
-        self.send_message_proto_peer_with_lock(token_dto_ack)
-
+        
+        token_dto = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
+        logging.info(f"Sending [PEER]: Type: {token_dto.a_type.value} {token_dto.dic_medics} To: {self.protocol_peer.socket.get_peer_name()[1]} 👈🔥")
+        self.protocol_peer.send_tokenDTO(token_dto)
+        #self.send_message_proto_peer_with_lock()
+        
+        #token_dto_ack = TokenDTO(a_type= TypeToken.ACK, dic_medics={self.id: self.my_numeric_ip})
+        #self.protocol_peer.send_tokenDTO(token_dto_ack)
 
     def thread_receiver_peer(self):
         result = self.queue_proto_connect.get()
@@ -232,10 +250,8 @@ class LeaderElection:
                     self.election_message_handler(token_dto)
                 elif (token_dto.a_type == TypeToken.COORDINATOR):
                     self.coordinator_message_handler(token_dto)
-                elif (token_dto.a_type == TypeToken.DUMMY):
-                    dummy_token = self.protocol_connect.recv_tokenDTO()
-                    logging.info(f" {dummy_token.a_type}")
             except Exception as e:
+                logging.info(f"Error {e} 👈")
                 if self.sigterm_monitor.is_this_value(False):
                     self.protocol_peer = None
                     if self.skt_peer:
@@ -245,7 +261,7 @@ class LeaderElection:
                     break
                 if self.skt_peer and self.skt_peer.is_closed():
                     break
-                break
+                #break redudante?
 
     def thread_receiver_connect(self):
         while self.sigterm_monitor.is_this_value(False):
@@ -259,25 +275,19 @@ class LeaderElection:
     def thread_accepter(self):
         self.skt_accept = Socket(port = get_service_name(self.id))
         while self.sigterm_monitor.is_this_value(False):
-            logging.info(f"Blocking in the accept! ⌛")
             skt_peer, addr = self.skt_accept.accept_simple()
             if not skt_peer:
                 return
             else:
-                logging.info(f"Theres a new socket peer! 🤝 💯💯")
+                logging.info(f"There's a new socket peer! 🤝 ✅")
                 self.skt_peer = skt_peer
                 self.protocol_peer = LeaderProtocol(self.skt_peer)
-                thr_receiver = threading.Thread(target= self.thread_receiver_peer, name= "thread_receiver_peer")
+                thr_receiver = threading.Thread(target= self.thread_receiver_peer)
                 thr_receiver.start()
                 self.joins.append(thr_receiver)
 
-
     def getNextId(self, aId: int):
         return ((aId - OFFSET_MEDIC_HOSTNAME + 1) % self.ring_size) + OFFSET_MEDIC_HOSTNAME
-
-    def send_message_proto_peer_with_lock(self, token_dto: TokenDTO):
-        with self.send_peer_control:
-            self.protocol_peer.send_tokenDTO(token_dto)
 
     def is_got_ack_this_value(self, next_id :int):
         return self.got_ack.is_this_value(next_id)
@@ -287,7 +297,7 @@ class LeaderElection:
         self.got_ack.notify_all()
 
     def start_accept(self):
-        thr_accepter = threading.Thread(target=self.thread_accepter, name="thread_accepter")
+        thr_accepter = threading.Thread(target=self.thread_accepter)
         thr_accepter.start()
         self.joins.append(thr_accepter)
 
@@ -300,7 +310,6 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         self.sigterm_monitor.set_value(True)
-        self.queue_proto_connect.put(EXIT)
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
         self.free_resources()
         if self.thr_obs_leader:
@@ -320,7 +329,6 @@ class LeaderElection:
         for thr in self.joins:
             thr.join()
         self.joins.clear()
-        logging.info(f"All threads are joined! 💯")
 
     def free_resources(self):
         if self.skt_accept and not self.skt_accept.is_closed():
@@ -330,5 +338,4 @@ class LeaderElection:
         if self.skt_peer and not self.skt_peer.is_closed():
             self.skt_peer.close()
         self.reset_skts_and_protocols()
-        logging.info(f"Sockets are free 💯")
 
