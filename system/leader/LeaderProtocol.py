@@ -1,5 +1,8 @@
+import logging
 from common.protocol.Protocol import Protocol
 from system.commonsSystem.DTO.TokenDTO import TokenDTO, TypeToken
+import time
+time_to_sleep = 5
 
 class LeaderProtocol(Protocol):
 
@@ -7,6 +10,7 @@ class LeaderProtocol(Protocol):
         super().__init__(socket)
 
     def send_tokenDTO(self, a_tokenDTO:TokenDTO):
+        time.sleep(time_to_sleep)
         if not isinstance(a_tokenDTO, TokenDTO):
             raise ValueError("Expected a TokenDTO instance")
         self.send_number_n_bytes(1, a_tokenDTO.a_type.value)
@@ -32,4 +36,6 @@ class LeaderProtocol(Protocol):
         except ValueError:
             raise ValueError(f"Invalid token type received: {a_type}")
 
-        return TokenDTO(type_token, dic_medics, leader_id, numeric_ip_leader)
+        a_tokenDTO = TokenDTO(type_token, dic_medics, leader_id, numeric_ip_leader)
+        return a_tokenDTO
+
