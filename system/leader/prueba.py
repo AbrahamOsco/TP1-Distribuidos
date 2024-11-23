@@ -1,3 +1,6 @@
+import signal
+import time
+import threading
 import socket
 import logging
 
@@ -17,20 +20,7 @@ class Socket:
         if (ip == ""):
             self.socket.bind(("", port))
             self.socket.listen(MAX_LISTEN_BACKLOG)
-
-    def is_active(self):
-        try:
-            if self.socket.fileno() < 0:
-                return False
-            _, _, errors = select.select([], [], [self.socket], 0)
-            if errors:
-                return False
-
-            self.socket.send(b'')
-            return True
-        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
-            return False
-        
+    
     def get_addr(self):
         return self.socket.getsockname()
     
@@ -56,7 +46,9 @@ class Socket:
             logging.error(msg)
             raise RuntimeError(msg)
         try:
+            self.socket.settimeout(2)
             skt_peer, addr = self.socket.accept()
+            self.socket.settimeout(None)
             return skt_peer, addr
         except OSError as e:
             return None, e
@@ -79,7 +71,7 @@ class Socket:
             try:
                 self.socket.shutdown(socket.SHUT_RDWR)
             except OSError as e:
-                logging.info("Socket closed ✅")
+                print("Closing socket with error: " + str(e))
                 pass
             self.socket.close()
             self.was_closed = self.socket._closed
@@ -133,3 +125,58 @@ class Socket:
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
         return ip_address
+
+def thread_accepter(self, a_socket: Socket):
+    while not not a_socket.was_closed():
+        try:
+            skt_peer, addr = a_socket.accept()
+            if skt_peer is not None:
+                self.add_socket(skt_peer, addr)
+        except OSError as e:
+            logging.error(f"action: accept | result: fail | error: {e}")
+            break
+
+class Basic:
+    
+    def __init__(self, port):
+        self.skt = Socket("", port)
+        self.joins = []
+        self.running = threading.Event()
+        self.running.set()
+        signal.signal(signal.SIGTERM, self.handler_sigterm)
+    
+    def thr_accepter(self):
+        while not self.skt.is_closed():
+            try:
+                skt_peer, addr = self.skt.accept()
+                if skt_peer is not None:
+                    self.add_socket(skt_peer, addr)
+            except OSError as e:
+                logging.error(f"action: accept | result: fail | error: {e}")
+                break
+    
+    def run(self):
+        thr = threading.Thread(target=self.thr_accepter, )
+        self.joins.append(thr)
+        thr.start()
+        while self.running.is_set():
+            time.sleep(1)
+
+    def handler_sigterm(self, signum, frame):
+        print("Signal SIGTERM received ⚡")
+        self.skt.close()
+        self.running.clear()
+        for join in self.joins:
+            join.join()
+        print("All resource free! ⚡⚡")
+        
+def main():
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S',)
+    basic = Basic(5000)
+    basic.run()
+    
+
+main()
+
