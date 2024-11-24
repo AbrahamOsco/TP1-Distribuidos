@@ -21,7 +21,14 @@ class Gateway(Node):
         self.pool_size = MAX_CLIENTS
         super().__init__()
         self.state_handler = StateHandler.get_instance()
+<<<<<<< HEAD
         self.recover()
+=======
+<<<<<<< HEAD
+=======
+        self.recover()
+>>>>>>> 03d460d (feat: continued gateway tolerance)
+>>>>>>> 90bf4d6 (add rabbit comments)
         
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -97,5 +104,8 @@ class Gateway(Node):
     def recover(self):
         messages_to_resend = self.state_handler.recover()
         for message in messages_to_resend:
+<<<<<<< HEAD
             logging.info(f"action: resend message | message: {message.global_counter} {message.get_client()}")
+=======
+>>>>>>> 90bf4d6 (add rabbit comments)
             self.broker.public_message(sink=self.sink, message = message.serialize(), routing_key="default")

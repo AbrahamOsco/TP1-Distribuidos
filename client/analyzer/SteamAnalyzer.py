@@ -112,17 +112,34 @@ class SteamAnalyzer:
         local_batch_id = 1
         show_message = True
         while not self.there_a_signal:
+<<<<<<< HEAD
+=======
+            if local_batch_id < self.batch_id:
+                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
+                result = self.game_reader.get_next_batch()
+                if result is None:
+                    logging.info("action: No more game batches left to process.")
+                    break
+                local_batch_id += 1
+                continue
+
+>>>>>>> 90bf4d6 (add rabbit comments)
             some_games = self.game_reader.get_next_batch()
             if some_games is None:
                 logging.info("action: No more game batches left to process.")
                 break
 
+<<<<<<< HEAD
             if local_batch_id < self.batch_id:
                 logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
                 local_batch_id += 1
                 continue
 
             self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
+=======
+            self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
+            self.batch_id += 1
+>>>>>>> 90bf4d6 (add rabbit comments)
             if show_message:
                 logging.info(f"action: Start sending games from batch batch_id: {local_batch_id} ✅")
                 show_message = False
@@ -133,18 +150,36 @@ class SteamAnalyzer:
 
         if not self.there_a_signal and local_batch_id == self.batch_id:
             self.protocol.send_games_eof(self.batch_id)
+<<<<<<< HEAD
             logging.info(f"action: Sent games EOF | batch_id: {self.batch_id}")
             self.batch_id += 1
+=======
+            self.batch_id += 1
+            logging.info(f"action: Sent games EOF | batch_id: {self.batch_id}")
+>>>>>>> 90bf4d6 (add rabbit comments)
         local_batch_id += 1
 
         if self.should_send_reviews:
             logging.info("action: Sending Reviews | result: pending ⌚")
             while not self.there_a_signal:
+<<<<<<< HEAD
+=======
+                if local_batch_id < self.batch_id:
+                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
+                    result = self.review_reader.get_next_batch()
+                    if result is None:
+                        logging.info("action: No more review batches left to process.")
+                        break
+                    local_batch_id += 1
+                    continue
+
+>>>>>>> 90bf4d6 (add rabbit comments)
                 some_reviews = self.review_reader.get_next_batch()
                 if some_reviews is None:
                     logging.info("action: No more review batches left to process.")
                     break
 
+<<<<<<< HEAD
                 if local_batch_id < self.batch_id:
                     logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
                     local_batch_id += 1
@@ -155,12 +190,24 @@ class SteamAnalyzer:
                     logging.info(f"action: Start sending reviews from batch batch_id: {local_batch_id} ✅")
                     show_message = False
                 self.batch_id += 1
+=======
+                self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
+                self.batch_id += 1
+                if show_message:
+                    logging.debug(f"action: Start sending reviews from batch batch_id: {local_batch_id} ✅")
+                    show_message = False
+>>>>>>> 90bf4d6 (add rabbit comments)
                 local_batch_id += 1
             logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
             if not self.there_a_signal and local_batch_id == self.batch_id:
                 self.protocol.send_reviews_eof(self.batch_id)
+<<<<<<< HEAD
                 logging.info(f"action: Sent reviews EOF | batch_id: {self.batch_id}")
                 self.batch_id += 1
+=======
+                self.batch_id += 1
+                logging.info(f"action: Sent reviews EOF | batch_id: {self.batch_id}")
+>>>>>>> 90bf4d6 (add rabbit comments)
             local_batch_id += 1
 
         logging.info("action: Finished sending all remaining data | result: success ✅")
