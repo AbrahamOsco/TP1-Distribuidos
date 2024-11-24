@@ -40,7 +40,7 @@ def obtener_contenedores_vivos():
 def matar_contenedor(contenedor):
     try:
         subprocess.run(
-            ["docker", "kill", contenedor],
+            ["docker", "kill", "--signal=SIGKILL", contenedor],
             check=True
         )
         print(f"Contenedor {contenedor} ha sido matado")
