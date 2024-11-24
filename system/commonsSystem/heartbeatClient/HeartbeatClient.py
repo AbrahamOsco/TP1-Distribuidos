@@ -6,7 +6,7 @@ import time
 import queue
 
 MAX_SIZE_QUEUE_HEARTBEAT = 1
-TIME_FOR_SEND_PING_HEARTBEAT = 1.0
+TIME_FOR_SEND_PING_HEARTBEAT = 0.90
 TIMEOUT_LEADER_RESPONSE = 4
 TIMEOUT_SOCKET = 2.0
 EXIT = "Exit"
@@ -96,6 +96,7 @@ class HeartbeatClient:
         self.joins.append(thread_receiver)
         thread_sender.start()
         thread_receiver.start()
+        logging.info(f"[Heartbeat Client] Start 🚀 👈")
         
     def free_resources(self):
         self.socket.close()

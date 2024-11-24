@@ -2,7 +2,7 @@ import logging
 from common.protocol.Protocol import Protocol
 from system.commonsSystem.DTO.TokenDTO import TokenDTO, TypeToken
 import time
-time_to_sleep = 5
+time_to_sleep = 0
 
 class LeaderProtocol(Protocol):
 
