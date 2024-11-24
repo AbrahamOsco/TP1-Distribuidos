@@ -223,7 +223,8 @@ def get_depends_and_envs(queries, service_name:str, i:int=0, service_instance_na
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
-        - NODE_NAME={service_instance_name or service_name}
+        - NODE_NAME={service_name}
+        - NODE_INSTANCE_NAME={service_instance_name or service_name}
         - NODE_ID={i}
         - AMOUNT_OF_NODES={node_amounts.get(service_name, 1)}
         - SOURCE={sources[service_name]}
