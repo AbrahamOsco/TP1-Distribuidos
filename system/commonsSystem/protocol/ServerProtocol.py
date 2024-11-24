@@ -17,14 +17,11 @@ class ServerProtocol(Protocol):
 
     def recv_auth(self):
         try:
-            logging.info("action: auth | result: pending ⌚")
             operation_type = self.recv_number_n_bytes_timeout(1)
             if operation_type != OPERATION_TYPE_AUTH:
                 logging.error("action: auth | result: error ❌")
                 return None
-            logging.info("action: auth | result: in progress ⌚")
             id_client = self.recv_number_n_bytes_timeout(1)
-            logging.info(f"action: auth | result: {id_client}")
             return id_client
         except Exception as e:
             return None
