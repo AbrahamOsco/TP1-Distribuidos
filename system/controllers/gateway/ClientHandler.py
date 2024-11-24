@@ -53,6 +53,10 @@ class ClientHandler:
                 raw_dto = self.protocol.recv_data_raw(self.client_id)
                 if raw_dto is None:
                     break
+                if raw_dto.batch_id <= self.batch_id:
+                    logging.info(f"action: client already processed batch | batch_id: {raw_dto.batch_id}")
+                    continue
+                self.batch_id = raw_dto.batch_id
                 raw_dto.set_counter(GlobalCounter.get_next())
                 self.state_handler.last_client_message(raw_dto)
                 self.broker.public_message(sink=self.sink, message = raw_dto.serialize(), routing_key="default")

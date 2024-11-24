@@ -66,18 +66,6 @@ class FileReader:
             self.close()
         return games
     
-
-    def skip_batch(self):
-        if(self.is_closed):
-            return None
-        try:
-            for _ in range(self.batch_size):
-                next(self.reader)
-            return True
-        except StopIteration:
-            self.close()
-            return None
-    
     def get_lines_read(self):
         return self.lines_read
 

@@ -112,63 +112,55 @@ class SteamAnalyzer:
         local_batch_id = 1
         show_message = True
         while not self.there_a_signal:
-            if local_batch_id < self.batch_id:
-                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
-                result = self.game_reader.get_next_batch()
-                if result is None:
-                    logging.info("action: No more game batches left to process.")
-                    break
-                local_batch_id += 1
-                continue
-
             some_games = self.game_reader.get_next_batch()
             if some_games is None:
                 logging.info("action: No more game batches left to process.")
                 break
 
+            if local_batch_id < self.batch_id:
+                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
+                local_batch_id += 1
+                continue
+
             self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
-            self.batch_id += 1
             if show_message:
-                logging.debug(f"action: Start sending games from batch batch_id: {local_batch_id} ✅")
+                logging.info(f"action: Start sending games from batch batch_id: {local_batch_id} ✅")
                 show_message = False
 
+            self.batch_id += 1
             local_batch_id += 1
         logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
 
         if not self.there_a_signal and local_batch_id == self.batch_id:
             self.protocol.send_games_eof(self.batch_id)
-            self.batch_id += 1
             logging.info(f"action: Sent games EOF | batch_id: {self.batch_id}")
+            self.batch_id += 1
         local_batch_id += 1
 
         if self.should_send_reviews:
             logging.info("action: Sending Reviews | result: pending ⌚")
             while not self.there_a_signal:
-                if local_batch_id < self.batch_id:
-                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
-                    result = self.review_reader.get_next_batch()
-                    if result is None:
-                        logging.info("action: No more review batches left to process.")
-                        break
-                    local_batch_id += 1
-                    continue
-
                 some_reviews = self.review_reader.get_next_batch()
                 if some_reviews is None:
                     logging.info("action: No more review batches left to process.")
                     break
 
+                if local_batch_id < self.batch_id:
+                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
+                    local_batch_id += 1
+                    continue
+
                 self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
-                self.batch_id += 1
                 if show_message:
-                    logging.debug(f"action: Start sending reviews from batch batch_id: {local_batch_id} ✅")
+                    logging.info(f"action: Start sending reviews from batch batch_id: {local_batch_id} ✅")
                     show_message = False
+                self.batch_id += 1
                 local_batch_id += 1
             logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
             if not self.there_a_signal and local_batch_id == self.batch_id:
                 self.protocol.send_reviews_eof(self.batch_id)
-                self.batch_id += 1
                 logging.info(f"action: Sent reviews EOF | batch_id: {self.batch_id}")
+                self.batch_id += 1
             local_batch_id += 1
 
         logging.info("action: Finished sending all remaining data | result: success ✅")
@@ -236,25 +228,27 @@ class SteamAnalyzer:
         self.stop()
 
     def get_result_from_queries(self):
-        try:
-            logging.info("action: Waiting for the results 📊 | result: pending ⌚")
-            while not self.there_a_signal:
-                resultQuerys = self.protocol.recv_result()
-                if resultQuerys is None:
+        while not self.there_a_signal:
+            try:
+                logging.info("action: Waiting for the results 📊 | result: pending ⌚")
+                while not self.there_a_signal:
+                    resultQuerys = self.protocol.recv_result()
+                    if resultQuerys is None:
+                        break
+                    logging.info(f"action: result_received 📊 | result: success ✅")
+                    self.actual_responses = resultQuerys.append_data(self.actual_responses)
+                logging.info("action: All the results 📊 were received! ✅")
+                if os.path.exists(CLIENT_ID_LOG_PATH):
+                    os.remove(CLIENT_ID_LOG_PATH)
+                    logging.info(f"action: client id log file deleted | client_id: {self.config_params['id']}")
+                diff = self.expected_responses.diff(self.actual_responses)
+                for query in diff:
+                    logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
+                break
+            except Exception as e:
+                logging.info(f"action: Error Catch from thread Receiver: {e} | result: success ✅")
+                if not self.reconnect():
                     break
-                logging.info(f"action: result_received 📊 | result: success ✅")
-                self.actual_responses = resultQuerys.append_data(self.actual_responses)
-            logging.info("action: All the results 📊 were received! ✅")
-            if os.path.exists(CLIENT_ID_LOG_PATH):
-                os.remove(CLIENT_ID_LOG_PATH)
-                logging.info(f"action: client id log file deleted | client_id: {self.config_params['id']}")
-            diff = self.expected_responses.diff(self.actual_responses)
-            for query in diff:
-                logging.info(f"action: diff | query: {query} | diff: {diff[query]}")
-        except Exception as e:
-            logging.info(f"action: Error Catch from thread Receiver: {e} | result: success ✅")
-            if self.reconnect():
-                self.get_result_from_queries()
 
     def stop_by_signal(self):
         self.there_a_signal = True

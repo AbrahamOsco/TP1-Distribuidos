@@ -19,4 +19,5 @@ class Query2345ResultDTO:
             responses[query] += self.games
         else:
             responses[query] = self.games
+        logging.info(f"Received responses for: {query}")
         return responses
