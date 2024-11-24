@@ -81,7 +81,7 @@ class HeartbeatClient:
             try: 
                 data, addr = self.socket.recvfrom(1024)
                 data = data.decode('utf-8')
-                logging.info(f"Recv: {data} 👈 ✅")
+                logging.debug(f"Recv: {data} 👈 ✅")
                 self.handler_message(data, addr)
             except socket.timeout:
                 continue
