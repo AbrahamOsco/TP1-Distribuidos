@@ -21,10 +21,7 @@ class Gateway(Node):
         self.pool_size = MAX_CLIENTS
         super().__init__()
         self.state_handler = StateHandler.get_instance()
-<<<<<<< HEAD
-=======
         self.recover()
->>>>>>> 03d460d (feat: continued gateway tolerance)
         
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
