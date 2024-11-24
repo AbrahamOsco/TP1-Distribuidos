@@ -74,7 +74,6 @@ class LeaderElection:
     def there_is_leader_already(self) -> bool:
         leader_data = InternalMedicCheck.try_get_leader_data(self.id, self.getNextId(self.id))
         if leader_data != None:
-            logging.info(f"There is a leader already! 🎖️ {leader_data}")
             self.leader_id.change_value(leader_data)
             self.internal_medic_server.set_leader_data(leader_data)
             self.start_observer_leader()
@@ -168,8 +167,6 @@ class LeaderElection:
         if self.next_id_lock.is_this_value(self.id):
             raise Exception("I went all around without any answers ❌")
         self.got_ack.change_value(None)
-        if not self.leader_id.is_this_value(None):
-            logging.info(f"[{self.id}]There is a leader already! {self.leader_id.value} 🎖️ Safe_send_next")
         try:
             if self.skt_connect and self.protocol_connect:
                 self.send_message_and_wait_for_ack(token_dto)
@@ -227,7 +224,6 @@ class LeaderElection:
         
     def thread_receiver_peer(self):
         result = self.queue_proto_connect.get()
-        logging.info(f"We obtain {result} 🏳️ 🅰️ 👈 ")
         if result == EXIT:
             return
         while self.sigterm_monitor.is_this_value(False):
@@ -319,7 +315,6 @@ class LeaderElection:
         for thr in self.joins:
             thr.join()
         self.joins.clear()
-        logging.info(f"Threads are free! 💯 ✅")
 
     def free_resources(self):
         if self.skt_accept and not self.skt_accept.is_closed():
@@ -328,12 +323,9 @@ class LeaderElection:
             self.skt_connect.close()
         if self.skt_peer and not self.skt_peer.is_closed():
             self.skt_peer.close()
-        logging.info(f"Only sockets only free ! Size of queue {self.queue_proto_connect.qsize()} 💯")
-
         
         self.reset_skts_and_protocols()
         self.release_threads()
         if not self.queue_proto_connect.empty():
             self.queue_proto_connect.get()
-        logging.info(f"Sockets And threads are free! 💯 ✅")
 

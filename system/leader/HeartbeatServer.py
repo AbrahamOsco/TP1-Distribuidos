@@ -160,7 +160,7 @@ class HeartbeatServer:
                     logging.info(f"[⛑️ ] Node {node.hostname} First time 🆕 ")
                     node.last_time = time.time()
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
-                    logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to vReive!")
+                    logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
                     self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.debug(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
