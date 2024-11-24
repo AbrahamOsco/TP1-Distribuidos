@@ -74,6 +74,7 @@ class LeaderElection:
     def there_is_leader_already(self) -> bool:
         leader_data = InternalMedicCheck.try_get_leader_data(self.id, self.getNextId(self.id))
         if leader_data != None:
+            logging.info(f"[{self.id}] There is a leader already! 🎖️")
             self.leader_id.change_value(leader_data)
             self.internal_medic_server.set_leader_data(leader_data)
             self.start_observer_leader()
@@ -295,6 +296,9 @@ class LeaderElection:
 
     def sign_term_handler(self, signum, frame):
         self.sigterm_monitor.set_value(True)
+        with self.leader_id.condition:
+            self.leader_id.change_value(False)
+            self.leader_id.notify_all()
         logging.info(f"action: ⚡ Signal Handler | signal: {signum} | result: success ✅")
         if self.queue_proto_connect.empty():
             self.queue_proto_connect.put(EXIT)
