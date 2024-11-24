@@ -97,4 +97,5 @@ class Gateway(Node):
     def recover(self):
         messages_to_resend = self.state_handler.recover()
         for message in messages_to_resend:
+            logging.info(f"action: resend message | message: {message.global_counter} {message.get_client()}")
             self.broker.public_message(sink=self.sink, message = message.serialize(), routing_key="default")
