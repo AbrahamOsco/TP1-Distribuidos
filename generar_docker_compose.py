@@ -201,7 +201,7 @@ def get_source_key(service_name, i):
         return f"{i}"
     return source_keys.get(service_name, "default")
 
-def get_depends_and_envs(queries, service_name:str, i:int=0, service_instance_name:str=None):
+def get_depends_and_envs(queries, service_name:str, node_id:int=0, i:int=0, service_instance_name:str=None):
     base = f"""
     depends_on:
         rabbitmq:
@@ -225,7 +225,7 @@ def get_depends_and_envs(queries, service_name:str, i:int=0, service_instance_na
         - PYTHONPATH=/app
         - NODE_NAME={service_name}
         - NODE_INSTANCE_NAME={service_instance_name or service_name}
-        - NODE_ID={i}
+        - NODE_ID={node_id}
         - AMOUNT_OF_NODES={node_amounts.get(service_name, 1)}
         - SOURCE={sources[service_name]}
         - SOURCE_KEY={get_source_key(service_name, i)}
@@ -258,7 +258,7 @@ def generar_servicio_escalable(queries, service_name, node_id, nodes_list=None):
     entrypoint: python3 -u {entrypoints[service_name]}
     networks:
         - system_network{add_persistence_to_pc(service_name)}
-    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0], service_instance_name)}"""
+    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0], i, service_instance_name)}"""
         
     if nodes_list is not None and amount > 0:
         for i in range(amount):
