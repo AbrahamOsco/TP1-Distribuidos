@@ -131,8 +131,7 @@ class StateHandler:
         with self.lock:
             if client_id not in self.shared_namespace.result_eofs_by_client:
                 return False
-            if len(self.shared_namespace.result_eofs_by_client[client_id]) == self.amount_of_queries:
-                logging.info(f"Client {client_id} has finished queries: {self.shared_namespace.result_eofs_by_client[client_id]}")
+            logging.info(f"Client {client_id} has finished queries: {self.shared_namespace.result_eofs_by_client[client_id]}")
             return len(self.shared_namespace.result_eofs_by_client[client_id]) == self.amount_of_queries
         
     def send_eof_to_client(self, client_id):

@@ -221,11 +221,11 @@ services:
         - NODE_ID=104
         - AMOUNT_OF_NODES=1
         - SOURCE=GamesPlatform
-        - SOURCE_KEY=104
+        - SOURCE_KEY=0
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
-        - SOURCE_NAME=platformcounter104
+        - SOURCE_NAME=platformcounter0
     
   platformreducer:
     container_name: platformreducer
