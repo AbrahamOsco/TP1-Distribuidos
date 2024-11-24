@@ -17,7 +17,20 @@ class Socket:
         if (ip == ""):
             self.socket.bind(("", port))
             self.socket.listen(MAX_LISTEN_BACKLOG)
-    
+
+    def is_active(self):
+        try:
+            if self.socket.fileno() < 0:
+                return False
+            _, _, errors = select.select([], [], [self.socket], 0)
+            if errors:
+                return False
+
+            self.socket.send(b'')
+            return True
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
+            return False
+        
     def get_addr(self):
         return self.socket.getsockname()
     

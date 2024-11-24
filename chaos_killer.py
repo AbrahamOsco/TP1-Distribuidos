@@ -26,11 +26,16 @@ def obtener_contenedores_vivos():
             ["docker", "ps", "--format", "{{.Names}}"],
             capture_output=True, text=True, check=True
         )
+<<<<<<< HEAD
         # Filtrar los contenedores que no se llamen "rabbitmq" ni empiecen con "client#"
         contenedores = [
             nombre for nombre in resultado.stdout.splitlines()
             if nombre != "rabbitmq" and not nombre.startswith("client")
         ]
+=======
+        # Filtrar los contenedores que no se llamen "rabbitmq"
+        contenedores = [nombre for nombre in resultado.stdout.splitlines() if nombre != "rabbitmq" and not nombre.startswith("client")]
+>>>>>>> 03d460d (feat: continued gateway tolerance)
         return contenedores
     except subprocess.CalledProcessError as e:
         print(f"Error al obtener contenedores vivos: {e}")

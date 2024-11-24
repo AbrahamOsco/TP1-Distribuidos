@@ -85,9 +85,9 @@ class Broker:
             logging.warning(f"Channel closed by broker: {e}. Attempting to recreate channel.")
             self.restablish_channel()
             self.start_consuming()
-        # except Exception as e:
-        #     logging.error(f"Irrecuperable error: {e}")
-        #     sys.exit(-1)
+        except Exception as e:
+            logging.error(f"Irrecuperable error: {e}")
+            sys.exit(-1)
         logging.info(f"action: start_consuming {self.tag} | result: finished ✅")
 
     def peek(self, queue_name):
@@ -106,7 +106,7 @@ class Broker:
             logging.info(f"action: stop consuming {self.tag}| result: success ✅")
         except Exception as e:
             logging.info(f"action: close | result: failed ❌ | error: {e}")
-#
+
     def enable_worker_queues(self):
         self.channel.basic_qos(prefetch_count=1)
 

@@ -187,16 +187,16 @@ class Node:
             logging.error(f"action: eof queue error | result: {e}")
 
     def process_queue_message(self, ch, method, properties, body):
-        # try:
+        try:
             data = DetectDTO(body).get_dto()
             if data.is_EOF():
                 self.inform_eof_to_nodes(data, method.delivery_tag)
             else:
                 self.process_data(data)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
-        # except Exception as e:
-        #     logging.error(f"action: data queue error | result: {e}")
-        #     ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        except Exception as e:
+            logging.error(f"action: data queue error | result: {e}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
     def run(self):
         self.hearbeatClient.run()
