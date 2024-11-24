@@ -27,7 +27,7 @@ def obtener_contenedores_vivos():
             capture_output=True, text=True, check=True
         )
         # Filtrar los contenedores que no se llamen "rabbitmq"
-        contenedores = [nombre for nombre in resultado.stdout.splitlines() if nombre != "rabbitmq"]
+        contenedores = [nombre for nombre in resultado.stdout.splitlines() if nombre != "rabbitmq" and not nombre.startswith("client")]
         return contenedores
     except subprocess.CalledProcessError as e:
         print(f"Error al obtener contenedores vivos: {e}")

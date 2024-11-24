@@ -20,13 +20,19 @@ class SteamAnalyzer:
         self.socket = None
         self.protocol = None
         self.batch_id = 1
+        self.percent = 1
         self.there_a_signal = False
         self.should_send_reviews = int(os.getenv("SEND_REVIEWS", 1)) == 1
         self.max_retries = int(os.getenv("MAX_RETRIES", 10))
         self.retry_delay = int(os.getenv("RETRY_DELAY", 5)) 
+        self.reconnect_lock = threading.Lock()
 
-    def init_readers_and_responses(self, percent_of_file):
-        self.percent = percent_of_file
+    def restart_readers_and_responses(self):
+        self.game_reader.close()
+        self.review_reader.close()
+        self.init_readers_and_responses()
+
+    def init_readers_and_responses(self):
         self.actual_responses = {}
         self.game_reader = FileReader(file_name='games', batch_size=25, percent_of_file_for_use=self.percent)
         self.review_reader = FileReader(file_name='reviews', batch_size=2000, percent_of_file_for_use=self.percent)
@@ -49,7 +55,6 @@ class SteamAnalyzer:
         logging.info(f"action: get_id_client | client_id: {None}")
         return None
     
-
     def connect_to_server(self):
         try:
             self.socket = Socket(self.config_params["hostname"], 12345)
@@ -65,116 +70,106 @@ class SteamAnalyzer:
             return False
 
     def reconnect(self):
-        attempts = 0
-        while attempts < self.max_retries:
-            logging.info(f"action: reconnect | attempt: {attempts + 1}/{self.max_retries}")
-            if self.connect_to_server():
-                logging.info("action: reconnect | result: success ✅")
+        with self.reconnect_lock:
+            if self.socket.is_active():
                 return True
-            attempts += 1
-            time.sleep(self.retry_delay)
-        
-        logging.error("action: reconnect | result: failed after all retry attempts ❌")
-        self.stop_by_signal()
-        return False
-
-    def send_games(self):
-        logging.info("action: Sending Games | result: pending ⌚")
-        while self.there_a_signal == False:
-            some_games = self.game_reader.get_next_batch()
-            if(some_games == None):
-                break
-            self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
-            self.batch_id += 1
-        logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
-        self.protocol.send_games_eof(self.batch_id)
-        self.batch_id += 1
-
-    def send_reviews(self):
-        if not self.should_send_reviews:
-            return
-        logging.info("action: Sending Reviews | result: pending ⌚")
-        while self.there_a_signal == False:
-            some_reviews = self.review_reader.get_next_batch()
-            if(some_reviews == None):
-                break
-            self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
-            self.batch_id += 1
-        logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
-        self.protocol.send_reviews_eof(self.batch_id)
-        self.batch_id += 1
+            self.restart_readers_and_responses()
+            attempts = 0
+            while attempts < self.max_retries:
+                logging.info(f"action: reconnect | attempt: {attempts + 1}/{self.max_retries}")
+                if self.connect_to_server():
+                    try:
+                        logging.info("action: reconnect | result: success ✅")
+                        self.auth(self.config_params["id"])
+                        logging.info("action: auth reenviado | result: success ✅")
+                        return True
+                    except Exception as e:
+                        logging.error(f"action: reconnect | error: {e}")
+                attempts += 1
+                time.sleep(self.retry_delay)
+            
+            logging.error("action: reconnect | result: failed after all retry attempts ❌")
+            self.stop_by_signal()
+            return False
 
     def send_data(self):
-        try:
-            if self.batch_id > 1:
+        while not self.there_a_signal:
+            try:
                 self.find_and_send_remaining_data()
-            else:
-                self.send_games()
-                self.send_reviews()
-        except (BrokenPipeError, ConnectionResetError) as e:
-            logging.error(f"action: send_data | error: {e} | attempting reconnect")
-            if self.reconnect():
-                logging.info("action: send_data | reconnected")
-                self.auth(self.config_params["id"])
-                logging.info("action: send_data | auth reenviado")
-                self.send_data()
+                break
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError) as e:
+                logging.error(f"action: send_data | error: {e} | attempting reconnect")
+                if not self.reconnect():
+                    break
                 logging.info("action: send_data | reenviado")
-        except Exception as e:
-            logging.error(f"action: send_data | unexpected error: {e}")
-            self.stop()
+            except Exception as e:
+                logging.error(f"action: send_data | unexpected error: {e}")
+                self.stop()
+                break
 
     def find_and_send_remaining_data(self):
         logging.info("action: Finding and sending remaining data | result: pending ⌚")
         local_batch_id = 1
-        games_eof_sent = False
-        reviews_eof_sent = False
         show_message = True
         while not self.there_a_signal:
-            some_games = self.game_reader.skip_batch()
+            if local_batch_id < self.batch_id:
+                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
+                result = self.game_reader.get_next_batch()
+                if result is None:
+                    logging.info("action: No more game batches left to process.")
+                    break
+                local_batch_id += 1
+                continue
+
+            some_games = self.game_reader.get_next_batch()
             if some_games is None:
                 logging.info("action: No more game batches left to process.")
                 break
 
-            if local_batch_id <= self.batch_id:
-                logging.debug(f"action: Skipping game batch | local_batch_id: {local_batch_id}")
-                local_batch_id += 1
-                continue
-
-            self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=local_batch_id))
+            self.protocol.send_data_raw(GamesRawDTO(games_raw=some_games, batch_id=self.batch_id))
+            self.batch_id += 1
             if show_message:
                 logging.debug(f"action: Start sending games from batch batch_id: {local_batch_id} ✅")
                 show_message = False
 
             local_batch_id += 1
+        logging.info("action: All The game 🕹️ batches were sent! | result: success ✅")
 
-        if not games_eof_sent and not self.there_a_signal:
-            self.protocol.send_games_eof(local_batch_id)
-            logging.info(f"action: Sent games EOF | batch_id: {local_batch_id}")
-            local_batch_id += 1
-            games_eof_sent = True
+        if not self.there_a_signal and local_batch_id == self.batch_id:
+            self.protocol.send_games_eof(self.batch_id)
+            self.batch_id += 1
+            logging.info(f"action: Sent games EOF | batch_id: {self.batch_id}")
+        local_batch_id += 1
 
         if self.should_send_reviews:
-            logging.info("action: Resuming with reviews | result: pending ⌚")
+            logging.info("action: Sending Reviews | result: pending ⌚")
             while not self.there_a_signal:
-                some_reviews = self.review_reader.skip_batch()
+                if local_batch_id < self.batch_id:
+                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
+                    result = self.review_reader.get_next_batch()
+                    if result is None:
+                        logging.info("action: No more review batches left to process.")
+                        break
+                    local_batch_id += 1
+                    continue
+
+                some_reviews = self.review_reader.get_next_batch()
                 if some_reviews is None:
                     logging.info("action: No more review batches left to process.")
                     break
 
-                if local_batch_id <= self.batch_id:
-                    logging.debug(f"action: Skipping review batch | local_batch_id: {local_batch_id}")
-                    local_batch_id += 1
-                    continue
-
-                self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=local_batch_id))
-                logging.debug(f"action: Sent review batch | batch_id: {local_batch_id} ✅")
+                self.protocol.send_data_raw(ReviewsRawDTO(reviews_raw=some_reviews, batch_id=self.batch_id))
+                self.batch_id += 1
+                if show_message:
+                    logging.debug(f"action: Start sending reviews from batch batch_id: {local_batch_id} ✅")
+                    show_message = False
                 local_batch_id += 1
-
-            if not reviews_eof_sent and not self.there_a_signal:
-                self.protocol.send_reviews_eof(local_batch_id)
-                logging.info(f"action: Sent reviews EOF | batch_id: {local_batch_id}")
-                local_batch_id += 1
-                reviews_eof_sent = True
+            logging.info("action: All the reviews 📰 batches were sent! | result: success ✅")
+            if not self.there_a_signal and local_batch_id == self.batch_id:
+                self.protocol.send_reviews_eof(self.batch_id)
+                self.batch_id += 1
+                logging.info(f"action: Sent reviews EOF | batch_id: {self.batch_id}")
+            local_batch_id += 1
 
         logging.info("action: Finished sending all remaining data | result: success ✅")
 
@@ -208,18 +203,19 @@ class SteamAnalyzer:
         self.protocol.send_auth(client_id)
         logging.info(f"action: Se envio el auth")
         client_id_response, batch_id = self.protocol.recv_auth_result()
-        logging.info(f"action: auth | result: {client_id_response, batch_id} ✅")
+        logging.info(f"action: auth | result: {client_id_response, batch_id+1} ✅")
         if client_id_response == None or (client_id != INVALID_CLIENT_ID and (client_id_response != client_id)) or batch_id == None:
             logging.error("action: auth | result: failed ❌")
             raise Exception("Auth failed")
         
         self.config_params["id"] = client_id_response
-        self.batch_id = batch_id
+        self.batch_id = batch_id+1
 
         self.save_client_id_log(client_id_response)
 
     def execute(self, percent):
-        self.init_readers_and_responses(percent)
+        self.percent = percent
+        self.init_readers_and_responses()
         if not self.connect_to_server():
             logging.error("action: execute | result: failed to establish initial connection")
             self.reconnect()

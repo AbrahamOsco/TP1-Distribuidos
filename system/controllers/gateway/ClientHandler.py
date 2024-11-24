@@ -14,7 +14,7 @@ class ClientHandler:
         self.socket_peer = Socket(socket_peer=skt_peer)
         self.protocol = ServerProtocol(self.socket_peer)
         self.sink = os.getenv("SINK")
-        self.batch_id = 1
+        self.batch_id = 0
 
     def recv_auth(self):
         return self.protocol.recv_auth()
@@ -40,6 +40,13 @@ class ClientHandler:
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
         self.send_auth_confirm()
         self.state_handler = StateHandler.get_instance()
+        self.state_handler.resend_results(self.client_id)
+
+        if self.state_handler.is_client_finished(self.client_id):
+            logging.info(f"action: client already finished")
+            self.state_handler.send_eof_to_client(self.client_id)
+            self.stop_client()
+            return
 
         while True:
             try:

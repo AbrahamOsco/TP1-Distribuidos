@@ -21,6 +21,9 @@ class BatchDTO:
     def is_games(self):
         return False
     
+    def is_raw(self):
+        return False
+    
     def serialize(self):
         pass
 
