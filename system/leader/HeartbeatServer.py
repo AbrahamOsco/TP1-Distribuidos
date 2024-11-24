@@ -13,7 +13,7 @@ OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
-TIMEOUT_FOR_RECV_PING = 2.0 # INTERVAL_HEARBEAT + 1
+TIMEOUT_FOR_RECV_PING = 0.9 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
@@ -65,17 +65,20 @@ class HeartbeatServer:
    
     def broadcast(self, message: bytes):
         for node in self.nodes:
+            hostname_to_send = node.hostname
+            if (node.numeric_ip is not None):
+                hostname_to_send = node.numeric_ip
             send_messg = False
             if self.my_hostname == node.hostname:
                 continue
             try:
                 if node.status == NodeStatus.ACTIVE:
-                    self.socket.sendto(message, (node.hostname, node.service_name))
+                    self.socket.sendto(message, (hostname_to_send, node.service_name))
                     send_messg = True
                 elif node.status == NodeStatus.RECENTLY_REVIVED:
                     hi_message = f"hi|{self.my_hostname}".encode('utf-8')
-                    self.socket.sendto(hi_message, (node.hostname, node.service_name))
-                    self.socket.sendto(message, (node.hostname, node.service_name))
+                    self.socket.sendto(hi_message, (hostname_to_send, node.service_name))
+                    self.socket.sendto(message, (hostname_to_send, node.service_name))
                     node.status = NodeStatus.ACTIVE
                     send_messg = True
             except socket.gaierror as e:
@@ -136,12 +139,15 @@ class HeartbeatServer:
                 logging.info("Receiver closed by socket was closed")
                 return
     
-    def revive_node(self, node: NodeInfo):
+    def revive_node(self, node: NodeInfo, initial=None):
         result = subprocess.run(['docker', 'start', f'{node.hostname}' ], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if result.returncode == 0:
+        if result.returncode == 0 and not initial:
             logging.info(f"Revive {node.hostname} was success! 👼✅")
-        else: 
+        elif result.returncode != 0: 
             logging.info(f"Revive {node.hostname} was failed! 😱❌")
+        if initial:
+            node.status = NodeStatus.ACTIVE
+            return
         node.status = NodeStatus.RECENTLY_REVIVED
 
     def monitor_nodes(self):
@@ -150,7 +156,8 @@ class HeartbeatServer:
                 if node.hostname == self.my_hostname:
                     continue
                 elif node.last_time is None:
-                    logging.info(f"[⛑️ ] Node {node.hostname} has a new LastTime 🆕")
+                    self.revive_node(node, initial=True) #Al inicio revivimos a todos ya sea q esta vivo o muerto.
+                    logging.info(f"[⛑️ ] Node {node.hostname} First time 🆕 ")
                     node.last_time = time.time()
                 elif time.time() - node.last_time > TIMEOUT_FOR_RECV_PING and node.status != NodeStatus.RECENTLY_REVIVED:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to vReive!")
