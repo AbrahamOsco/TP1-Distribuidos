@@ -1,7 +1,6 @@
 import csv
 import os
 from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
-from system.leader.InternalMedicCheck import InternalMedicCheck
 from enum import Enum
 import logging
 import socket
@@ -102,7 +101,7 @@ class HeartbeatServer:
                 if end_time - start_time >= THRESHOLD_RESTART_PING: #Si supera 1.5s muy probable murio otro nodo y fue revivido necesitamos enviarle ping. con la data del lider
                     logging.info(f"Threshold exceed We send ping right now {end_time - start_time} 👌")
                     time_to_sleep = 0
-                logging.info(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
+                logging.debug(f"[⛑️ ] Sent ping to all Nodes! 💯🎯🎯🎯🎯")
                 time.sleep(time_to_sleep)
             except OSError as e:
                 logging.info("Sender closed by socket was closed")
@@ -157,7 +156,7 @@ class HeartbeatServer:
                     logging.info(f"[⛑️ ] Node {node.hostname} is dead! 💀 Now to Revive!")
                     self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
-                    logging.info(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
+                    logging.debug(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
             
     def run(self):

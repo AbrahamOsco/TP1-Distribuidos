@@ -63,6 +63,7 @@ class GatewayStructure():
             responses_length = int.from_bytes(data[offset:offset+2], byteorder='big')
             offset += 2
             for _ in range(responses_length):
+                offset += 1
                 response, offset = GamesDTO.deserialize(data, offset)
                 responses.append(response)
             responses_by_client[client_id] = responses

@@ -6,7 +6,7 @@ from common.DTO.ReviewsRawDTO import OPERATION_TYPE_REVIEWS_RAW
 from common.DTO.ReviewEOFDTO import OPERATION_TYPE_REVIEWEOF
 
 
-class RawDTO(DTO):
+class RawDTO():
     def __init__(self, client_id:int=0, type:int=0, raw_data=[], batch_id=0, global_counter=0):
         self.operation_type = OperationType.OPERATION_TYPE_RAW
         self.client_id = client_id
@@ -68,6 +68,9 @@ class RawDTO(DTO):
     
     def is_games(self):
         return self.type == OPERATION_TYPE_GAMES_RAW
+    
+    def is_raw(self):
+        return True
     
     def get_client(self):
         return self.client_id

@@ -303,6 +303,7 @@ def get_gateway(queries, node_id):
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=gateway
+        - NODE_INSTANCE_NAME=gateway
         - NODE_ID={node_id[0]}
         - SOURCE=Output
         - SINK=DataRaw
@@ -336,7 +337,8 @@ def get_medicos():
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - NODE_NAME=medic_{i}  
+      - NODE_NAME=medic_{i}
+      - NODE_INSTANCE_NAME=medic_{i}
       - NODE_ID={500+i}
       - LOGGING_LEVEL=INFO
       - RING_SIZE=4

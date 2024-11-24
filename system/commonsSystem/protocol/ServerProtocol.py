@@ -18,7 +18,10 @@ class ServerProtocol(Protocol):
     def recv_auth(self):
         try:
             operation_type = self.recv_number_n_bytes_timeout(1)
-            id_client = self.recv_number_n_bytes(1)
+            if operation_type != OPERATION_TYPE_AUTH:
+                logging.error("action: auth | result: error ❌")
+                return None
+            id_client = self.recv_number_n_bytes_timeout(1)
             return id_client
         except Exception as e:
             return None
