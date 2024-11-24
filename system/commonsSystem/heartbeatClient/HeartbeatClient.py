@@ -96,7 +96,6 @@ class HeartbeatClient:
         self.joins.append(thread_receiver)
         thread_sender.start()
         thread_receiver.start()
-        logging.info(f"[Heartbeat Client] Start 🚀 👈")
         
     def free_resources(self):
         self.socket.close()
