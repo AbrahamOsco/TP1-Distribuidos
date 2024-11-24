@@ -55,6 +55,10 @@ class QueriesResponses:
     def diffQueryOrder(self, response1, response2):
         diff = []
         for i in range(len(response1)):
+            if i >= len(response2):
+                logging.info(f"Pos#{i+1} Expected: {response1[i]} | Actual: None")
+                diff.append(response1[i])
+                continue
             if response1[i] != response2[i]:
                 logging.info(f"Pos#{i+1} Expected: {response1[i]} | Actual: {response2[i]}")
                 diff.append(response1[i])

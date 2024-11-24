@@ -30,6 +30,7 @@ class Counter(StatefullNode):
             logging.info(f"Already processed {data.global_counter}")
             return
         self.logs.add_log(data.serialize())
+        self.id_list.insert(data.global_counter)
         client_id = data.get_client()
         if client_id not in self.data.result:
             self.data.result[client_id] = {"windows": 0, "linux": 0, "mac": 0, "counter": 0}

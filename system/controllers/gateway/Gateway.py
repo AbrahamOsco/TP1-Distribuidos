@@ -21,6 +21,7 @@ class Gateway(Node):
         self.pool_size = MAX_CLIENTS
         super().__init__()
         self.state_handler = StateHandler.get_instance()
+        self.recover()
         
     def accept_a_connection(self):
         logging.info("action: Waiting a client to connect | result: pending ⌚")
@@ -66,11 +67,11 @@ class Gateway(Node):
                         batch_id = self.state_handler.get_batch_id(client_id)
                         client_handler.set_batch_id(batch_id)
                     self.state_handler.set_protocol(client_id, client_handler.protocol)
-                    self.state_handler.set_client(client_id, client_handler)
                     self.pool.apply_async(func = client_handler.start, args = (), error_callback = lambda e: logging.error(f"action: error | result: {e}"))
                 except Exception as e:
                     logging.error(f"action: error on incoming connection | result: {e}")
-            logging.info("Llegue al server stop")
+                    if socket_peer is not None:
+                        socket_peer.close()
             self.stop_server()
 
     def process_data(self, data: GamesDTO):
@@ -87,7 +88,14 @@ class Gateway(Node):
     def stop(self):
         logging.info("Gateway abort | result: in progress ⌚")
         self.broker.close()
-        self.listener_proc.terminate()
-        self.listener_proc.join()
+        if self.listener_proc is not None:
+            self.listener_proc.terminate()
+            self.listener_proc.join()
         logging.info("Gateway abort | result: success ✅")
         sys.exit(0)
+
+    def recover(self):
+        messages_to_resend = self.state_handler.recover()
+        for message in messages_to_resend:
+            logging.info(f"action: resend message | message: {message.global_counter} {message.get_client()}")
+            self.broker.public_message(sink=self.sink, message = message.serialize(), routing_key="default")

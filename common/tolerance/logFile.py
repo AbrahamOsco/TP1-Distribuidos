@@ -77,7 +77,8 @@ class LogFile:
         self.logs = []
         self.log_count = 0
         self._remove_file()
-        self._init_file_write()
+        if self.remain_open:
+            self._init_file_write()
     
     def add_log(self, content: bytes):
         if not self.remain_open:
@@ -85,6 +86,7 @@ class LogFile:
         self._add_log_to_file(content, self.file)
         if not self.remain_open:
             self.file.close()
+            self.file = None
         self.log_count += 1
 
     def _add_log_to_file(self, content: bytes, file):
