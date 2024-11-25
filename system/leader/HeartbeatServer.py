@@ -14,7 +14,7 @@ MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
 TIMEOUT_FOR_RECV_PING = 0.9 # INTERVAL_HEARBEAT + 1
-TIME_TO_CHECK_FOR_DEAD_NODES = 1.0 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
+TIME_TO_CHECK_FOR_DEAD_NODES = 0.9 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 
 class NodeStatus(Enum):
     ACTIVE = 0
@@ -41,6 +41,7 @@ class HeartbeatServer:
         self.my_hostname = my_hostname
         self.my_service_name = my_service_name + OFFSET_PORT_LEADER_MEDIC
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.settimeout(TIMEOUT_FOR_RECV_PING)
         self.socket.bind((self.my_hostname, self.my_service_name))
         self.nodes = []
@@ -93,6 +94,7 @@ class HeartbeatServer:
         logging.info(f"Sent first Hi to all nodes 🏅✅")
     
     def sender(self):
+        pass
         self.send_hi()
         while not self.socket._closed:
             try:

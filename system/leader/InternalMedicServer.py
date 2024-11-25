@@ -12,6 +12,7 @@ class InternalMedicServer:
         self.service_name = get_service_name(node_id + OFFSET_MEDIC_PORT_SERVER_INTERN)
         self.node_id = node_id
         self.skt_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.skt_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.skt_udp.bind(("", self.service_name))
         self.skt_udp.settimeout(TIMEOUT_FOR_CHECK_PING)
         self.joins = []

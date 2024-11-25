@@ -18,6 +18,7 @@ class HeartbeatClient:
         self.my_hostname = get_host_name(node_id)
         self.my_service_name = get_service_name(node_id)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.my_hostname, self.my_service_name))
         self.my_numeric_ip = socket.gethostbyname(socket.gethostname())
         self.socket.settimeout(TIMEOUT_SOCKET)

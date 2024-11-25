@@ -31,7 +31,10 @@ services:
       - PYTHONPATH=/app
     networks:
       - system_network
-    
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
   medic_1:
     container_name: medic_1
     image: leader:latest
@@ -50,7 +53,9 @@ services:
     depends_on:
       medic_0:
         condition: service_started
-    
+      rabbitmq:
+        condition: service_healthy
+
   medic_2:
     container_name: medic_2
     image: leader:latest
@@ -69,7 +74,9 @@ services:
     depends_on:
       medic_1:
         condition: service_started
-    
+      rabbitmq:
+        condition: service_healthy
+
   medic_3:
     container_name: medic_3
     image: leader:latest
@@ -88,7 +95,8 @@ services:
     depends_on:
       medic_2:
         condition: service_started
-    
+      rabbitmq:
+        condition: service_healthy    
 
   client1:
     container_name: client1
@@ -633,6 +641,6 @@ services:
 networks:
   system_network:
     ipam:
-      driver: default
+      driver: bridge
       config:
         - subnet: 172.25.125.0/24

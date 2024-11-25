@@ -74,7 +74,7 @@ class LeaderElection:
     def there_is_leader_already(self) -> bool:
         leader_data = InternalMedicCheck.try_get_leader_data(self.id, self.getNextId(self.id))
         if leader_data != None:
-            logging.info(f"[{self.id}] There is a leader already! 🎖️")
+            logging.info(f"[{self.id}] There is a leader already! 🎖️ 👉 {leader_data}")
             self.leader_id.change_value(leader_data)
             self.internal_medic_server.set_leader_data(leader_data)
             self.start_observer_leader()
