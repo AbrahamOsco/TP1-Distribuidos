@@ -320,15 +320,19 @@ def get_gateway(queries, node_id):
 def get_medicos():
     compose = ""
     num_medics = 4
-    for i in range(0, num_medics):
-        depends_on = (
-            f"""
+    for i in range(num_medics):
+        if i == 0:
+            depends_on = """
     depends_on:
+      rabbitmq:
+        condition: service_healthy"""
+        else:
+            depends_on = f"""
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
       medic_{i - 1}:
         condition: service_started"""
-            if i > 0
-            else ""
-        )
         compose += f"""
   medic_{i}:
     container_name: medic_{i}
