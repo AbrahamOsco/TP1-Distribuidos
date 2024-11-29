@@ -75,8 +75,8 @@ class Broker:
     def basic_nack(self, delivery_tag):
         self.channel.basic_nack(delivery_tag=delivery_tag, requeue=True)
 
-    def basic_ack(self, delivery_tag):
-        self.channel.basic_ack(delivery_tag=delivery_tag)
+    def basic_ack(self, delivery_tag, multiple=False):
+        self.channel.basic_ack(delivery_tag=delivery_tag, multiple=multiple)
 
     def start_consuming(self):
         try:

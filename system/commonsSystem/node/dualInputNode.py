@@ -21,14 +21,13 @@ class DualInputNode(StatefullNode):
         if data.get_type() == "reviews" and self.data.status[client_id] == STATUS_REVIEWING:
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Finished.")
-            self.checkpoint.save_checkpoint(self.data.to_bytes())
         elif data.get_type() == "games" and self.data.status[client_id] == STATUS_STARTED:
             self.data.status[client_id] = STATUS_REVIEWING
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
             self.checkpoint.save_checkpoint(self.data.to_bytes())
             self.check_premature_messages(data.get_client())
-        self.broker.basic_ack(delivery_tag)
+        self.broker.basic_ack(delivery_tag=0,multiple=True)
 
     def check_premature_messages(self, client_id):
         if len(self.data.premature_messages[client_id]) == 0:
@@ -41,7 +40,6 @@ class DualInputNode(StatefullNode):
         if data.get_type() == "games":
             return
         client = data.get_client()
-        self.checkpoint.save_checkpoint(self.data.to_bytes())
         self.send_result(client)
         self.send_eof(data)
         self.data.reset(client)
@@ -65,6 +63,7 @@ class DualInputNode(StatefullNode):
         if self.review_id_list.already_processed(data.global_counter):
             logging.error(f"Review {data.global_counter} already processed")
             return
+
         client_id = data.get_client()
         if self.data.status[client_id] == STATUS_STARTED:
             logging.debug(f"Client {client_id} is still started")
@@ -79,6 +78,8 @@ class DualInputNode(StatefullNode):
         if self.games_id_list.already_processed(data.global_counter):
             logging.error(f"Game {data.global_counter} already processed")
             return
+        # else:
+        #     logging.info(f"Processing game {data.global_counter}")
         self.games_id_list.insert(data.global_counter)
         client_id = data.get_client()
         self.data.add_counter(client_id, data.global_counter)

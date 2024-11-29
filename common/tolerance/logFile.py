@@ -10,6 +10,7 @@ class LogFile:
         self.logs = []
         self.log_count = 0
         self._load_file()
+        self.ack_threshold = int(os.getenv("ACK_THRESHOLD", 1))
         if self.remain_open:
             self._init_file_write()
 
@@ -81,13 +82,19 @@ class LogFile:
             self._init_file_write()
     
     def add_log(self, content: bytes):
+        self.logs.append(content)
+        if len(self.logs) < self.ack_threshold:
+            return
         if not self.remain_open:
             self._init_file_write()
-        self._add_log_to_file(content, self.file)
+        for log in self.logs:
+            self._add_log_to_file(log, self.file)
+
         if not self.remain_open:
             self.file.close()
             self.file = None
-        self.log_count += 1
+        self.log_count += len(self.logs)
+        self.logs = []
 
     def _add_log_to_file(self, content: bytes, file):
         file.write(len(content).to_bytes(6, "big"))

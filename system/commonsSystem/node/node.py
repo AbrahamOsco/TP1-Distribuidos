@@ -13,6 +13,7 @@ from system.commonsSystem.node.routingPolicies.RoutingPolicy import RoutingPolic
 from system.commonsSystem.node.routingPolicies.RoutingDefault import RoutingDefault
 from system.commonsSystem.heartbeatClient.HeartbeatClient import HeartbeatClient
 
+
 class Node:
     def __init__(self, routing: RoutingPolicy = RoutingDefault()):
         self.initialize_config()
@@ -35,6 +36,8 @@ class Node:
         self.initialize_queues()
         self.initialize_healthcheck()
         self.hearbeatClient = HeartbeatClient(self.node_id)
+        self.message_counter = 0
+        self.ack_threshold = int(os.getenv("ACK_THRESHOLD", 1))
 
     def initialize_healthcheck(self):
         self.healthcheck_server = HealthcheckServer()
@@ -124,7 +127,7 @@ class Node:
         self.pre_eof_actions(client)
         self.send_eof(data)
         if client in self.clients_pending_confirmations:
-            self.broker.basic_ack(self.clients_pending_confirmations[client][1])
+            self.broker.basic_ack(self.clients_pending_confirmations[client][1],multiple=True)
             del self.clients_pending_confirmations[client]
         if client in self.confirmations:
             del self.confirmations[client]
@@ -182,7 +185,7 @@ class Node:
         try:
             data = DetectDTO(body).get_dto()
             self.process_node_eof(data)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+            ch.basic_ack(delivery_tag=method.delivery_tag, multiple=False)
         except Exception as e:
             logging.error(f"action: eof queue error | result: {e}")
 
@@ -193,7 +196,10 @@ class Node:
                 self.inform_eof_to_nodes(data, method.delivery_tag)
             else:
                 self.process_data(data)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
+                self.message_counter += 1
+                if self.message_counter >= self.ack_threshold:
+                    ch.basic_ack(delivery_tag=method.delivery_tag, multiple=True)
+                    self.message_counter = 0
         except Exception as e:
             logging.error(f"action: data queue error | result: {e}")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)

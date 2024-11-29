@@ -34,7 +34,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-
+    
   medic_1:
     container_name: medic_1
     image: leader:latest
@@ -51,11 +51,11 @@ services:
     networks:
       - system_network
     depends_on:
-      medic_0:
-        condition: service_started
       rabbitmq:
         condition: service_healthy
-
+      medic_0:
+        condition: service_started
+    
   medic_2:
     container_name: medic_2
     image: leader:latest
@@ -72,11 +72,11 @@ services:
     networks:
       - system_network
     depends_on:
-      medic_1:
-        condition: service_started
       rabbitmq:
         condition: service_healthy
-
+      medic_1:
+        condition: service_started
+    
   medic_3:
     container_name: medic_3
     image: leader:latest
@@ -93,10 +93,11 @@ services:
     networks:
       - system_network
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       medic_2:
         condition: service_started
-      rabbitmq:
-        condition: service_healthy    
+    
 
   client1:
     container_name: client1
@@ -448,6 +449,7 @@ services:
         - SOURCE_TYPE=direct,direct
         - SINK=IndieGamesReviewed
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
     
   groupertopreviewspositiveindie:
     container_name: groupertopreviewspositiveindie
@@ -558,6 +560,7 @@ services:
         - SOURCE_TYPE=fanout,fanout
         - SINK=ActionGamesReviewed
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         
   filterreviewenglish_0:
     container_name: filterreviewenglish_0
@@ -610,6 +613,7 @@ services:
         - SINK_TYPE=direct
         - AMOUNT_NEEDED=5000
         - QUERY=4
+        - ACK_THRESHOLD=2
     
   monitorstorageq5:
     container_name: monitorstorageq5
@@ -641,6 +645,6 @@ services:
 networks:
   system_network:
     ipam:
-      driver: bridge
+      driver: default
       config:
         - subnet: 172.25.125.0/24

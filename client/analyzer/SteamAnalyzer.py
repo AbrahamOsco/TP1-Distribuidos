@@ -179,6 +179,7 @@ class SteamAnalyzer:
             percent_of_file_for_use_by_execution = os.getenv("PERCENT_OF_FILE_FOR_USE_BY_EXECUTION", 1)
             self.percentages = [float(p.strip()) for p in percent_of_file_for_use_by_execution.split(',')]
             logging.info(f"Starting executions of Client")
+            inicio = time.time()
             for i, percent in enumerate(self.percentages, 1):
                 self.save_current_execution(percent)
                 logging.info(f"Saving current execution with {percent*100}% of file")
@@ -186,6 +187,8 @@ class SteamAnalyzer:
                 self.execute(percent)
                 logging.info(f"Finished execution {i} with {percent*100}%")
             logging.info("All executions completed")
+            fin = time.time()
+            logging.info(f"Total time: {fin - inicio:.5f} segundos")
         except Exception as e:
             logging.info(f"action: Error Catcheado: in Run: {e}  | result: success ✅")
             self.stop()

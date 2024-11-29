@@ -84,7 +84,7 @@ class Gateway(Node):
         if self.state_handler.is_client_finished(client_id):
             self.state_handler.send_eof_to_client(client_id)
             logging.info(f"action: inform_eof_to_client | client_id: {client_id} | result: success ✅")
-        self.broker.basic_ack(delivery_tag)
+        self.broker.basic_ack(delivery_tag,multiple=True)
 
     def stop(self):
         logging.info("Gateway abort | result: in progress ⌚")
