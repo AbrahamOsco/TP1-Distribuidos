@@ -180,6 +180,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=DataParsed
         - SINK_TYPE=topic
+        - ACK_THRESHOLD=1
         
   selectq1_0:
     container_name: selectq1_0
@@ -205,6 +206,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=2
         - SEND_MODULO=1
         
@@ -234,6 +236,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SOURCE_NAME=platformcounter0
     
   platformreducer:
@@ -260,6 +263,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         - QUERY=1
         
   selectq2345_0:
@@ -286,6 +290,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesQ2345
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=3
         
   filtergender_0:
@@ -316,6 +321,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=GenderGames
         - SINK_TYPE=topic
+        - ACK_THRESHOLD=1
         - GENDERS=Indie,Action
         
   filterdecade_0:
@@ -342,6 +348,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=DecadeGames
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - DECADE=2010
     
   groupertopaverageplaytime:
@@ -368,6 +375,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         - TOP_SIZE=10
         - QUERY=2
         
@@ -395,6 +403,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ3
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=6
         
   filterscorepositive_0:
@@ -421,6 +430,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SCORE_WANTED=1
     
   monitorstorageq3:
@@ -475,6 +485,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         - TOP_SIZE=5
         - QUERY=3
         
@@ -504,6 +515,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
+        - ACK_THRESHOLD=1
         - SELECT=6
         
   filterscorenegative_0:
@@ -532,6 +544,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
+        - ACK_THRESHOLD=1
         - SCORE_WANTED=-1
     
   monitorjoinerq4:
@@ -586,6 +599,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=ActionGamesEnglishReviews
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
     
   monitorstorageq4:
     container_name: monitorstorageq4
@@ -611,9 +625,9 @@ services:
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         - AMOUNT_NEEDED=5000
         - QUERY=4
-        - ACK_THRESHOLD=2
     
   monitorstorageq5:
     container_name: monitorstorageq5
@@ -639,6 +653,7 @@ services:
         - SOURCE_TYPE=fanout,fanout
         - SINK=Output
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         - PERCENTILE=0.9
         - QUERY=5
 

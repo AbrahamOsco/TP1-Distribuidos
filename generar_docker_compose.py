@@ -201,7 +201,7 @@ def get_source_key(service_name, i):
         return f"{i}"
     return source_keys.get(service_name, "default")
 
-def get_depends_and_envs(queries, service_name:str, node_id:int=0, i:int=0, service_instance_name:str=None):
+def get_depends_and_envs(queries, service_name:str, node_id:int=0, i:int=0, service_instance_name:str=None, escalable=True):
     base = f"""
     depends_on:
         rabbitmq:
@@ -231,7 +231,8 @@ def get_depends_and_envs(queries, service_name:str, node_id:int=0, i:int=0, serv
         - SOURCE_KEY={get_source_key(service_name, i)}
         - SOURCE_TYPE={source_types.get(service_name, "direct")}
         - SINK={sinks[service_name]}
-        - SINK_TYPE={sink_types.get(service_name, "direct")}"""
+        - SINK_TYPE={sink_types.get(service_name, "direct")}
+        - ACK_THRESHOLD={2 if not escalable else 1}"""
     base += special_envs(service_name, i)
     return base
 
@@ -279,7 +280,7 @@ def generar_servicio_no_escalable(queries, service_name, node_id, nodes_list=Non
         - system_network
     volumes:
       - ./persistent:/persistent
-    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0])}"""
+    restart: on-failure{get_depends_and_envs(queries, service_name, node_id[0],escalable=False)}"""
 
     if nodes_list is not None:
         nodes_list.append({"NODE_NAME": service_name, "NODE_ID": node_id[0]})
