@@ -78,8 +78,7 @@ class StateHandler:
                 
                 return client_id
             else:
-                logging.warning("No available client IDs found.")
-                return None
+                raise Exception("No clients available")
     
     def get_batch_id(self, client_id):
         with self.lock:

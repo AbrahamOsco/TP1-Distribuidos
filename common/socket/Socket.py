@@ -1,5 +1,6 @@
 import socket
 import logging
+import select
 
 MAX_LISTEN_BACKLOG = 30
 

@@ -6,7 +6,7 @@ import logging
 
 class Storage(DualInputNode):
     def __init__(self):
-        super().__init__(2)
+        super().__init__(1)
         self.percentile = float(os.getenv("PERCENTILE", 0.9))
 
     def send_result(self, client_id):
@@ -16,7 +16,7 @@ class Storage(DualInputNode):
         games_to_send = []
         for app_id, _ in values[index:]:
             games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.data.games[client_id][app_id]))
-            if len(games_to_send) > 50:
+            if len(games_to_send) > 100:
                 self.send_games(client_id, games_to_send, STATE_IDNAME, query=5)
                 games_to_send = []
         if len(games_to_send) > 0:

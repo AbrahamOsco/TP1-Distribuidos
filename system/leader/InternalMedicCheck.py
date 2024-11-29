@@ -43,7 +43,7 @@ class InternalMedicCheck:
                 i += 1
             data, addr = cls.socket.recvfrom(1024)
             if data == b'ping'and verbose == VERBOSE:
-                logging.info(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
+                logging.debug(f"[{my_id}] Node: {cls.hostname} is Alive! ✅")
             cls.socket.close()
             return True
         except socket.timeout:
