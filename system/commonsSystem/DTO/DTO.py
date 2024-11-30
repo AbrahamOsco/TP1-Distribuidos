@@ -10,7 +10,7 @@ class DTO:
     def __init__(self):
         pass
     
-    def serialize_str(a_string:str):
+    def serialize_str(a_string:str=""):
         serialized_string = bytearray()
         string_in_bytes = a_string.encode('utf-8')
         string_length = len(string_in_bytes)
@@ -27,11 +27,14 @@ class DTO:
         return serialized_string
 
     def deserialize_str(data, offset):
-        operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
-        offset += 1
-        length_length = type_to_length[operation_type]
-        string_length = int.from_bytes(data[offset:offset+length_length], byteorder='big')
-        offset += length_length
-        string = data[offset:offset + string_length].decode('utf-8')
-        offset += string_length
-        return string, offset
+        try:
+            operation_type = int.from_bytes(data[offset:offset+1], byteorder='big')
+            offset += 1
+            length_length = type_to_length[operation_type]
+            string_length = int.from_bytes(data[offset:offset+length_length], byteorder='big')
+            offset += length_length
+            string = data[offset:offset + string_length].decode('utf-8')
+            offset += string_length
+            return string, offset
+        except Exception as e:
+            return "", offset
