@@ -13,7 +13,7 @@ class Storage(StatefullNode):
     def __init__(self):
         self.amount_needed = int(os.getenv("AMOUNT_NEEDED"))
         self.id_list = IDList()
-        data = StorageQ4Structure(counter_size=1)
+        data = StorageQ4Structure()
         super().__init__(data, [self.id_list])
 
     def pre_eof_actions(self, client_id):
