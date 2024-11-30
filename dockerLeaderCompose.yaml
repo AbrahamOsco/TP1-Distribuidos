@@ -68,7 +68,6 @@ services:
     depends_on:
       medic_2:
         condition: service_started
-
   gateway:
     image: "nodetoy:latest"
     container_name: gateway

@@ -110,7 +110,7 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
@@ -190,6 +190,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=DataParsed
         - SINK_TYPE=topic
+        - ACK_THRESHOLD=1
         
   filterbasic_1:
     container_name: filterbasic_1
@@ -287,6 +288,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=2
         - SEND_MODULO=2
         
@@ -345,6 +347,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SOURCE_NAME=platformcounter1
     
   platformreducer:
@@ -400,6 +403,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=GamesQ2345
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=3
         
   selectq2345_1:
@@ -465,6 +469,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=GenderGames
         - SINK_TYPE=topic
+        - ACK_THRESHOLD=1
         - GENDERS=Indie,Action
         
   filtergender_1:
@@ -528,6 +533,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=DecadeGames
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - DECADE=2010
         
   filterdecade_1:
@@ -609,6 +615,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ3
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SELECT=6
         
   selectidnameindie_1:
@@ -662,6 +669,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         - SCORE_WANTED=1
         
   filterscorepositive_1:
@@ -717,6 +725,7 @@ services:
         - SOURCE_TYPE=direct,direct
         - SINK=IndieGamesReviewed
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
     
   groupertopreviewspositiveindie:
     container_name: groupertopreviewspositiveindie
@@ -772,6 +781,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
+        - ACK_THRESHOLD=1
         - SELECT=6
         
   selectidnameaction_1:
@@ -829,6 +839,7 @@ services:
         - SOURCE_TYPE=topic
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
+        - ACK_THRESHOLD=1
         - SCORE_WANTED=-1
         
   filterscorenegative_1:
@@ -888,6 +899,7 @@ services:
         - SOURCE_TYPE=fanout,fanout
         - SINK=ActionGamesReviewed
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=2
         
   filterreviewenglish_0:
     container_name: filterreviewenglish_0
@@ -913,6 +925,7 @@ services:
         - SOURCE_TYPE=direct
         - SINK=ActionGamesEnglishReviews
         - SINK_TYPE=direct
+        - ACK_THRESHOLD=1
         
   filterreviewenglish_1:
     container_name: filterreviewenglish_1

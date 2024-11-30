@@ -50,6 +50,7 @@ class HeartbeatClient:
         if result == SPECIAL_PING:
             message = f"ping|{self.my_numeric_ip}".encode('utf-8')
             self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
+            logging.debug("Send! special ping 🌟")
 
     def sender(self):
         while not self.socket._closed:
@@ -64,6 +65,7 @@ class HeartbeatClient:
                     continue
                 message = "ping".encode('utf-8')
                 self.socket.sendto(message, (self.leader_numeric_ip, self.leader_service_name))
+                logging.debug("Send! ping 👈 🐗")
                 time.sleep(TIME_FOR_SEND_PING_HEARTBEAT)
             except OSError as e:
                 return
@@ -91,6 +93,7 @@ class HeartbeatClient:
 
     def run(self):
         self.init_logg_info()
+        logging.info(f"[Heartbeat Client] I Here! 🦾😁👌")
         thread_sender = threading.Thread(target= self.sender)
         thread_receiver = threading.Thread(target= self.receiver)
         self.joins.append(thread_sender)
