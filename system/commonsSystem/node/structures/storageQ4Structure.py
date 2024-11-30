@@ -6,7 +6,6 @@ import math
 
 class StorageQ4Structure(Structure):
     def __init__(self):
-        self.incoming_state = STATE_IDNAME
         self.list = {}
         self.counter = {}
         self.max_counter_size = 2 ** 6
@@ -46,7 +45,7 @@ class StorageQ4Structure(Structure):
             client_id = int.from_bytes(data[offset:offset+1], byteorder='big')
             offset += 1
             game_size = int.from_bytes(data[offset:offset+4], byteorder='big')
-            offset += 1
+            offset += 4
             self.list[client_id] = {}
             for j in range(game_size):
                 app_name, offset = DTO.deserialize_str(data, offset)
