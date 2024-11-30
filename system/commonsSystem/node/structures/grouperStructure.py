@@ -57,6 +57,6 @@ class GrouperStructure(Structure):
         return self, offset
     
     def print_state(self):
-        logging.info(f"List: {self.list}")
-        logging.info(f"Min time: {self.min_time}")
-        logging.info(f"Counters: {self.counters}")
+        logging.debug(f"List: {self.list}")
+        logging.debug(f"Min time: {self.min_time}")
+        logging.debug(f"Counters: {self.counters}")

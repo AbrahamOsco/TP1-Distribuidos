@@ -42,4 +42,4 @@ class PlatformStructure(Structure):
         return self, offset
     
     def print_state(self):
-        logging.info(f"Result: {self.result}")
+        logging.debug(f"Result: {self.result}")

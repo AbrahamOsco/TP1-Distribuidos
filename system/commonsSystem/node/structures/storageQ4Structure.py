@@ -62,6 +62,6 @@ class StorageQ4Structure(Structure):
         return self, offset
     
     def print_state(self):
-        logging.info(f"List: {self.list}")
-        logging.info(f"Counter: {self.counter}")
+        logging.debug(f"List: {self.list}")
+        logging.debug(f"Counter: {self.counter}")
         

@@ -2,6 +2,7 @@ from system.commonsSystem.DTO.ReviewsDTO import STATE_TEXT, ReviewsDTO
 from system.commonsSystem.DTO.DTO import DTO
 from system.commonsSystem.node.structures.structure import Structure
 import math
+import logging
 
 STATUS_STARTED = 0
 STATUS_REVIEWING = 1
@@ -102,10 +103,9 @@ class DualInputStructure(Structure):
         return self, offset
     
     def print_state(self):
-        pass
-        # logging.info(f"List: {self.list}")
-        # logging.info(f"Games: {self.games}")
-        # logging.info(f"Status: {self.status}")
-        # logging.info(f"Counter: {self.counter}")
-        # logging.info(f"Premature messages: {self.premature_messages}")
+        logging.debug(f"List: {self.list}")
+        logging.debug(f"Games: {self.games}")
+        logging.debug(f"Status: {self.status}")
+        logging.debug(f"Counter: {self.counter}")
+        logging.debug(f"Premature messages: {self.premature_messages}")
         
