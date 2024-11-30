@@ -68,6 +68,10 @@ class StateHandler:
             responses = self.shared_namespace.responses_by_client
             del responses[client_id]
             self.shared_namespace.responses_by_client = responses
+        if client_id in self.shared_namespace.last_batch_by_client:
+            last_batch = self.shared_namespace.last_batch_by_client
+            del last_batch[client_id]
+            self.shared_namespace.last_batch_by_client = last_batch
 
     def get_client_id(self):
         with self.lock:
