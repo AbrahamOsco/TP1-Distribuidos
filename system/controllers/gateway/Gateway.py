@@ -67,7 +67,6 @@ class Gateway(Node):
                         client_handler.set_client_id(client_id)
                         batch_id = self.state_handler.get_batch_id(client_id)
                         client_handler.set_batch_id(batch_id)
-                    self.state_handler.set_protocol(client_id, client_handler.protocol)
                     self.pool.apply_async(func = client_handler.start, args = (), error_callback = lambda e: logging.error(f"action: error | result: {e}"))
                 except Exception as e:
                     logging.error(f"action: error on incoming connection | result: {e}")

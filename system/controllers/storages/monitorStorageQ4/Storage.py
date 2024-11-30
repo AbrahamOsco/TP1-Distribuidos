@@ -7,6 +7,7 @@ from system.commonsSystem.DTO.GameIDNameDTO import GameIDNameDTO
 from common.tolerance.IDList import IDList
 from system.commonsSystem.node.structures.storageQ4Structure import StorageQ4Structure
 from system.commonsSystem.node.statefullNode import StatefullNode
+import logging
 
 class Storage(StatefullNode):
     def __init__(self):
@@ -25,6 +26,11 @@ class Storage(StatefullNode):
         self.broker.public_message(sink=self.sink, message=result.serialize(), routing_key="default")
 
     def process_data(self, data: ReviewsDTO):
+        if self.id_list.already_processed(data.global_counter):
+            logging.error(f"Game {data.global_counter} already processed")
+            return
+        self.id_list.insert(data.global_counter)
+        self.logs.add_log(data.serialize())
         client_id = data.get_client()
         if client_id not in self.data.list:
             self.data.list[client_id] = {}
@@ -37,3 +43,5 @@ class Storage(StatefullNode):
                 self.data.list[client_id][review.name] += 1
             if self.data.list[client_id][review.name] == self.amount_needed:
                 self.send_result(client_id, review)
+        if self.logs.is_full():
+            self.checkpoint.save_checkpoint(self.data.to_bytes())

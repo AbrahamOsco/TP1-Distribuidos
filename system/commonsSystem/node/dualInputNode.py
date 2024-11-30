@@ -67,7 +67,7 @@ class DualInputNode(StatefullNode):
         client_id = data.get_client()
         if self.data.status[client_id] == STATUS_STARTED:
             logging.debug(f"Client {client_id} is still started")
-            self.add_premature_message(data) # TODO: Revisar que onda con esto
+            self.add_premature_message(data)
             return
         self.review_id_list.insert(data.global_counter)
         for review in data.reviews_dto:
@@ -78,8 +78,6 @@ class DualInputNode(StatefullNode):
         if self.games_id_list.already_processed(data.global_counter):
             logging.error(f"Game {data.global_counter} already processed")
             return
-        # else:
-        #     logging.info(f"Processing game {data.global_counter}")
         self.games_id_list.insert(data.global_counter)
         client_id = data.get_client()
         self.data.add_counter(client_id, data.global_counter)

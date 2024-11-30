@@ -221,9 +221,9 @@ class StateHandler:
         result_dict[client_id].add(data.query)
         self.shared_namespace.result_eofs_by_client = result_dict
 
-    def resend_results(self, client_id):
+    def resend_results(self, client_id, protocol):
         with self.manager_lock:
             results = self.shared_namespace.responses_by_client.get(client_id, [])
             for data in results:
                 result = data.to_result()
-                self.shared_namespace.protocols.get(client_id).send_result(result)
+                protocol.send_result(result)
