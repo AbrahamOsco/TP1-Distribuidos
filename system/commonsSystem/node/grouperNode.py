@@ -18,11 +18,11 @@ class GrouperNode(StatefullNode):
     def pre_eof_actions(self, client_id):
         if client_id not in self.data.list:
             return
-        self.checkpoint.save_checkpoint(self.data.to_bytes())
         games = GamesDTO(client_id=client_id, state_games=self.incoming_state, games_dto=self.data.list[client_id], query=self.query, global_counter=self.data.counters[client_id])
         games.set_state(STATE_IDNAME)
         self.send_result(games)
         self.data.reset(client_id)
+        self.checkpoint.save_checkpoint(self.data.to_bytes())
 
     def has_to_be_inserted(self, game, current_client):
         return len(self.data.list[current_client]) < self.top_size or game.get(self.comparing_field) > self.data.min_time[current_client]

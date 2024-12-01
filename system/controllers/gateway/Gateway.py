@@ -9,9 +9,9 @@ from system.commonsSystem.DTO.GamesDTO import GamesDTO
 from system.commonsSystem.DTO.EOFDTO import EOFDTO
 from system.controllers.gateway.ClientHandler import ClientHandler
 from system.controllers.gateway.StateHandler import StateHandler
+from system.controllers.gateway.gatewayStructure import MAX_CLIENTS
 
 PORT_SERVER = 12345
-MAX_CLIENTS = 5
 CLIENT_NOT_FOUND = 0
 class Gateway(Node):
     def __init__(self):

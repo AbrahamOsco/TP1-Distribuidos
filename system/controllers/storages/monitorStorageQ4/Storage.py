@@ -20,6 +20,7 @@ class Storage(StatefullNode):
         if client_id not in self.data.list:
             return
         self.data.reset(client_id)
+        self.checkpoint.save_checkpoint(self.data.to_bytes())
     
     def send_result(self, client_id, review):
         result = GamesDTO(client_id=client_id, state_games=STATE_IDNAME, games_dto=[GameIDNameDTO(review.app_id, review.name)], query=4, global_counter=self.data.counter[client_id].pop(0))

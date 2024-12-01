@@ -1,6 +1,8 @@
 from system.controllers.gateway.GlobalCounter import GlobalCounter
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
 
+MAX_CLIENTS=10
+
 class GatewayStructure():
     def to_bytes(result_eofs_by_client, last_batch_by_client, responses_by_client, client_allows):
         structure_bytes = bytearray()
@@ -28,7 +30,7 @@ class GatewayStructure():
     def from_bytes(data):
         offset = 0
         if len(data) == 0:
-            return {}, {}, {}, [True]*10
+            return {}, {}, {}, [True]*MAX_CLIENTS
         global_counter = int.from_bytes(data[offset:offset+6], byteorder='big')
         offset += 6
         result_eofs_by_client = {}
@@ -68,7 +70,7 @@ class GatewayStructure():
                 responses.append(response)
             responses_by_client[client_id] = responses
         client_allows = []
-        for _ in range(5):
+        for _ in range(MAX_CLIENTS):
             client_allows.append(bool.from_bytes(data[offset:offset+1], byteorder='big'))
             offset += 1
         GlobalCounter.set_current(global_counter)

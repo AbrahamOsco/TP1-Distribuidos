@@ -1,7 +1,7 @@
 from common.tolerance.logFile import LogFile
 from common.tolerance.checkpointFile import CheckpointFile
 from system.commonsSystem.DTO.RawDTO import RawDTO
-from system.controllers.gateway.gatewayStructure import GatewayStructure
+from system.controllers.gateway.gatewayStructure import GatewayStructure, MAX_CLIENTS
 from system.commonsSystem.DTO.DetectDTO import DetectDTO
 from system.controllers.gateway.GlobalCounter import GlobalCounter
 from multiprocessing import Manager
@@ -22,7 +22,7 @@ class StateHandler:
         self.shared_namespace.last_batch_by_client = {}
         self.shared_namespace.responses_by_client = {}
         self.shared_namespace.logs = LogFile(prefix, remain_open=False)
-        self.shared_namespace.clients_allow = [True] * 10
+        self.shared_namespace.clients_allow = [True] * MAX_CLIENTS
         self.manager_lock = manager.Lock()
         self.checkpoint = CheckpointFile(prefix, log_file=self.shared_namespace.logs, id_lists=[])
 
@@ -141,6 +141,7 @@ class StateHandler:
                 raise Exception(f"Client {client_id} not found in protocols")
             self._send_to_client(client_id, None)
             self.remove_client(client_id)
+            self.set_client_available(client_id)
             self.save_checkpoint()
 
     def _send_to_client(self, client_id, data):
