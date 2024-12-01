@@ -1,9 +1,8 @@
-import re
 from common.socket.Socket import Socket
 from system.commonsSystem.node.node import Node
+from system.commonsSystem.node.healthcheck import shutdown_server
 import logging
 import multiprocessing
-import os
 import signal
 import sys
 from system.commonsSystem.DTO.GamesDTO import GamesDTO
@@ -33,17 +32,20 @@ class Gateway(Node):
         return socket_peer
     
     def start(self):
-        self.listener_proc = multiprocessing.Process(target=self.run_server)
+        self.listener_proc = multiprocessing.Process(target=self.run_server, name="listener")
         self.listener_proc.start()
+        signal.signal(signal.SIGTERM, lambda _n,_f: self.stop())
         self.run()
         self.listener_proc.terminate()
         self.listener_proc.join()
 
     def stop_server(self):
         self.pool.terminate()
+        self.pool.join()
         if self.socket_accepter is not None:
             self.socket_accepter.close()
         logging.info("action: server stopped | result: success ✅")
+        sys.exit(0)
 
     def run_server(self):
         with multiprocessing.Pool(self.pool_size) as self.pool:
@@ -91,6 +93,9 @@ class Gateway(Node):
         if self.listener_proc is not None:
             self.listener_proc.terminate()
             self.listener_proc.join()
+        shutdown_server(self.healthcheck_server)
+        self.healthcheck_thread.join()
+        self.hearbeatClient.free_resources()
         logging.info("Gateway abort | result: success ✅")
         sys.exit(0)
 
