@@ -210,6 +210,7 @@ class SteamAnalyzer:
 
     def execute(self, percent):
         self.percent = percent
+        self.config_params["id"] = self.get_client_id()
         self.init_readers_and_responses()
         if not self.connect_to_server():
             logging.error("action: execute | result: failed to establish initial connection")

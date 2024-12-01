@@ -14,7 +14,6 @@ class StateHandler:
     _instance = None
 
     def __init__(self):
-        self.lock = multiprocessing.Lock()
         prefix = os.getenv("NODE_NAME") + os.getenv("NODE_ID") + "_"
         self.amount_of_queries = int(os.getenv("AMOUNT_OF_QUERIES", 5))
         manager = Manager()
@@ -41,14 +40,14 @@ class StateHandler:
             self.save_checkpoint()
 
     def last_client_message(self, dto: RawDTO):
-        with self.lock:
+        with self.manager_lock:
             aux = self.shared_namespace.last_batch_by_client
             aux[dto.get_client()] = dto.batch_id
             self.shared_namespace.last_batch_by_client = aux
             self._add_log(dto.serialize())
 
     def add_client_eof(self, client_id, data):
-        with self.lock:
+        with self.manager_lock:
             if data.query == 0:
                 logging.info(f"Client {client_id}, global counter {data.global_counter}, {data}")
                 return
@@ -74,7 +73,7 @@ class StateHandler:
             self.shared_namespace.last_batch_by_client = last_batch
 
     def get_client_id(self):
-        with self.lock:
+        with self.manager_lock:
             client_id = self.get_first_available_client()
             logging.info(f"action: get_client_id | client_id: {client_id}")
             if client_id is not None:
@@ -85,7 +84,7 @@ class StateHandler:
                 raise Exception("No clients available")
     
     def get_batch_id(self, client_id):
-        with self.lock:
+        with self.manager_lock:
             if client_id not in self.shared_namespace.last_batch_by_client:
                 return 0
             return self.shared_namespace.last_batch_by_client[client_id]
@@ -111,14 +110,14 @@ class StateHandler:
             protocols = self.shared_namespace.protocols
             protocols[client_id] = protocol
             self.shared_namespace.protocols = protocols
+            self._resend_results(client_id, protocol)
 
     def _add_result(self, client_id, result):
-        with self.lock:
-            responses = self.shared_namespace.responses_by_client
-            if client_id not in responses:
-                responses[client_id] = []
-            responses[client_id].append(result)
-            self.shared_namespace.responses_by_client = responses
+        responses = self.shared_namespace.responses_by_client
+        if client_id not in responses:
+            responses[client_id] = []
+        responses[client_id].append(result)
+        self.shared_namespace.responses_by_client = responses
 
     def send_result_to_client(self, client_id, data):
         with self.manager_lock:
@@ -131,7 +130,7 @@ class StateHandler:
             self._send_to_client(client_id, result)
 
     def is_client_finished(self, client_id):
-        with self.lock:
+        with self.manager_lock:
             if client_id not in self.shared_namespace.result_eofs_by_client:
                 return False
             logging.info(f"Client {client_id} has finished queries: {self.shared_namespace.result_eofs_by_client[client_id]}")
@@ -143,9 +142,8 @@ class StateHandler:
                 raise Exception(f"Client {client_id} not found in protocols")
             self._send_to_client(client_id, None)
             self.remove_client(client_id)
-            with self.lock:
-                self.set_client_available(client_id)
-                self.save_checkpoint()
+            self.set_client_available(client_id)
+            self.save_checkpoint()
 
     def _send_to_client(self, client_id, data):
         try:
@@ -221,9 +219,8 @@ class StateHandler:
         result_dict[client_id].add(data.query)
         self.shared_namespace.result_eofs_by_client = result_dict
 
-    def resend_results(self, client_id, protocol):
-        with self.manager_lock:
-            results = self.shared_namespace.responses_by_client.get(client_id, [])
-            for data in results:
-                result = data.to_result()
-                protocol.send_result(result)
+    def _resend_results(self, client_id, protocol):
+        results = self.shared_namespace.responses_by_client.get(client_id, [])
+        for data in results:
+            result = data.to_result()
+            protocol.send_result(result)

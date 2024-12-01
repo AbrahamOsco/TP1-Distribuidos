@@ -40,7 +40,6 @@ class ClientHandler:
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
         self.send_auth_confirm()
         self.state_handler = StateHandler.get_instance()
-        self.state_handler.resend_results(self.client_id, self.protocol)
         self.state_handler.set_protocol(self.client_id, self.protocol)
 
         if self.state_handler.is_client_finished(self.client_id):
@@ -48,7 +47,6 @@ class ClientHandler:
             self.state_handler.send_eof_to_client(self.client_id)
             self.stop_client()
             return
-        
 
         while True:
             try:
