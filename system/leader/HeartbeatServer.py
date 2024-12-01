@@ -15,6 +15,7 @@ TIME_NORMAL_FOR_SEND_PING = 3.0
 THRESHOLD_RESTART_PING = 1.5
 TIMEOUT_FOR_RECV_PING = 0.9 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 0.9 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
+TIME_FOR_REVIVIE_INITAL_NODES = 0.1
 
 class NodeStatus(Enum):
     ACTIVE = 0
@@ -94,7 +95,7 @@ class HeartbeatServer:
         logging.info(f"Sent first Hi to all nodes 🏅✅")
     
     def sender(self):
-        pass
+        time.sleep(TIME_FOR_REVIVIE_INITAL_NODES)
         self.send_hi()
         while not self.socket._closed:
             try:
@@ -175,9 +176,9 @@ class HeartbeatServer:
         self.joins.append(thr_monitor)
         self.joins.append(thr_sender)
         self.joins.append(thr_receiver)
+        thr_monitor.start()
         thr_sender.start()
         thr_receiver.start()
-        thr_monitor.start()
 
     def free_resources(self):
         self.socket.close()

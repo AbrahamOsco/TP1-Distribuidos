@@ -8,7 +8,7 @@ import logging
 import threading
 
 VERBOSE = 1
-TIME_OUT_HEALTH_CHECK = 0.5
+TIME_OUT_HEALTH_CHECK = 0.8
 FAIL = 0
 SUCCESS = 1
 PING_ATTEMPTS = 1
