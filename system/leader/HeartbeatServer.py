@@ -1,14 +1,16 @@
 import csv
 import os
 from system.commonsSystem.utils.connectionLeader import OFFSET_MEDIC_HOSTNAME, get_service_name
-from enum import Enum
+from system.leader.NodeInfo import NodeInfo, NodeStatus
 import logging
 import socket
 import logging
 import time
 import threading
 import subprocess
+import queue
 
+MESSAGE_QUEUE= "FIRST_RESURRECTIONS"
 OFFSET_PORT_LEADER_MEDIC= 300
 MAX_SIZE_QUEUE_HEARTBEAT = 1
 TIME_NORMAL_FOR_SEND_PING = 3.0
@@ -17,28 +19,12 @@ TIMEOUT_FOR_RECV_PING = 0.9 # INTERVAL_HEARBEAT + 1
 TIME_TO_CHECK_FOR_DEAD_NODES = 0.9 #ASOCIATED WITH INTERVAL_HEARTBEAT TOO.
 TIME_FOR_REVIVIE_INITAL_NODES = 0.1
 
-class NodeStatus(Enum):
-    ACTIVE = 0
-    DEAD = 1
-    RECENTLY_REVIVED = 2
-
-
-class NodeInfo:
-    def __init__(self, hostname: str, service_name: int):
-        self.hostname = hostname
-        self.numeric_ip = None
-        self.service_name = service_name
-        self.last_time = None
-        self.status = NodeStatus.ACTIVE
-        self.active = True
-        self.counter_loading = 0
-
-    def update_lastime(self, time_received):
-        self.last_time = time_received
 
 class HeartbeatServer:
     def __init__(self,my_hostname, my_service_name):
         self.joins = []
+        self.first_resurrection = False
+        self.queue_first_resurrections = queue.Queue(maxsize =MAX_SIZE_QUEUE_HEARTBEAT)
         self.my_hostname = my_hostname
         self.my_service_name = my_service_name + OFFSET_PORT_LEADER_MEDIC
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -95,7 +81,7 @@ class HeartbeatServer:
         logging.info(f"Sent first Hi to all nodes 🏅✅")
     
     def sender(self):
-        time.sleep(TIME_FOR_REVIVIE_INITAL_NODES)
+        result = self.queue_first_resurrections.get()
         self.send_hi()
         while not self.socket._closed:
             try:
@@ -167,6 +153,9 @@ class HeartbeatServer:
                     self.revive_node(node)
                 elif time.time() - node.last_time < TIMEOUT_FOR_RECV_PING:
                     logging.debug(f"[⛑️ ] 🫀 From: {node.hostname} ✅ ")
+            if not self.first_resurrection:
+                self.queue_first_resurrections.put(MESSAGE_QUEUE)
+                self.first_resurrection = True
             time.sleep(TIME_TO_CHECK_FOR_DEAD_NODES)
             
     def run(self):

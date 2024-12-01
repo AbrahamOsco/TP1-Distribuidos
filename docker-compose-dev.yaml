@@ -110,7 +110,7 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.4
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
