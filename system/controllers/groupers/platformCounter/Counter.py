@@ -15,7 +15,6 @@ class Counter(StatefullNode):
     def pre_eof_actions(self, client_id):
         if client_id not in self.data.result:
             return
-        self.checkpoint.save_checkpoint(self.data.to_bytes())
         data = self.data.result[client_id]
         result = GamesDTO(client_id=int(client_id), state_games=STATE_PLATFORM, games_dto=[PlatformDTO(windows=data["windows"], linux=data["linux"], mac=data["mac"])], global_counter=data["counter"])
         self.send_result(result)

@@ -110,7 +110,7 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2,0.1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
@@ -137,12 +137,39 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1,0.2
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
       - NODE_NAME=client2
       - NODE_ID=101
+      - SEND_REVIEWS=1
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+
+  client3:
+    container_name: client3
+    image: client:latest
+    entrypoint: python3 -u /app/client/main.py
+    volumes:
+      - ./data/games.csv:/data/games.csv
+      - ./data/dataset.csv:/data/dataset.csv
+      - ./data/responses:/data/responses
+      - ./persistent:/persistent
+    environment:
+      - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.3
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - HOSTNAME=gateway
+      - NODE_NAME=client3
+      - NODE_ID=102
       - SEND_REVIEWS=1
     networks:
       - system_network
@@ -167,7 +194,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=gateway
         - NODE_INSTANCE_NAME=gateway
-        - NODE_ID=102
+        - NODE_ID=103
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES=5
@@ -193,31 +220,38 @@ services:
             condition: service_started
         selectq1_1:
             condition: service_started
+        selectq1_2:
+            condition: service_started
         selectq2345_0:
             condition: service_started
         selectq2345_1:
+            condition: service_started
+        selectq2345_2:
             condition: service_started
         filterscorepositive_0:
             condition: service_started
         filterscorepositive_1:
             condition: service_started
+        filterscorepositive_2:
+            condition: service_started
         filterscorenegative_0:
             condition: service_started
         filterscorenegative_1:
+            condition: service_started
+        filterscorenegative_2:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_INSTANCE_NAME=filterbasic_0
-        - NODE_ID=103
+        - NODE_ID=104
         - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=DataParsed
         - SINK_TYPE=topic
-        - ACK_THRESHOLD=1
         
   filterbasic_1:
     container_name: filterbasic_1
@@ -233,31 +267,38 @@ services:
             condition: service_started
         selectq1_1:
             condition: service_started
+        selectq1_2:
+            condition: service_started
         selectq2345_0:
             condition: service_started
         selectq2345_1:
+            condition: service_started
+        selectq2345_2:
             condition: service_started
         filterscorepositive_0:
             condition: service_started
         filterscorepositive_1:
             condition: service_started
+        filterscorepositive_2:
+            condition: service_started
         filterscorenegative_0:
             condition: service_started
         filterscorenegative_1:
+            condition: service_started
+        filterscorenegative_2:
             condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_INSTANCE_NAME=filterbasic_1
-        - NODE_ID=104
+        - NODE_ID=105
         - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=DataParsed
         - SINK_TYPE=topic
-        - ACK_THRESHOLD=1
         
   selectq1_0:
     container_name: selectq1_0
@@ -278,14 +319,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_INSTANCE_NAME=selectq1_0
-        - NODE_ID=105
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=106
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SELECT=2
         - SEND_MODULO=2
         
@@ -308,14 +348,42 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_INSTANCE_NAME=selectq1_1
-        - NODE_ID=106
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=107
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
         - SINK=GamesPlatform
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
+        - SELECT=2
+        - SEND_MODULO=2
+        
+  selectq1_2:
+    container_name: selectq1_2
+    image: select:latest
+    entrypoint: python3 -u /app/system/controllers/select/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        platformcounter_0:
+            condition: service_started
+        platformcounter_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectq1
+        - NODE_INSTANCE_NAME=selectq1_2
+        - NODE_ID=108
+        - AMOUNT_OF_NODES=3
+        - SOURCE=DataParsed
+        - SOURCE_KEY=games
+        - SOURCE_TYPE=topic
+        - SINK=GamesPlatform
+        - SINK_TYPE=direct
         - SELECT=2
         - SEND_MODULO=2
         
@@ -338,15 +406,15 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_INSTANCE_NAME=platformcounter_0
-        - NODE_ID=107
+        - NODE_ID=109
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=0
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SOURCE_NAME=platformcounter0
+        - ACK_THRESHOLD=10
         
   platformcounter_1:
     container_name: platformcounter_1
@@ -367,15 +435,15 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_INSTANCE_NAME=platformcounter_1
-        - NODE_ID=108
+        - NODE_ID=110
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=1
         - SOURCE_TYPE=direct
         - SINK=CountByPlatform
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SOURCE_NAME=platformcounter1
+        - ACK_THRESHOLD=10
     
   platformreducer:
     container_name: platformreducer
@@ -394,14 +462,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformreducer
         - NODE_INSTANCE_NAME=platformreducer
-        - NODE_ID=109
+        - NODE_ID=111
         - AMOUNT_OF_NODES=1
         - SOURCE=CountByPlatform
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         - QUERY=1
         
   selectq2345_0:
@@ -423,14 +490,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_INSTANCE_NAME=selectq2345_0
-        - NODE_ID=110
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=112
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
         - SINK=GamesQ2345
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SELECT=3
         
   selectq2345_1:
@@ -452,14 +518,41 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_INSTANCE_NAME=selectq2345_1
-        - NODE_ID=111
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=113
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=games
         - SOURCE_TYPE=topic
         - SINK=GamesQ2345
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
+        - SELECT=3
+        
+  selectq2345_2:
+    container_name: selectq2345_2
+    image: select:latest
+    entrypoint: python3 -u /app/system/controllers/select/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        filtergender_0:
+            condition: service_started
+        filtergender_1:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=selectq2345
+        - NODE_INSTANCE_NAME=selectq2345_2
+        - NODE_ID=114
+        - AMOUNT_OF_NODES=3
+        - SOURCE=DataParsed
+        - SOURCE_KEY=games
+        - SOURCE_TYPE=topic
+        - SINK=GamesQ2345
+        - SINK_TYPE=direct
         - SELECT=3
         
   filtergender_0:
@@ -484,19 +577,20 @@ services:
             condition: service_started
         filterdecade_1:
             condition: service_started
+        filterdecade_2:
+            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_INSTANCE_NAME=filtergender_0
-        - NODE_ID=112
+        - NODE_ID=115
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=GenderGames
         - SINK_TYPE=topic
-        - ACK_THRESHOLD=1
         - GENDERS=Indie,Action
         
   filtergender_1:
@@ -521,19 +615,20 @@ services:
             condition: service_started
         filterdecade_1:
             condition: service_started
+        filterdecade_2:
+            condition: service_started
     environment:
         - LOGGING_LEVEL=INFO
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_INSTANCE_NAME=filtergender_1
-        - NODE_ID=113
+        - NODE_ID=116
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=GenderGames
         - SINK_TYPE=topic
-        - ACK_THRESHOLD=1
         - GENDERS=Indie,Action
         
   filterdecade_0:
@@ -553,14 +648,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_INSTANCE_NAME=filterdecade_0
-        - NODE_ID=114
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=117
+        - AMOUNT_OF_NODES=3
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
         - SINK=DecadeGames
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - DECADE=2010
         
   filterdecade_1:
@@ -580,14 +674,39 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_INSTANCE_NAME=filterdecade_1
-        - NODE_ID=115
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=118
+        - AMOUNT_OF_NODES=3
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
         - SINK=DecadeGames
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
+        - DECADE=2010
+        
+  filterdecade_2:
+    container_name: filterdecade_2
+    image: filterdecade:latest
+    entrypoint: python3 -u /app/system/controllers/filters/filterDecade/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        groupertopaverageplaytime:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterdecade
+        - NODE_INSTANCE_NAME=filterdecade_2
+        - NODE_ID=119
+        - AMOUNT_OF_NODES=3
+        - SOURCE=GenderGames
+        - SOURCE_KEY=Indie
+        - SOURCE_TYPE=topic
+        - SINK=DecadeGames
+        - SINK_TYPE=direct
         - DECADE=2010
     
   groupertopaverageplaytime:
@@ -607,14 +726,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopaverageplaytime
         - NODE_INSTANCE_NAME=groupertopaverageplaytime
-        - NODE_ID=116
+        - NODE_ID=120
         - AMOUNT_OF_NODES=1
         - SOURCE=DecadeGames
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         - TOP_SIZE=10
         - QUERY=2
         
@@ -635,14 +753,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_INSTANCE_NAME=selectidnameindie_0
-        - NODE_ID=117
+        - NODE_ID=121
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
         - SINK=MonitorQ3
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SELECT=6
         
   selectidnameindie_1:
@@ -662,14 +779,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_INSTANCE_NAME=selectidnameindie_1
-        - NODE_ID=118
+        - NODE_ID=122
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
         - SOURCE_TYPE=topic
         - SINK=MonitorQ3
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SELECT=6
         
   filterscorepositive_0:
@@ -689,14 +805,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_INSTANCE_NAME=filterscorepositive_0
-        - NODE_ID=119
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=123
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         - SCORE_WANTED=1
         
   filterscorepositive_1:
@@ -716,14 +831,39 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_INSTANCE_NAME=filterscorepositive_1
-        - NODE_ID=120
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=124
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
         - SINK=ReviewsPositives
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
+        - SCORE_WANTED=1
+        
+  filterscorepositive_2:
+    container_name: filterscorepositive_2
+    image: filterscore:latest
+    entrypoint: python3 -u /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorstorageq3:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorepositive
+        - NODE_INSTANCE_NAME=filterscorepositive_2
+        - NODE_ID=125
+        - AMOUNT_OF_NODES=3
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsPositives
+        - SINK_TYPE=direct
         - SCORE_WANTED=1
     
   monitorstorageq3:
@@ -745,14 +885,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq3
         - NODE_INSTANCE_NAME=monitorstorageq3
-        - NODE_ID=121
+        - NODE_ID=126
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsPositives,MonitorQ3
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=direct,direct
         - SINK=IndieGamesReviewed
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
     
   groupertopreviewspositiveindie:
     container_name: groupertopreviewspositiveindie
@@ -771,14 +910,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopreviewspositiveindie
         - NODE_INSTANCE_NAME=groupertopreviewspositiveindie
-        - NODE_ID=122
+        - NODE_ID=127
         - AMOUNT_OF_NODES=1
         - SOURCE=IndieGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         - TOP_SIZE=5
         - QUERY=3
         
@@ -801,14 +939,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_INSTANCE_NAME=selectidnameaction_0
-        - NODE_ID=123
+        - NODE_ID=128
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
         - SOURCE_TYPE=topic
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
-        - ACK_THRESHOLD=1
         - SELECT=6
         
   selectidnameaction_1:
@@ -830,14 +967,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_INSTANCE_NAME=selectidnameaction_1
-        - NODE_ID=124
+        - NODE_ID=129
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
         - SOURCE_TYPE=topic
         - SINK=MonitorQ45
         - SINK_TYPE=fanout
-        - ACK_THRESHOLD=1
         - SELECT=6
         
   filterscorenegative_0:
@@ -859,14 +995,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_INSTANCE_NAME=filterscorenegative_0
-        - NODE_ID=125
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=130
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
-        - ACK_THRESHOLD=1
         - SCORE_WANTED=-1
         
   filterscorenegative_1:
@@ -888,14 +1023,41 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_INSTANCE_NAME=filterscorenegative_1
-        - NODE_ID=126
-        - AMOUNT_OF_NODES=2
+        - NODE_ID=131
+        - AMOUNT_OF_NODES=3
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
         - SOURCE_TYPE=topic
         - SINK=ReviewsNegatives
         - SINK_TYPE=fanout
-        - ACK_THRESHOLD=1
+        - SCORE_WANTED=-1
+        
+  filterscorenegative_2:
+    container_name: filterscorenegative_2
+    image: filterscore:latest
+    entrypoint: python3 -u /app/system/controllers/filters/filterScore/main.py
+    networks:
+        - system_network
+    restart: on-failure
+    depends_on:
+        rabbitmq:
+            condition: service_healthy
+        monitorjoinerq4:
+            condition: service_started
+        monitorstorageq5:
+            condition: service_started
+    environment:
+        - LOGGING_LEVEL=INFO
+        - PYTHONPATH=/app
+        - NODE_NAME=filterscorenegative
+        - NODE_INSTANCE_NAME=filterscorenegative_2
+        - NODE_ID=132
+        - AMOUNT_OF_NODES=3
+        - SOURCE=DataParsed
+        - SOURCE_KEY=reviews
+        - SOURCE_TYPE=topic
+        - SINK=ReviewsNegatives
+        - SINK_TYPE=fanout
         - SCORE_WANTED=-1
     
   monitorjoinerq4:
@@ -919,14 +1081,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorjoinerq4
         - NODE_INSTANCE_NAME=monitorjoinerq4
-        - NODE_ID=127
+        - NODE_ID=133
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=fanout,fanout
         - SINK=ActionGamesReviewed
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         
   filterreviewenglish_0:
     container_name: filterreviewenglish_0
@@ -945,14 +1106,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_INSTANCE_NAME=filterreviewenglish_0
-        - NODE_ID=128
+        - NODE_ID=134
         - AMOUNT_OF_NODES=2
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=ActionGamesEnglishReviews
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
         
   filterreviewenglish_1:
     container_name: filterreviewenglish_1
@@ -971,14 +1131,13 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_INSTANCE_NAME=filterreviewenglish_1
-        - NODE_ID=129
+        - NODE_ID=135
         - AMOUNT_OF_NODES=2
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=ActionGamesEnglishReviews
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=1
     
   monitorstorageq4:
     container_name: monitorstorageq4
@@ -997,16 +1156,16 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq4
         - NODE_INSTANCE_NAME=monitorstorageq4
-        - NODE_ID=130
+        - NODE_ID=136
         - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesEnglishReviews
         - SOURCE_KEY=default
         - SOURCE_TYPE=direct
         - SINK=Output
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         - AMOUNT_NEEDED=5000
         - QUERY=4
+        - ACK_THRESHOLD=10
     
   monitorstorageq5:
     container_name: monitorstorageq5
@@ -1025,16 +1184,16 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq5
         - NODE_INSTANCE_NAME=monitorstorageq5
-        - NODE_ID=131
+        - NODE_ID=137
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
         - SOURCE_TYPE=fanout,fanout
         - SINK=Output
         - SINK_TYPE=direct
-        - ACK_THRESHOLD=2
         - PERCENTILE=0.9
         - QUERY=5
+        - ACK_THRESHOLD=10
 
 networks:
   system_network:

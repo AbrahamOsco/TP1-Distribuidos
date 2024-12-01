@@ -24,8 +24,8 @@ class GrouperNode(StatefullNode):
         self.data.reset(client_id)
         self.checkpoint.save_checkpoint(self.data.to_bytes())
 
-    def has_to_be_inserted(self, game, current_client):
-        return len(self.data.list[current_client]) < self.top_size or game.get(self.comparing_field) > self.data.min_time[current_client]
+    def has_to_be_inserted(self, game, current_len, current_min):
+        return current_len < self.top_size or game.get(self.comparing_field) > current_min
     
     def send_result(self, games):
         self.broker.public_message(sink=self.sink, message=games.serialize(), routing_key="default")
@@ -41,18 +41,22 @@ class GrouperNode(StatefullNode):
         self.id_list.insert(data.global_counter)
         self.logs.add_log(data.serialize())
         self.data.counters[current_client] = data.global_counter
+        current_min = self.data.min_time[current_client]
+        current_len = len(self.data.list[current_client])
         for game in data.games_dto:
-            if self.has_to_be_inserted(game, current_client):
+            if self.has_to_be_inserted(game, current_len, current_min):
                 inserted = False
-                for i in range(len(self.data.list[current_client])):
+                for i in range(current_len):
                     if game.get(self.comparing_field) > self.data.list[current_client][i].get(self.comparing_field):
                         self.data.list[current_client].insert(i, game)
                         inserted = True
                         break
                 if not inserted:
                     self.data.list[current_client].append(game)
-                if len(self.data.list[current_client]) > self.top_size:
+                current_len += 1
+                if current_len > self.top_size:
                     self.data.list[current_client].pop()
                 self.data.min_time[current_client] = self.data.list[current_client][-1].get(self.comparing_field)
+                current_min = self.data.min_time[current_client]
         if self.logs.is_full():
             self.checkpoint.save_checkpoint(self.data.to_bytes())

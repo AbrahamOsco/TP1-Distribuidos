@@ -10,7 +10,7 @@ class Storage(DualInputNode):
         games = []
         for app_id in self.data.list[client_id]:
             games.append(GameReviewedDTO(app_id, self.data.games[client_id][app_id], self.data.list[client_id][app_id]))
-            if len(games) == 1000:
+            if len(games) == 250:
                 self.send_games(client_id, games, STATE_REVIEWED, 3)
                 games = []
         if len(games) > 0:

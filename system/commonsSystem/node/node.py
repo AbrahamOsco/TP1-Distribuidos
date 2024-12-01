@@ -74,9 +74,9 @@ class Node:
             datefmt='%Y-%m-%d %H:%M:%S',
         )
 
-    def resend_eof_to_brothers(self, data: EOFDTO):
+    def resend_eof_to_brothers(self, data: EOFDTO, retry:int = 1):
         temporal_broker = Broker("temporal")
-        self.ask_confirmations(temporal_broker, data, 1)
+        self.ask_confirmations(temporal_broker, data, retry)
         temporal_broker.close()
 
     def check_eofs(self):
@@ -85,14 +85,15 @@ class Node:
             with self.confirmations_lock:
                 for client in list(self.clients_pending_confirmations.keys()):
                     information = self.clients_pending_confirmations[client]
-                    if information[3] == 1 and time.time() - information[0] > 7:
+                    if information[3] == 8 and time.time() - information[0] > 7:
                         logging.error("action: check_eofs | result: timeout")
                         del self.clients_pending_confirmations[client]
                         continue
-                    if information[3] == 0 and time.time() - information[0] > 4:
+                    if information[3] < 8 and time.time() - information[0] > 4:
                         logging.error("action: check_eofs | result: resend")
-                        self.clients_pending_confirmations[client] = (time.time(), information[1], information[2], 1)
-                        self.resend_eof_to_brothers(information[2])
+                        retry = information[3] + 1
+                        self.clients_pending_confirmations[client] = (time.time(), information[1], information[2], retry)
+                        self.resend_eof_to_brothers(information[2], retry)
 
     def send_eof(self, data: EOFDTO):
         client = data.get_client()
