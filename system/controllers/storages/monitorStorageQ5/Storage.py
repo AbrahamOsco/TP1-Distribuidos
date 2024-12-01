@@ -16,7 +16,7 @@ class Storage(DualInputNode):
         games_to_send = []
         for app_id, _ in values[index:]:
             games_to_send.append(GameIDNameDTO(app_id=app_id, name=self.data.games[client_id][app_id]))
-            if len(games_to_send) > 100:
+            if len(games_to_send) > 250:
                 self.send_games(client_id, games_to_send, STATE_IDNAME, query=5)
                 games_to_send = []
         if len(games_to_send) > 0:

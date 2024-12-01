@@ -27,7 +27,7 @@ class DualInputNode(StatefullNode):
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
             self.checkpoint.save_checkpoint(self.data.to_bytes())
             self.check_premature_messages(data.get_client())
-        self.broker.basic_ack(delivery_tag=0,multiple=True)
+        self.broker.basic_ack(delivery_tag=delivery_tag,multiple=True)
 
     def check_premature_messages(self, client_id):
         if len(self.data.premature_messages[client_id]) == 0:
