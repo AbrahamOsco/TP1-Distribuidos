@@ -110,12 +110,39 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.4
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2,0.1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
       - NODE_NAME=client1
       - NODE_ID=100
+      - SEND_REVIEWS=1
+    networks:
+      - system_network
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+
+  client2:
+    container_name: client2
+    image: client:latest
+    entrypoint: python3 -u /app/client/main.py
+    volumes:
+      - ./data/games.csv:/data/games.csv
+      - ./data/dataset.csv:/data/dataset.csv
+      - ./data/responses:/data/responses
+      - ./persistent:/persistent
+    environment:
+      - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1,0.2
+      - LOGGING_LEVEL=INFO
+      - PYTHONPATH=/app
+      - HOSTNAME=gateway
+      - NODE_NAME=client2
+      - NODE_ID=101
       - SEND_REVIEWS=1
     networks:
       - system_network
@@ -140,7 +167,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=gateway
         - NODE_INSTANCE_NAME=gateway
-        - NODE_ID=101
+        - NODE_ID=102
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES=5
@@ -183,7 +210,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_INSTANCE_NAME=filterbasic_0
-        - NODE_ID=102
+        - NODE_ID=103
         - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
@@ -223,7 +250,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterbasic
         - NODE_INSTANCE_NAME=filterbasic_1
-        - NODE_ID=103
+        - NODE_ID=104
         - AMOUNT_OF_NODES=2
         - SOURCE=DataRaw
         - SOURCE_KEY=default
@@ -251,7 +278,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_INSTANCE_NAME=selectq1_0
-        - NODE_ID=104
+        - NODE_ID=105
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -281,7 +308,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq1
         - NODE_INSTANCE_NAME=selectq1_1
-        - NODE_ID=105
+        - NODE_ID=106
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -311,7 +338,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_INSTANCE_NAME=platformcounter_0
-        - NODE_ID=106
+        - NODE_ID=107
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=0
@@ -340,7 +367,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformcounter
         - NODE_INSTANCE_NAME=platformcounter_1
-        - NODE_ID=107
+        - NODE_ID=108
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesPlatform
         - SOURCE_KEY=1
@@ -367,7 +394,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=platformreducer
         - NODE_INSTANCE_NAME=platformreducer
-        - NODE_ID=108
+        - NODE_ID=109
         - AMOUNT_OF_NODES=1
         - SOURCE=CountByPlatform
         - SOURCE_KEY=default
@@ -396,7 +423,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_INSTANCE_NAME=selectq2345_0
-        - NODE_ID=109
+        - NODE_ID=110
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -425,7 +452,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectq2345
         - NODE_INSTANCE_NAME=selectq2345_1
-        - NODE_ID=110
+        - NODE_ID=111
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=games
@@ -462,7 +489,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_INSTANCE_NAME=filtergender_0
-        - NODE_ID=111
+        - NODE_ID=112
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
@@ -499,7 +526,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filtergender
         - NODE_INSTANCE_NAME=filtergender_1
-        - NODE_ID=112
+        - NODE_ID=113
         - AMOUNT_OF_NODES=2
         - SOURCE=GamesQ2345
         - SOURCE_KEY=default
@@ -526,7 +553,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_INSTANCE_NAME=filterdecade_0
-        - NODE_ID=113
+        - NODE_ID=114
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -553,7 +580,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterdecade
         - NODE_INSTANCE_NAME=filterdecade_1
-        - NODE_ID=114
+        - NODE_ID=115
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -580,7 +607,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopaverageplaytime
         - NODE_INSTANCE_NAME=groupertopaverageplaytime
-        - NODE_ID=115
+        - NODE_ID=116
         - AMOUNT_OF_NODES=1
         - SOURCE=DecadeGames
         - SOURCE_KEY=default
@@ -608,7 +635,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_INSTANCE_NAME=selectidnameindie_0
-        - NODE_ID=116
+        - NODE_ID=117
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -635,7 +662,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameindie
         - NODE_INSTANCE_NAME=selectidnameindie_1
-        - NODE_ID=117
+        - NODE_ID=118
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Indie
@@ -662,7 +689,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_INSTANCE_NAME=filterscorepositive_0
-        - NODE_ID=118
+        - NODE_ID=119
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -689,7 +716,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorepositive
         - NODE_INSTANCE_NAME=filterscorepositive_1
-        - NODE_ID=119
+        - NODE_ID=120
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -718,7 +745,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq3
         - NODE_INSTANCE_NAME=monitorstorageq3
-        - NODE_ID=120
+        - NODE_ID=121
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsPositives,MonitorQ3
         - SOURCE_KEY=default,default
@@ -744,7 +771,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=groupertopreviewspositiveindie
         - NODE_INSTANCE_NAME=groupertopreviewspositiveindie
-        - NODE_ID=121
+        - NODE_ID=122
         - AMOUNT_OF_NODES=1
         - SOURCE=IndieGamesReviewed
         - SOURCE_KEY=default
@@ -774,7 +801,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_INSTANCE_NAME=selectidnameaction_0
-        - NODE_ID=122
+        - NODE_ID=123
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
@@ -803,7 +830,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=selectidnameaction
         - NODE_INSTANCE_NAME=selectidnameaction_1
-        - NODE_ID=123
+        - NODE_ID=124
         - AMOUNT_OF_NODES=2
         - SOURCE=GenderGames
         - SOURCE_KEY=Action
@@ -832,7 +859,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_INSTANCE_NAME=filterscorenegative_0
-        - NODE_ID=124
+        - NODE_ID=125
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -861,7 +888,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterscorenegative
         - NODE_INSTANCE_NAME=filterscorenegative_1
-        - NODE_ID=125
+        - NODE_ID=126
         - AMOUNT_OF_NODES=2
         - SOURCE=DataParsed
         - SOURCE_KEY=reviews
@@ -892,7 +919,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorjoinerq4
         - NODE_INSTANCE_NAME=monitorjoinerq4
-        - NODE_ID=126
+        - NODE_ID=127
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
@@ -918,7 +945,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_INSTANCE_NAME=filterreviewenglish_0
-        - NODE_ID=127
+        - NODE_ID=128
         - AMOUNT_OF_NODES=2
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
@@ -944,7 +971,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=filterreviewenglish
         - NODE_INSTANCE_NAME=filterreviewenglish_1
-        - NODE_ID=128
+        - NODE_ID=129
         - AMOUNT_OF_NODES=2
         - SOURCE=ActionGamesReviewed
         - SOURCE_KEY=default
@@ -970,7 +997,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq4
         - NODE_INSTANCE_NAME=monitorstorageq4
-        - NODE_ID=129
+        - NODE_ID=130
         - AMOUNT_OF_NODES=1
         - SOURCE=ActionGamesEnglishReviews
         - SOURCE_KEY=default
@@ -998,7 +1025,7 @@ services:
         - PYTHONPATH=/app
         - NODE_NAME=monitorstorageq5
         - NODE_INSTANCE_NAME=monitorstorageq5
-        - NODE_ID=130
+        - NODE_ID=131
         - AMOUNT_OF_NODES=1
         - SOURCE=ReviewsNegatives,MonitorQ45
         - SOURCE_KEY=default,default
