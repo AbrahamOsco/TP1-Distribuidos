@@ -18,6 +18,10 @@ class DualInputNode(StatefullNode):
 
     def inform_eof_to_nodes(self, data, delivery_tag: str):
         client_id = data.get_client()
+        if client_id not in self.data.status:
+            logging.error(f"Client {client_id} not found")
+            self.broker.basic_ack(delivery_tag=delivery_tag,multiple=True)
+            return
         if data.get_type() == "reviews" and self.data.status[client_id] == STATUS_REVIEWING:
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Finished.")
