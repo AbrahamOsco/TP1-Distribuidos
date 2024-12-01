@@ -28,7 +28,7 @@ class GatewayStructure():
     def from_bytes(data):
         offset = 0
         if len(data) == 0:
-            return {}, {}, {}, [True]*5
+            return {}, {}, {}, [True]*10
         global_counter = int.from_bytes(data[offset:offset+6], byteorder='big')
         offset += 6
         result_eofs_by_client = {}
