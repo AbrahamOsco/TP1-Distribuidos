@@ -24,7 +24,9 @@ HAVE_NEW_SKT_PEER = "NewSocketPeer"
 TIME_OUT_TO_FIND_LEADER = 18
 TIME_OUT_TO_GET_ACK = 7
 MAX_SIZE_QUEUE_PROTO_CONNECT = 1
-TIME_FOR_BOOSTRAPING = 2.8
+TIME_FOR_BOOSTRAPING_INIIAL = 2.8
+TIME_FOR_BOOSTRAPING_INITIATED = 1.1
+
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
 class LeaderElection:
@@ -68,7 +70,10 @@ class LeaderElection:
     def wait_boostrap_leader(self):
         self.next_id_lock.set_value(self.getNextId(self.id)) #el Next_id sera el id actual.
         self.start_accept()
-        time.sleep(TIME_FOR_BOOSTRAPING)
+        if self.thr_obs_leader is None:
+            time.sleep(TIME_FOR_BOOSTRAPING_INIIAL)
+        else:
+            time.sleep(TIME_FOR_BOOSTRAPING_INITIATED)
         self.leader_id.change_value(None)
 
     def there_is_leader_already(self) -> bool:
