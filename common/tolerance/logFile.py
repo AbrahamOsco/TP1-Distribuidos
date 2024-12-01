@@ -43,10 +43,12 @@ class LogFile:
             log_size = int.from_bytes(data[offset:offset+6], "big")
             offset += 6
             if len(data[offset:]) < log_size + 1:
+                logging.info("Corrupted log file, not enough size")
                 return logs
             log = data[offset:offset+log_size]
             offset += log_size
             if data[offset:offset+1] != b"\n":
+                logging.info("Corrupted log file, bad ending")
                 return logs
             offset += 1
             logs.append(log)
