@@ -93,7 +93,7 @@ class HeartbeatClient:
 
     def run(self):
         self.init_logg_info()
-        logging.info(f"[Heartbeat Client] I Here! 🦾😁👌")
+        logging.info(f"[Heartbeat Client] I'm Here! 🦾😁👌")
         thread_sender = threading.Thread(target= self.sender)
         thread_receiver = threading.Thread(target= self.receiver)
         self.joins.append(thread_sender)
