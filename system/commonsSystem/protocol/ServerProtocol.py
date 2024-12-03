@@ -19,9 +19,9 @@ class ServerProtocol(Protocol):
         try:
             operation_type = self.recv_number_n_bytes_timeout(1)
             if operation_type != OPERATION_TYPE_AUTH:
-                logging.error("action: auth | result: error ❌")
                 return None
-            id_client = self.recv_number_n_bytes_timeout(1)
+            id_client = self.recv_string()
+            logging.info(f"action: recv_auth | client_id: {id_client} ✅")
             return id_client
         except Exception as e:
             return None
@@ -29,7 +29,7 @@ class ServerProtocol(Protocol):
     def recv_data_raw(self, client_id):
         operation_type = self.recv_number_n_bytes(1)
         if operation_type == OPERATION_TYPE_AUTH:
-            client_id = self.recv_number_n_bytes(1)
+            client_id = self.recv_string()
             return client_id
         batch_id = self.recv_number_n_bytes(2)
         if operation_type == OPERATION_TYPE_GAMEEOF:
@@ -49,7 +49,7 @@ class ServerProtocol(Protocol):
 
     def send_auth_result(self, client_id, batch_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
-        self.send_number_n_bytes(1, client_id)
+        self.send_string(client_id)
         self.send_number_n_bytes(2, batch_id)
 
     def send_result(self, result):

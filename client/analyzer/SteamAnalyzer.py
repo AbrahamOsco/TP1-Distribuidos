@@ -11,7 +11,7 @@ from common.socket.Socket import Socket
 from client.protocol.ClientProtocol import ClientProtocol
 
 CLIENT_ID_LOG_PATH = "/data/client_id.log"
-INVALID_CLIENT_ID = 0
+INVALID_CLIENT_ID = '0' * 100
 class SteamAnalyzer:
 
     def __init__(self):
@@ -49,7 +49,7 @@ class SteamAnalyzer:
     def get_client_id(self):
         if os.path.exists(CLIENT_ID_LOG_PATH):
             with open(CLIENT_ID_LOG_PATH, "r") as file:
-                client_id = int(file.read().strip())
+                client_id = file.read().strip()
                 logging.info(f"action: load_existing_id | client_id: {client_id}")
                 return client_id
         logging.info(f"action: get_id_client | client_id: {None}")
@@ -194,11 +194,11 @@ class SteamAnalyzer:
             self.stop()
     
     def auth(self, client_id):
-        logging.info(f"action: auth | estoy enviando el client_id: {client_id}")
         self.protocol.send_auth(client_id)
         logging.info(f"action: Se envio el auth")
         client_id_response, batch_id = self.protocol.recv_auth_result()
-        logging.info(f"action: auth | result: {client_id_response, batch_id+1} ✅")
+        logging.info(f"action: auth | client_id: {client_id_response} ✅")
+        logging.info(f"action: auth | batch_id: {batch_id+1} ✅")
         if client_id_response == None or (client_id != INVALID_CLIENT_ID and (client_id_response != client_id)) or batch_id == None:
             logging.error("action: auth | result: failed ❌")
             raise Exception("Auth failed")

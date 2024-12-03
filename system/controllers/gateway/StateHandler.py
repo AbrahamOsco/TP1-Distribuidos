@@ -8,7 +8,9 @@ from multiprocessing import Manager
 import logging
 import traceback
 import os
+from cryptography.fernet import Fernet
 
+FERNET_KEY = b'QWGObJry3Q3h3yQs4EZpFMVdRkvxz4QwKqzTbr6p3Ik='
 class StateHandler:
     _instance = None
 
@@ -25,6 +27,7 @@ class StateHandler:
         self.shared_namespace.clients_allow = [True] * MAX_CLIENTS
         self.manager_lock = manager.Lock()
         self.checkpoint = CheckpointFile(prefix, log_file=self.shared_namespace.logs, id_lists=[])
+        self.cipher = Fernet(FERNET_KEY)
 
     def get_instance():
         if StateHandler._instance is None:
@@ -70,14 +73,13 @@ class StateHandler:
             last_batch = self.shared_namespace.last_batch_by_client
             del last_batch[client_id]
             self.shared_namespace.last_batch_by_client = last_batch
-
+            
     def get_client_id(self):
         with self.manager_lock:
             client_id = self.get_first_available_client()
             logging.info(f"action: get_client_id | client_id: {client_id}")
             if client_id is not None:
                 self.set_client_busy(client_id)
-                
                 return client_id
             else:
                 raise Exception("No clients available")
@@ -223,3 +225,15 @@ class StateHandler:
         for data in results:
             result = data.to_result()
             protocol.send_result(result)
+
+    def encrypt_client_id(self, client_id):
+        """Encripta el client_id usando la clave simétrica."""
+        return self.cipher.encrypt(str(client_id).encode()).decode()
+
+    def decrypt_client_id(self, encrypted_client_id):
+        """Desencripta el client_id encriptado."""
+        try:
+            return int(self.cipher.decrypt(encrypted_client_id.encode()).decode())
+        except Exception as e:
+            logging.error(f"Error decrypting client_id: {e}")
+            return None

@@ -36,15 +36,16 @@ class ClientProtocol(Protocol):
 
     def send_auth(self, client_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
-        self.send_number_n_bytes(1, client_id)
+        logging.info(f"action: send_auth | client_id: {client_id} ✅")
+        self.send_string(client_id)
 
     def recv_auth_result(self):
         operation_type = self.recv_number_n_bytes(1)
         if operation_type != OPERATION_TYPE_AUTH:
             return False
-        client_id = self.recv_number_n_bytes(1)
+        client_id_encrypted = self.recv_string()
         batch_id = self.recv_number_n_bytes(2)
-        return client_id, batch_id
+        return client_id_encrypted, batch_id
     
     def recv_result(self):
         operation_type = self.recv_number_n_bytes(1)

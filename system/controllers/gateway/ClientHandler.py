@@ -22,6 +22,9 @@ class ClientHandler:
     def set_client_id(self, client_id):
         self.client_id = client_id
 
+    def set_client_id_encrypted(self, client_id_encrypted):
+        self.client_id_encrypted = client_id_encrypted
+
     def set_batch_id(self, batch_id):
         self.batch_id = batch_id
 
@@ -32,13 +35,15 @@ class ClientHandler:
         sys.exit(0)
 
     def send_auth_confirm(self):
-        logging.info(f"action: auth confirm | client_id: {self.client_id} | batch_id: {self.batch_id}")
-        self.protocol.send_auth_result(self.client_id, self.batch_id)
+        logging.info(f"action: auth confirm | client_id_encrypted: {self.client_id_encrypted} | batch_id: {self.batch_id}")
+        self.protocol.send_auth_result(self.client_id_encrypted, self.batch_id)
 
     def start(self):
         self.broker = Broker(tag=f"client{self.client_id}")
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
         self.send_auth_confirm()
+        logging.info(f"action: El client_id es: {self.client_id}")
+        logging.info(f"action: El client_id encriptado es: {self.client_id_encrypted}")
         self.state_handler = StateHandler.get_instance()
         self.state_handler.set_protocol(self.client_id, self.protocol)
 

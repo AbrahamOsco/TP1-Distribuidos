@@ -12,7 +12,7 @@ from system.controllers.gateway.StateHandler import StateHandler
 from system.controllers.gateway.gatewayStructure import MAX_CLIENTS
 
 PORT_SERVER = 12345
-CLIENT_NOT_FOUND = 0
+CLIENT_NOT_FOUND = '0' * 100
 class Gateway(Node):
     def __init__(self):
         self.socket_accepter = Socket(port =PORT_SERVER)
@@ -56,15 +56,21 @@ class Gateway(Node):
                     if socket_peer is None:
                         break
                     client_handler = ClientHandler(socket_peer)
-                    client_id = client_handler.recv_auth()
-                    if client_id == None:
+                    client_id_encrypted = client_handler.recv_auth()
+                    if client_id_encrypted == None:
                         socket_peer.close()
                         continue
-                    if client_id == CLIENT_NOT_FOUND:
+                    if client_id_encrypted == CLIENT_NOT_FOUND:
                         logging.info("action: auth without client_id")
                         client_id = self.state_handler.get_client_id()
+                        logging.info(f"Se obtuvo el client_id: {client_id}")
                         client_handler.set_client_id(client_id)
+                        client_id_encrypted = self.state_handler.encrypt_client_id(client_id)
+                        client_handler.set_client_id_encrypted(client_id_encrypted)
                     else:
+                        logging.info(f"action: auth with client_id encrypt | client_id_encrypted: {client_id_encrypted}")
+                        client_handler.set_client_id_encrypted(client_id_encrypted)
+                        client_id = self.state_handler.decrypt_client_id(client_id_encrypted)
                         logging.info(f"action: auth with client_id | client_id: {client_id}")
                         client_handler.set_client_id(client_id)
                         batch_id = self.state_handler.get_batch_id(client_id)
