@@ -36,7 +36,6 @@ class ClientProtocol(Protocol):
 
     def send_auth(self, client_id):
         self.send_number_n_bytes(1, OPERATION_TYPE_AUTH)
-        logging.info(f"action: send_auth | client_id: {client_id} ✅")
         self.send_string(client_id)
 
     def recv_auth_result(self):

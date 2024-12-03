@@ -314,6 +314,7 @@ def get_gateway(queries, node_id):
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES={len(queries)}
+        - FERNET_KEY=$FERNET_KEY
     depends_on:
       rabbitmq:
         condition: service_healthy"""

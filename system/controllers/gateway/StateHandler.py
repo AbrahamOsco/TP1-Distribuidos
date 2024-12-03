@@ -10,7 +10,6 @@ import traceback
 import os
 from cryptography.fernet import Fernet
 
-FERNET_KEY = b'QWGObJry3Q3h3yQs4EZpFMVdRkvxz4QwKqzTbr6p3Ik='
 class StateHandler:
     _instance = None
 
@@ -25,6 +24,7 @@ class StateHandler:
         self.shared_namespace.responses_by_client = {}
         self.shared_namespace.logs = LogFile(prefix, remain_open=False)
         self.shared_namespace.clients_allow = [True] * MAX_CLIENTS
+        FERNET_KEY = os.getenv("FERNET_KEY")
         self.manager_lock = manager.Lock()
         self.checkpoint = CheckpointFile(prefix, log_file=self.shared_namespace.logs, id_lists=[])
         self.cipher = Fernet(FERNET_KEY)
