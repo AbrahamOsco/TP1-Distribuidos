@@ -2,3 +2,4 @@ data/dataset.csv
 data/games.csv
 .idea
 persistent/
+.env
