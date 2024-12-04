@@ -3,6 +3,14 @@ import subprocess
 import time
 import sys
 import threading
+from datetime import datetime
+
+LOG_FILE = "chaos_killer.log"
+
+def escribir_log(mensaje):
+    """Escribe un mensaje en el archivo de log."""
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(f"{datetime.now()} - {mensaje}\n")
 
 def revivir_contenedor(contenedor):
     threading.Thread(target=revivir_contenedor_thread, args=(contenedor,)).start()
@@ -15,18 +23,17 @@ def revivir_contenedor_thread(contenedor):
             check=True
         )
         print(f"Contenedor {contenedor} ha sido revivido")
+        escribir_log(f"Contenedor {contenedor} ha sido revivido")
     except subprocess.CalledProcessError as e:
         print(f"Error al revivir el contenedor {contenedor}: {e}")
+        escribir_log(f"Error al revivir el contenedor {contenedor}: {e}")
 
-# Función para obtener una lista de contenedores en ejecución, excepto "rabbitmq" y los que empiecen con "client"
 def obtener_contenedores_vivos():
     try:
-        # Ejecuta el comando para obtener los contenedores vivos
         resultado = subprocess.run(
             ["docker", "ps", "--format", "{{.Names}}"],
             capture_output=True, text=True, check=True
         )
-        # Filtrar los contenedores que no se llamen "rabbitmq" ni empiecen con "client#"
         contenedores = [
             nombre for nombre in resultado.stdout.splitlines()
             if nombre != "rabbitmq" and not nombre.startswith("client")
@@ -34,9 +41,9 @@ def obtener_contenedores_vivos():
         return contenedores
     except subprocess.CalledProcessError as e:
         print(f"Error al obtener contenedores vivos: {e}")
+        escribir_log(f"Error al obtener contenedores vivos: {e}")
         return []
 
-# Función para matar un contenedor completo usando 'docker kill'
 def matar_contenedor(contenedor):
     try:
         subprocess.run(
@@ -44,39 +51,35 @@ def matar_contenedor(contenedor):
             check=True
         )
         print(f"Contenedor {contenedor} ha sido matado")
+        escribir_log(f"Contenedor {contenedor} ha sido matado con SIGKILL")
     except subprocess.CalledProcessError as e:
         print(f"Error al matar el contenedor {contenedor}: {e}")
+        escribir_log(f"Error al matar el contenedor {contenedor}: {e}")
 
-# Función principal que mata contenedores aleatoriamente periódicamente
 def chaos_killer(intervalo, auto_revive):
     while True:
-        # Obtener los contenedores vivos excluyendo "rabbitmq"
         contenedores = obtener_contenedores_vivos()
         
         if contenedores:
-            # Elegir un contenedor aleatoriamente
             contenedor = random.choice(contenedores)
             print(f"Seleccionando contenedor {contenedor} para matar...")
-
-            # Matar el contenedor seleccionado
+            escribir_log(f"Seleccionando contenedor {contenedor} para matar...")
+            
             matar_contenedor(contenedor)
             if auto_revive:
                 revivir_contenedor(contenedor)
         else:
             print("No hay contenedores vivos en este momento.")
+            escribir_log("No hay contenedores vivos en este momento.")
         
-        # Esperar el intervalo antes de repetir
         time.sleep(intervalo)
 
-# Comprobar si se ha pasado el intervalo como argumento
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Uso: python3 chaos_killer.py <intervalo_en_segundos> <auto_revive>")
         sys.exit(1)
 
-    # Convertir el argumento a un entero
     intervalo_tiempo = int(sys.argv[1])
-    #auto_revive = int(sys.argv[2])
+    auto_revive = bool(int(sys.argv[2]))
 
-    # Ejecutar el chaos killer con el intervalo proporcionado
-    chaos_killer(intervalo_tiempo, None)
+    chaos_killer(intervalo_tiempo, auto_revive)
