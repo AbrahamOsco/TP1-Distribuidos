@@ -42,8 +42,8 @@ class ClientHandler:
         self.broker = Broker(tag=f"client{self.client_id}")
         signal.signal(signal.SIGTERM, lambda _n,_f: self.stop_client())
         self.send_auth_confirm()
-        logging.info(f"action: El client_id es: {self.client_id}")
-        logging.info(f"action: El client_id encriptado es: {self.client_id_encrypted}")
+        logging.debug(f"action: El client_id es: {self.client_id}")
+        logging.debug(f"action: El client_id encriptado es: {self.client_id_encrypted}")
         self.state_handler = StateHandler.get_instance()
         self.state_handler.set_protocol(self.client_id, self.protocol)
 

@@ -21,7 +21,7 @@ class ServerProtocol(Protocol):
             if operation_type != OPERATION_TYPE_AUTH:
                 return None
             id_client = self.recv_string()
-            logging.info(f"action: recv_auth | client_id: {id_client} ✅")
+            logging.debug(f"action: recv_auth | client_id: {id_client} ✅")
             return id_client
         except Exception as e:
             return None

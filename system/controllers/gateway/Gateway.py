@@ -63,7 +63,7 @@ class Gateway(Node):
                     if client_id_encrypted == CLIENT_NOT_FOUND:
                         logging.info("action: auth without client_id")
                         client_id = self.state_handler.get_client_id()
-                        logging.info(f"Se obtuvo el client_id: {client_id}")
+                        logging.debug(f"Se obtuvo el client_id: {client_id}")
                         client_handler.set_client_id(client_id)
                         client_id_encrypted = self.state_handler.encrypt_client_id(client_id)
                         client_handler.set_client_id_encrypted(client_id_encrypted)
