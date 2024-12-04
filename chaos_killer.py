@@ -4,8 +4,17 @@ import time
 import sys
 import threading
 from datetime import datetime
+import os
 
 LOG_FILE = "chaos_killer.log"
+
+def inicializar_log():
+    """Crea el archivo de log si no existe y añade un separador para cada nueva ejecución."""
+    if not os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "w") as log_file:
+            log_file.write("=== Chaos Killer Log Iniciado ===\n")
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(f"\n=== Nueva ejecución: {datetime.now()} ===\n")
 
 def escribir_log(mensaje):
     """Escribe un mensaje en el archivo de log."""
@@ -82,4 +91,5 @@ if __name__ == "__main__":
     intervalo_tiempo = int(sys.argv[1])
     auto_revive = bool(int(sys.argv[2]))
 
+    inicializar_log()
     chaos_killer(intervalo_tiempo, auto_revive)
