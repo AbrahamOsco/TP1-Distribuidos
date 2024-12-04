@@ -110,7 +110,7 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1,0.2
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
@@ -137,7 +137,7 @@ services:
       - ./persistent:/persistent
     environment:
       - QUERIES_EXECUTED=[1, 2, 3, 4, 5]  
-      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.2,0.1
+      - PERCENT_OF_FILE_FOR_USE_BY_EXECUTION=0.1
       - LOGGING_LEVEL=INFO
       - PYTHONPATH=/app
       - HOSTNAME=gateway
@@ -171,6 +171,7 @@ services:
         - SOURCE=Output
         - SINK=DataRaw
         - AMOUNT_OF_QUERIES=5
+        - FERNET_KEY=$FERNET_KEY
     depends_on:
       rabbitmq:
         condition: service_healthy

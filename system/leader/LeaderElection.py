@@ -26,7 +26,7 @@ TIME_OUT_TO_GET_ACK = 7
 MAX_SIZE_QUEUE_PROTO_CONNECT = 1
 TIME_FOR_BOOSTRAPING_INIIAL = 3.2
 TIME_FOR_BOOSTRAPING_INITIATED = 1.1
-
+TIME_FOR_DEPENDENCE_MEDIC_0 = 1.1
 TIME_FOR_SLEEP_OBS_LEADER = 0.5
 
 class LeaderElection:
@@ -72,6 +72,8 @@ class LeaderElection:
         self.start_accept()
         if self.thr_obs_leader is None:
             time.sleep(TIME_FOR_BOOSTRAPING_INIIAL)
+            if self.id == 0:
+                time.sleep(TIME_FOR_DEPENDENCE_MEDIC_0)
         else:
             time.sleep(TIME_FOR_BOOSTRAPING_INITIATED)
         self.leader_id.change_value(None)
