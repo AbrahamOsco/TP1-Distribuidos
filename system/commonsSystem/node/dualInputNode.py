@@ -29,8 +29,8 @@ class DualInputNode(StatefullNode):
             self.data.status[client_id] = STATUS_REVIEWING
             self.check_amounts(data)
             logging.info(f"Status changed for client {data.get_client()}. Now is expecting reviews")
-            self.checkpoint.save_checkpoint(self.data.to_bytes())
             self.check_premature_messages(data.get_client())
+            self.checkpoint.save_checkpoint(self.data.to_bytes())
         self.broker.basic_ack(delivery_tag=delivery_tag,multiple=True)
 
     def check_premature_messages(self, client_id):
@@ -38,7 +38,6 @@ class DualInputNode(StatefullNode):
             return
         for data in self.data.premature_messages[client_id]:
             self.process_reviews(data)
-        self.checkpoint.save_checkpoint(self.data.to_bytes())
 
     def check_amounts(self, data: EOFDTO):
         if data.get_type() == "games":
