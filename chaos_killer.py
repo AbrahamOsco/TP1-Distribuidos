@@ -9,12 +9,12 @@ import os
 LOG_FILE = "chaos_killer.log"
 
 def inicializar_log():
-    """Crea el archivo de log si no existe y añade un separador para cada nueva ejecución."""
+    """Crea el archivo de log si no existe y añade un separador para cada nueva ejecucion."""
     if not os.path.exists(LOG_FILE):
         with open(LOG_FILE, "w") as log_file:
             log_file.write("=== Chaos Killer Log Iniciado ===\n")
     with open(LOG_FILE, "a") as log_file:
-        log_file.write(f"\n=== Nueva ejecución: {datetime.now()} ===\n")
+        log_file.write(f"\n=== Nueva ejecucion: {datetime.now()} ===\n")
 
 def escribir_log(mensaje):
     """Escribe un mensaje en el archivo de log."""
