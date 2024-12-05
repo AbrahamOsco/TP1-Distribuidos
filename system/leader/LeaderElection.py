@@ -151,8 +151,7 @@ class LeaderElection:
             if result:
                 return
             elif (time.time() - start_time) >= TIME_OUT_TO_GET_ACK:
-                next_id_to_compare = self.next_id_lock.get_value()
-                logging.debug(f"[{self.id}] Connect Timeout to get a ack! from {current_next_id} Type: {token_dto.a_type.value} {token_dto.dic_medics}  We try with the next! 🔕 {next_id_to_compare} 👈")
+                logging.debug(f"[{self.id}] Connect Timeout to get a ack! from {current_next_id} Type: {token_dto.a_type.value} {token_dto.dic_medics}  We try with the next! 🔕")
                 if not self.leader_id.is_this_value(None):
                     logging.info(f"[{self.id}] We found a leader already! Leader:{self.leader_id.value} 💯 ✅")
                     return

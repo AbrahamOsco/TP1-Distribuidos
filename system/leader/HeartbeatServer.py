@@ -64,6 +64,7 @@ class HeartbeatServer:
                     self.socket.sendto(message, (hostname_to_send, node.service_name))
                     send_messg = True
                 elif node.status == NodeStatus.RECENTLY_REVIVED:
+                    hostname_to_send = node.hostname
                     hi_message = f"hi|{self.my_hostname}".encode('utf-8')
                     self.socket.sendto(hi_message, (hostname_to_send, node.service_name))
                     self.socket.sendto(message, (hostname_to_send, node.service_name))
