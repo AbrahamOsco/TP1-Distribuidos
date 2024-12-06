@@ -1,5 +1,8 @@
 # TP Escalabilidad
 
+## Informe: 
+https://docs.google.com/document/d/1_2p2jImJKtobeWnadvrUPZKUT7AoA-OdORsOQypaefw/edit?tab=t.0
+
 ## Instrucciones de uso
 
 Para generar el archivo docker compose se debe correr el comando: 
