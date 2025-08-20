@@ -3,6 +3,14 @@
 ## Informe: 
 https://docs.google.com/document/d/1_2p2jImJKtobeWnadvrUPZKUT7AoA-OdORsOQypaefw/edit?tab=t.0
 
+## Finales:
+
+1. Only Consignas:
+    https://docs.google.com/document/d/1TGU-u_wfeIYD2bVx_oj6R8ak-5YrcDOwCI21EjS5RwI/edit?tab=t.0
+
+2. Finales resueltos:
+    https://docs.google.com/document/d/1C_CafwaHuyMBiYAFF_ryJICTksEqDzz6_1GH95hoR7k/edit?tab=t.0
+
 ## Instrucciones de uso
 
 Para generar el archivo docker compose se debe correr el comando: 
